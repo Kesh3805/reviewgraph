@@ -1,0 +1,8 @@
+{
+  "name": "init-basic",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": { "build": "tsc -p tsconfig.json", "test": "jest" },
+  "dependencies": { "express": "^4.19.0" },
+  "devDependencies": { "typescript": "^5.4.0", "jest": "^29.7.0" }
+}

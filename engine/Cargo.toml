@@ -1,6 +1,6 @@
 [workspace]
 resolver = "2"
-members = ["crates/*", "apps/*", "xtask"]
+members = ["crates/*", "apps/*", "xtask", "tools/test-support"]
 
 [workspace.package]
 version = "0.1.0"
@@ -23,6 +23,7 @@ todo = "deny"
 [workspace.dependencies]
 # internal
 review-core = { path = "crates/review-core" }
+review-test-support = { path = "tools/test-support" }
 telemetry = { path = "crates/telemetry" }
 repository = { path = "crates/repository" }
 analysis-ir = { path = "crates/analysis-ir" }
@@ -73,9 +74,16 @@ schemars = { version = "0.8", features = ["uuid1", "chrono"] }
 axum = "0.8"
 imara-diff = "0.1"
 toml = "0.8"
+opentelemetry = "0.33"
+opentelemetry_sdk = { version = "0.33", features = ["rt-tokio"] }
+opentelemetry-otlp = { version = "0.33", default-features = false, features = ["http-proto", "reqwest-blocking-client", "trace", "metrics", "logs"] }
+opentelemetry-appender-tracing = "0.33"
+tracing-opentelemetry = "0.34"
+gix = { version = "0.88", default-features = false }
 
 # dev
 proptest = "1"
+wiremock = "0.6"
 criterion = { version = "0.5", default-features = false, features = ["cargo_bench_support"] }
 insta = { version = "1", features = ["yaml", "json"] }
 tempfile = "3"

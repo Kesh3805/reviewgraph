@@ -185,7 +185,9 @@ Every detector in this phase is a **pure function over already-walked data** (`F
 
 ### INIT-001 — Repository discovery & git state via gix
 
-Status: ☐
+Status: â
+
+> **Implementation note:** Fixtures use the step-directory builder (FND-008) rather than a scripted history.sh, so the origin remote and refs/remotes/origin/HEAD are added by test helpers (review-test-support::add_origin). The test-support crate lives at engine/tools/test-support (package review-test-support) instead of engine/crates/ so the xtask dependency-direction table needs no new library entry. gix 0.88 needs the sha1 and dirwalk features in addition to those listed. Tracing spans are emitted with the tracing crate directly; metric instruments wait for the telemetry crate.
 
 - **Task ID:** INIT-001
 - **Title:** Repository discovery & git state via gix (open, HEAD, remotes, dirty status, default branch)
