@@ -5,6 +5,7 @@
 
 pub mod error;
 pub mod git;
+pub mod language;
 pub mod read;
 pub mod remote_url;
 pub mod sensitive;

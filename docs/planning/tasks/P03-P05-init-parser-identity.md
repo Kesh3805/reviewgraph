@@ -396,7 +396,9 @@ Status: â
 
 ### INIT-003 — Language detection + per-language stats
 
-Status: ☐
+Status: â
+
+> **Implementation note:** review_core::Language already existed with six variants and lowercase wire names, so it was extended additively (Kotlin, Csharp, Ruby, Php, Shell, Sql, Yaml, Json, Toml, Markdown, Html, Css, Dockerfile, Terraform, Protobuf, Graphql, Prisma, Other) and keeps id_prefix() rather than gaining a second id_tag(). Other is a unit variant, so Makefile/Jenkinsfile are reported as Other without the make/groovy hint. detect_language returns Some(Other) for unknown extensions and None for extensionless files with no recognizable name or shebang; stats count the latter as Other. The polyglot-manifests assertion (typescript, python, go, rust, java, kotlin) is covered by an inline polyglot tree here and again against the polyglot-manifests fixture in INIT-004.
 
 - **Task ID:** INIT-003
 - **Title:** Language detection (extension/shebang) + per-language stats
