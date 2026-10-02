@@ -23,6 +23,8 @@ Model-derived artifacts also record:
 - `model`
 - `verification_version`
 
+The types and the invalidation table are implemented in [`engine/crates/review-core/src/provenance.rs`](../../engine/crates/review-core/src/provenance.rs) (`Provenance::invalidation_against`).
+
 ### Repository fingerprint (PRD §15)
 ```
 fingerprint = blake3(repository_id ‖ commit_sha ‖ analyzer_versions ‖ graph_schema_version

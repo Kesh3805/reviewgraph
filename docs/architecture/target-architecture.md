@@ -285,7 +285,7 @@ seeds (changed symbols of a cluster)
 
 ### 3.9 Semantic layer (Qdrant, ADR-008)
 
-- **One collection per embedding space**, named `rg_{space}_v{n}`, where the space is `{provider}-{model}-{dims}`. Payload indexes cover `organization_id, repository_id, kind, language, symbol_key, file_path, content_hash, snapshot_lineage`.
+- **One collection per embedding space**, named `rg_{provider}_{model}_{dims}_v{n}` (provider and model lowercased, every character outside `[a-z0-9]` replaced by `_`; see `EmbeddingSpace::collection_name`). Payload indexes cover `organization_id, repository_id, kind, language, symbol_key, file_path, content_hash, snapshot_lineage`.
 - **Points.** `point_id = uuid_v5(org, repo, kind, symbol_key | chunk_key, embedding_space)`. Re-embedding the same content is an upsert no-op, detected by a content_hash check *before* calling the embedding provider.
 - **Kinds:** `symbol_summary, code_chunk, doc, convention, finding_history`.
 - **Every search carries a mandatory tenant filter.** The adapter API makes it impossible to omit: `TenantScope` is a required parameter type.

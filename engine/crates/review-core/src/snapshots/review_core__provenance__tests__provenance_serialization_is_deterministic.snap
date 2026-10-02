@@ -1,0 +1,5 @@
+---
+source: crates/review-core/src/provenance.rs
+expression: ja
+---
+{"commit_sha":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","graph_schema_version":1,"analyzer_versions":{"typescript":"1.2.3","python":"0.4.0"},"config_hash":"b756e64ea90c4036e88f3f07ff9a708666dc0527bf14a015249e84ff6daabaa7","profile_version":1,"model":{"embedding_space":{"provider":"voyage","model":"voyage-code-3","dims":1024},"reviewer_version":"1.0.0","prompt_version":"correctness/v3","provider":"anthropic","model":"sonnet","verification_version":1}}

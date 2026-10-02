@@ -1418,7 +1418,9 @@ The arch-test gains a rule: no library crate lists `anyhow` among its normal dep
 ---
 
 ### DOM-003 — Version constants & Provenance
-Status: ☐
+Status: ☑
+
+> **Implementation note:** Added workspace dependency `semver` (serde feature). `EmbeddingSpace` and the semver wrappers deserialize through their validating constructors, so malformed input is rejected by serde as well. A shared `pub(crate) schema::string_pattern` helper now builds the hand-written string schemas (also used by `ids.rs`). `Invalidation` is a plain value type (not serialized). `cargo insta` was not run; the single snapshot was accepted with `INSTA_UPDATE=always` and `cargo test` leaves no `.snap.new` files.
 
 **Task ID:** DOM-003
 

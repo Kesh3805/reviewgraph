@@ -16,28 +16,12 @@ use std::fmt;
 use std::str::FromStr;
 
 use schemars::gen::SchemaGenerator;
-use schemars::schema::{InstanceType, Schema, SchemaObject, StringValidation};
+use schemars::schema::Schema;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
 use crate::error::CoreError;
-
-fn pattern_schema(name: &str, pattern: &str) -> Schema {
-    SchemaObject {
-        instance_type: Some(InstanceType::String.into()),
-        metadata: Some(Box::new(schemars::schema::Metadata {
-            title: Some(name.to_owned()),
-            ..Default::default()
-        })),
-        string: Some(Box::new(StringValidation {
-            pattern: Some(pattern.to_owned()),
-            ..Default::default()
-        })),
-        ..Default::default()
-    }
-    .into()
-}
 
 macro_rules! uuid_id {
     ($(#[$meta:meta])* $name:ident) => {
@@ -269,7 +253,7 @@ impl JsonSchema for SymbolKey {
     }
 
     fn json_schema(_: &mut SchemaGenerator) -> Schema {
-        pattern_schema("SymbolKey", "^[0-9a-f]{32}$")
+        crate::schema::string_pattern("SymbolKey", "^[0-9a-f]{32}$")
     }
 }
 
@@ -331,7 +315,7 @@ impl JsonSchema for CommitSha {
     }
 
     fn json_schema(_: &mut SchemaGenerator) -> Schema {
-        pattern_schema("CommitSha", "^([0-9a-f]{40}|[0-9a-f]{64})$")
+        crate::schema::string_pattern("CommitSha", "^([0-9a-f]{40}|[0-9a-f]{64})$")
     }
 }
 
