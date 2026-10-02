@@ -1981,7 +1981,9 @@ pub struct PublishedFinding { pub id: PublishedFindingId, pub verified_finding_i
 ---
 
 ### DOM-007 — Evidence model
-Status: ☐
+Status: ☑
+
+> **Implementation note:** Implemented before DOM-006 because DOM-006 lists DOM-007 as a dependency (the commit order is therefore DOM-005, DOM-007, DOM-006). `EvidenceOrigin::Reviewer` needs `ReviewerType`, which DOM-006 scopes; to avoid a cycle it is defined in its own module, `reviewer_type.rs`, introduced here, and DOM-006 re-exports it from `finding`. `Evidence` is built as a plain struct and checked with `Evidence::validated()` (an eight-argument constructor would trip `clippy::too_many_arguments`); deserialization validates automatically, as do `SymbolRef` and `RelationClaim`. `EvidenceOrigin` uses an internal `"type"` tag and `EvidenceVerification` an internal `"status"` tag. The ADR-011 consequence bullet now links `evidence.rs` and `has_strong_evidence`.
 
 **Task ID:** DOM-007
 

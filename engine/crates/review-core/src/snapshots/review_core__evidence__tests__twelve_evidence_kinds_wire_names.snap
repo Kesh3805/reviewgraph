@@ -1,0 +1,16 @@
+---
+source: crates/review-core/src/evidence.rs
+expression: names
+---
+- changed_source
+- caller_path
+- callee_path
+- test_behavior
+- interface_contract
+- configuration
+- database_schema
+- repository_convention
+- compiler_diagnostic
+- lint_result
+- static_analysis_result
+- historical_regression

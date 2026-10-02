@@ -40,5 +40,5 @@ Invariant 2 says LLM output is never published directly. The legacy system gave 
 | Accept above a model-reported confidence | Self-reported confidence is uncalibrated. |
 
 ## Consequences
-- Reviewers must cite structured evidence: symbol keys, ranges and the relations they claim. The reviewer output schema enforces this.
+- Reviewers must cite structured evidence: symbol keys, ranges and the relations they claim. The reviewer output schema enforces this. The types live in [`engine/crates/review-core/src/evidence.rs`](../../engine/crates/review-core/src/evidence.rs); the "at least one strong evidence source" rule is `has_strong_evidence`, which counts only *effective* strength (model-claimed evidence is capped until verification confirms it).
 - Verification depth scales with risk.
