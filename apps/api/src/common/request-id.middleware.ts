@@ -1,4 +1,5 @@
 import { AsyncLocalStorage } from 'node:async_hooks';
+import { trace } from '@opentelemetry/api';
 import type { NextFunction, Request, Response } from 'express';
 import { v7 as uuidv7 } from 'uuid';
 
@@ -27,5 +28,6 @@ export function requestIdMiddleware(req: RequestWithId, res: Response, next: Nex
   const requestId = resolveRequestId(Array.isArray(header) ? header[0] : header);
   req.requestId = requestId;
   res.setHeader(REQUEST_ID_HEADER, requestId);
+  trace.getActiveSpan()?.setAttribute('request_id', requestId);
   store.run({ requestId }, next);
 }

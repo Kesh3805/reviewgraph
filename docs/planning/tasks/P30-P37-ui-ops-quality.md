@@ -673,7 +673,8 @@ Status: ☐
 ---
 
 ### OBS-002 — NestJS OpenTelemetry SDK
-Status: ☐
+Status: ☑
+> **Implementation note:** The SDK core lives in `telemetry/sdk.ts` (`instrumentation.ts` is the `--import` side-effect entry), and `start`/`start:dev` load it with `node --import ./dist/telemetry/instrumentation.js`. The http server span is named `HTTP <method> <route>` by a Nest interceptor (route is only known after Express matches). Because Jest bypasses the Node module hooks auto-instrumentation needs, the http/pg/ioredis tests run in a child process (`test/telemetry/run.cjs`) against in-process fake Postgres/Redis servers. The http span query string is overwritten with the path; ioredis spans record only the command name. `otel_export_failures_total` is created lazily on the SDK meter when an export fails (log line limited to once a minute). The `request_id` attribute is set by the request-id middleware. Verified against local OpenObserve (traces and logs ingested). The `ioredis` instrumentation currently emits each command span twice with ioredis 5.11 (cosmetic, upstream). Metric instruments remain OBS-005 and redaction OBS-006 (injection point is the `REDACT_PATHS`/logger factory).
 
 - **Task ID:** OBS-002
 - **Title:** `@opentelemetry/sdk-node` bootstrap for `apps/api` with http/pg/ioredis instrumentation, structured logger and graceful flush

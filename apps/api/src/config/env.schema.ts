@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { telemetryEnvShape } from '../telemetry/config';
 
 /** Exit code for configuration errors (sysexits EX_CONFIG). */
 export const EX_CONFIG = 78;
@@ -47,7 +48,7 @@ const baseShape = {
   GITHUB_CLIENT_ID: nonEmpty.optional(),
   GITHUB_CLIENT_SECRET: nonEmpty.optional(),
   GITHUB_API_URL: url(['http:', 'https:']).default('https://api.github.com'),
-  OTEL_EXPORTER_OTLP_ENDPOINT: url(['http:', 'https:']).optional(),
+  ...telemetryEnvShape,
 };
 
 const GITHUB_REQUIRED = [
