@@ -1,0 +1,19 @@
+{
+  "$id": "urn:reviewgraph:contracts:FindingCategory",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "description": "What kind of problem a finding describes. Wire form is snake_case.",
+  "enum": [
+    "correctness",
+    "security",
+    "performance",
+    "testing",
+    "architecture",
+    "maintainability",
+    "data_integrity",
+    "concurrency",
+    "api_contract",
+    "error_handling"
+  ],
+  "title": "FindingCategory",
+  "type": "string"
+}

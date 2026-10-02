@@ -1,0 +1,176 @@
+{
+  "$id": "urn:reviewgraph:contracts:PublishedFinding",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": false,
+  "definitions": {
+    "CommitSha": {
+      "pattern": "^([0-9a-f]{40}|[0-9a-f]{64})$",
+      "title": "CommitSha",
+      "type": "string"
+    },
+    "DiffSide": {
+      "description": "Which side of a diff a location refers to.",
+      "enum": [
+        "base",
+        "head"
+      ],
+      "type": "string"
+    },
+    "LineRange": {
+      "additionalProperties": false,
+      "description": "1-based inclusive line range. Invariant: `1 <= start <= end`.",
+      "properties": {
+        "end": {
+          "format": "uint32",
+          "minimum": 0.0,
+          "type": "integer"
+        },
+        "start": {
+          "format": "uint32",
+          "minimum": 0.0,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "end",
+        "start"
+      ],
+      "type": "object"
+    },
+    "Placement": {
+      "description": "Where a finding appears on the provider. `Summary` carries an out-of-diff finding: it moves to the summary comment and is never dropped (legacy `policy.rs:128-137`, INV-015). The legacy `Discarded` placement is now a suppression state.",
+      "enum": [
+        "inline",
+        "summary"
+      ],
+      "type": "string"
+    },
+    "Position": {
+      "additionalProperties": false,
+      "description": "A point in a source file.\n\n`line` is **1-based**. `column` is a **0-based UTF-8 byte offset** within the line, matching tree-sitter columns. Ordering is by line, then column.",
+      "properties": {
+        "column": {
+          "format": "uint32",
+          "minimum": 0.0,
+          "type": "integer"
+        },
+        "line": {
+          "format": "uint32",
+          "minimum": 0.0,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "column",
+        "line"
+      ],
+      "type": "object"
+    },
+    "SourceLocation": {
+      "additionalProperties": false,
+      "description": "A place in a file at one side of a diff.",
+      "properties": {
+        "lines": {
+          "$ref": "#/definitions/LineRange"
+        },
+        "path": {
+          "type": "string"
+        },
+        "range": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/SourceRange"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "side": {
+          "$ref": "#/definitions/DiffSide"
+        }
+      },
+      "required": [
+        "lines",
+        "path",
+        "side"
+      ],
+      "type": "object"
+    },
+    "SourceRange": {
+      "additionalProperties": false,
+      "description": "A span between two [`Position`]s. Invariant: `start <= end`.",
+      "properties": {
+        "end": {
+          "$ref": "#/definitions/Position"
+        },
+        "start": {
+          "$ref": "#/definitions/Position"
+        }
+      },
+      "required": [
+        "end",
+        "start"
+      ],
+      "type": "object"
+    }
+  },
+  "description": "Maps onto `published_findings` (DOM-009).",
+  "properties": {
+    "head_sha": {
+      "$ref": "#/definitions/CommitSha"
+    },
+    "id": {
+      "format": "uuid",
+      "type": "string"
+    },
+    "location": {
+      "anyOf": [
+        {
+          "$ref": "#/definitions/SourceLocation"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "Present exactly when the placement is `Inline`."
+    },
+    "organization_id": {
+      "format": "uuid",
+      "type": "string"
+    },
+    "placement": {
+      "$ref": "#/definitions/Placement"
+    },
+    "provider_comment_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "provider_review_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "published_at": {
+      "format": "date-time",
+      "type": "string"
+    },
+    "verified_finding_id": {
+      "format": "uuid",
+      "type": "string"
+    }
+  },
+  "required": [
+    "head_sha",
+    "id",
+    "organization_id",
+    "placement",
+    "published_at",
+    "verified_finding_id"
+  ],
+  "title": "PublishedFinding",
+  "type": "object"
+}

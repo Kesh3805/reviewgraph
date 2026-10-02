@@ -1,0 +1,21 @@
+{
+  "$id": "urn:reviewgraph:contracts:FindingState",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "description": "Lifecycle state of a candidate finding. Wire form is SCREAMING_SNAKE_CASE.",
+  "enum": [
+    "GENERATED",
+    "EVIDENCE_COLLECTED",
+    "VERIFIED",
+    "DEDUPLICATED",
+    "PRIORITIZED",
+    "PUBLISHED",
+    "SUPPRESSED_LOW_CONFIDENCE",
+    "SUPPRESSED_DUPLICATE",
+    "SUPPRESSED_PREEXISTING",
+    "SUPPRESSED_NOT_ACTIONABLE",
+    "SUPPRESSED_POLICY",
+    "INVALIDATED"
+  ],
+  "title": "FindingState",
+  "type": "string"
+}

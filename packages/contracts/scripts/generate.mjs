@@ -32,7 +32,9 @@ export async function generate(schemasDir, outDir) {
     await writeFile(path.join(outDir, `${name}.ts`), ts);
   }
 
-  const barrel = [BANNER, ...names.map((n) => `export type * from './${n}.js';`), ''].join('\n');
+  const barrel = [BANNER, ...names.map((n) => `export type { ${n} } from './${n}.js';`), ''].join(
+    '\n',
+  );
   await writeFile(path.join(outDir, 'index.ts'), barrel);
   return names;
 }

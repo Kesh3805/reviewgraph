@@ -1,0 +1,767 @@
+{
+  "$id": "urn:reviewgraph:contracts:CandidateFinding",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": false,
+  "definitions": {
+    "ArtifactKind": {
+      "enum": [
+        "model_rationale",
+        "tool_output",
+        "graph_query"
+      ],
+      "type": "string"
+    },
+    "ClaimedRelation": {
+      "description": "A relation a reviewer claims between two symbols. Verification (VER-003) maps each variant onto code-graph edge kinds; `review-core` does not depend on `codegraph`, so the mapping is documented here and implemented there:\n\n| Variant | Graph edge(s) | |---|---| | `Calls` | `CALLS` (direct) | | `Reaches` | a path of `CALLS` edges | | `Tests` | `TESTS` | | `Implements` | `IMPLEMENTS` | | `Extends` | `EXTENDS` | | `Overrides` | `OVERRIDES` | | `DependsOn` | `IMPORTS` / `DEPENDS_ON` | | `ReadsConfig` | `READS_CONFIG` | | `ReadsTable` | `READS_TABLE` | | `WritesTable` | `WRITES_TABLE` | | `ProducesJob` | `PRODUCES_JOB` | | `ConsumesJob` | `CONSUMES_JOB` | | `HandlesRoute` | `HANDLED_BY` / `ROUTES_TO` | | `GuardedBy` | `GUARDED_BY` |",
+      "enum": [
+        "calls",
+        "reaches",
+        "tests",
+        "implements",
+        "extends",
+        "overrides",
+        "depends_on",
+        "reads_config",
+        "reads_table",
+        "writes_table",
+        "produces_job",
+        "consumes_job",
+        "handles_route",
+        "guarded_by"
+      ],
+      "type": "string"
+    },
+    "Confidence": {
+      "maximum": 1.0,
+      "minimum": 0.0,
+      "title": "Confidence",
+      "type": "number"
+    },
+    "ContentHash": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "ContentHash",
+      "type": "string"
+    },
+    "DiffSide": {
+      "description": "Which side of a diff a location refers to.",
+      "enum": [
+        "base",
+        "head"
+      ],
+      "type": "string"
+    },
+    "Evidence": {
+      "additionalProperties": false,
+      "description": "One piece of evidence. Build the struct, then call [`Evidence::validated`]; deserialization does this automatically.",
+      "properties": {
+        "claim": {
+          "description": "1 to 500 characters of model- or tool-authored text; treated as untrusted when rendered.",
+          "type": "string"
+        },
+        "claimed_strength": {
+          "allOf": [
+            {
+              "$ref": "#/definitions/EvidenceStrength"
+            }
+          ],
+          "description": "What the producer claims. Use [`Evidence::effective_strength`] for decisions."
+        },
+        "kind": {
+          "$ref": "#/definitions/EvidenceKind"
+        },
+        "location": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/SourceLocation"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "origin": {
+          "$ref": "#/definitions/EvidenceOrigin"
+        },
+        "relation": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/RelationClaim"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "symbols": {
+          "items": {
+            "$ref": "#/definitions/SymbolRef"
+          },
+          "type": "array"
+        },
+        "verification": {
+          "$ref": "#/definitions/EvidenceVerification"
+        }
+      },
+      "required": [
+        "claim",
+        "claimed_strength",
+        "kind",
+        "origin",
+        "symbols",
+        "verification"
+      ],
+      "type": "object"
+    },
+    "EvidenceKind": {
+      "description": "The twelve PRD §52 evidence kinds.",
+      "enum": [
+        "changed_source",
+        "caller_path",
+        "callee_path",
+        "test_behavior",
+        "interface_contract",
+        "configuration",
+        "database_schema",
+        "repository_convention",
+        "compiler_diagnostic",
+        "lint_result",
+        "static_analysis_result",
+        "historical_regression"
+      ],
+      "type": "string"
+    },
+    "EvidenceOrigin": {
+      "description": "Who produced an evidence item.",
+      "oneOf": [
+        {
+          "description": "Claimed by a model reviewer.",
+          "properties": {
+            "reviewer": {
+              "$ref": "#/definitions/ReviewerType"
+            },
+            "type": {
+              "enum": [
+                "reviewer"
+              ],
+              "type": "string"
+            }
+          },
+          "required": [
+            "reviewer",
+            "type"
+          ],
+          "type": "object"
+        },
+        {
+          "description": "Produced by a deterministic tool. `tool` is a tool name only, never a command line.",
+          "properties": {
+            "tool": {
+              "type": "string"
+            },
+            "type": {
+              "enum": [
+                "deterministic"
+              ],
+              "type": "string"
+            }
+          },
+          "required": [
+            "tool",
+            "type"
+          ],
+          "type": "object"
+        },
+        {
+          "description": "Read from the code graph.",
+          "properties": {
+            "type": {
+              "enum": [
+                "graph"
+              ],
+              "type": "string"
+            }
+          },
+          "required": [
+            "type"
+          ],
+          "type": "object"
+        },
+        {
+          "description": "Gathered by verification stage `stage`.",
+          "properties": {
+            "stage": {
+              "format": "uint8",
+              "minimum": 0.0,
+              "type": "integer"
+            },
+            "type": {
+              "enum": [
+                "verification"
+              ],
+              "type": "string"
+            }
+          },
+          "required": [
+            "stage",
+            "type"
+          ],
+          "type": "object"
+        }
+      ]
+    },
+    "EvidenceStrength": {
+      "description": "Ordered ascending: `Weak < Supporting < Strong`.",
+      "enum": [
+        "weak",
+        "supporting",
+        "strong"
+      ],
+      "type": "string"
+    },
+    "EvidenceVerification": {
+      "oneOf": [
+        {
+          "properties": {
+            "status": {
+              "enum": [
+                "unverified"
+              ],
+              "type": "string"
+            }
+          },
+          "required": [
+            "status"
+          ],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "stage": {
+              "format": "uint8",
+              "minimum": 0.0,
+              "type": "integer"
+            },
+            "status": {
+              "enum": [
+                "confirmed"
+              ],
+              "type": "string"
+            }
+          },
+          "required": [
+            "stage",
+            "status"
+          ],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "reason": {
+              "type": "string"
+            },
+            "stage": {
+              "format": "uint8",
+              "minimum": 0.0,
+              "type": "integer"
+            },
+            "status": {
+              "enum": [
+                "refuted"
+              ],
+              "type": "string"
+            }
+          },
+          "required": [
+            "reason",
+            "stage",
+            "status"
+          ],
+          "type": "object"
+        }
+      ]
+    },
+    "FindingArtifact": {
+      "additionalProperties": false,
+      "description": "A reasoning artifact attached to a candidate. There is deliberately no field that can hold a prompt: prompts are never persisted in clear text. Large content lives in the object store under `blob_key`.",
+      "properties": {
+        "blob_key": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "content_hash": {
+          "$ref": "#/definitions/ContentHash"
+        },
+        "kind": {
+          "$ref": "#/definitions/ArtifactKind"
+        },
+        "summary": {
+          "description": "At most 2000 characters.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "content_hash",
+        "kind",
+        "summary"
+      ],
+      "type": "object"
+    },
+    "FindingCategory": {
+      "description": "What kind of problem a finding describes. Wire form is snake_case.",
+      "enum": [
+        "correctness",
+        "security",
+        "performance",
+        "testing",
+        "architecture",
+        "maintainability",
+        "data_integrity",
+        "concurrency",
+        "api_contract",
+        "error_handling"
+      ],
+      "type": "string"
+    },
+    "FindingFingerprint": {
+      "pattern": "^v1:[0-9a-f]{32}$",
+      "title": "FindingFingerprint",
+      "type": "string"
+    },
+    "FindingState": {
+      "description": "Lifecycle state of a candidate finding. Wire form is SCREAMING_SNAKE_CASE.",
+      "enum": [
+        "GENERATED",
+        "EVIDENCE_COLLECTED",
+        "VERIFIED",
+        "DEDUPLICATED",
+        "PRIORITIZED",
+        "PUBLISHED",
+        "SUPPRESSED_LOW_CONFIDENCE",
+        "SUPPRESSED_DUPLICATE",
+        "SUPPRESSED_PREEXISTING",
+        "SUPPRESSED_NOT_ACTIONABLE",
+        "SUPPRESSED_POLICY",
+        "INVALIDATED"
+      ],
+      "type": "string"
+    },
+    "LineRange": {
+      "additionalProperties": false,
+      "description": "1-based inclusive line range. Invariant: `1 <= start <= end`.",
+      "properties": {
+        "end": {
+          "format": "uint32",
+          "minimum": 0.0,
+          "type": "integer"
+        },
+        "start": {
+          "format": "uint32",
+          "minimum": 0.0,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "end",
+        "start"
+      ],
+      "type": "object"
+    },
+    "Position": {
+      "additionalProperties": false,
+      "description": "A point in a source file.\n\n`line` is **1-based**. `column` is a **0-based UTF-8 byte offset** within the line, matching tree-sitter columns. Ordering is by line, then column.",
+      "properties": {
+        "column": {
+          "format": "uint32",
+          "minimum": 0.0,
+          "type": "integer"
+        },
+        "line": {
+          "format": "uint32",
+          "minimum": 0.0,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "column",
+        "line"
+      ],
+      "type": "object"
+    },
+    "RelationClaim": {
+      "additionalProperties": false,
+      "description": "`from --relation--> to`, optionally through `via` (the claimed path, at most 8 hops).",
+      "properties": {
+        "from": {
+          "$ref": "#/definitions/SymbolRef"
+        },
+        "relation": {
+          "$ref": "#/definitions/ClaimedRelation"
+        },
+        "to": {
+          "$ref": "#/definitions/SymbolRef"
+        },
+        "via": {
+          "items": {
+            "$ref": "#/definitions/SymbolRef"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "from",
+        "relation",
+        "to",
+        "via"
+      ],
+      "type": "object"
+    },
+    "ReviewerType": {
+      "description": "A reviewer specialisation. Wire form is snake_case. `Ord` gives a stable order for sorted, deduplicated collections such as a run's degraded reviewers.",
+      "enum": [
+        "correctness",
+        "security",
+        "test",
+        "architecture",
+        "performance",
+        "maintainability"
+      ],
+      "type": "string"
+    },
+    "Severity": {
+      "description": "Finding severity. `Ord` is **ascending** (`Info < Low < Medium < High < Critical`), so `sev >= Severity::Medium` reads naturally for the PRD §55 band rule. The legacy order (P0 < P1) was the reverse; ported tests must flip their comparisons.",
+      "enum": [
+        "info",
+        "low",
+        "medium",
+        "high",
+        "critical"
+      ],
+      "type": "string"
+    },
+    "SourceLocation": {
+      "additionalProperties": false,
+      "description": "A place in a file at one side of a diff.",
+      "properties": {
+        "lines": {
+          "$ref": "#/definitions/LineRange"
+        },
+        "path": {
+          "type": "string"
+        },
+        "range": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/SourceRange"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "side": {
+          "$ref": "#/definitions/DiffSide"
+        }
+      },
+      "required": [
+        "lines",
+        "path",
+        "side"
+      ],
+      "type": "object"
+    },
+    "SourceRange": {
+      "additionalProperties": false,
+      "description": "A span between two [`Position`]s. Invariant: `start <= end`.",
+      "properties": {
+        "end": {
+          "$ref": "#/definitions/Position"
+        },
+        "start": {
+          "$ref": "#/definitions/Position"
+        }
+      },
+      "required": [
+        "end",
+        "start"
+      ],
+      "type": "object"
+    },
+    "Suppression": {
+      "additionalProperties": false,
+      "description": "A persisted suppression: reason, detail (at most 1000 characters; no source, prompts or tokens) and the verification stage (1..=8) that decided it, if any.",
+      "properties": {
+        "detail": {
+          "type": "string"
+        },
+        "reason": {
+          "$ref": "#/definitions/SuppressionReason"
+        },
+        "stage": {
+          "format": "uint8",
+          "minimum": 0.0,
+          "type": [
+            "integer",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "detail",
+        "reason"
+      ],
+      "type": "object"
+    },
+    "SuppressionReason": {
+      "description": "Why a finding left the happy path. The variant must match the target state.",
+      "oneOf": [
+        {
+          "properties": {
+            "computed": {
+              "$ref": "#/definitions/Confidence"
+            },
+            "threshold": {
+              "$ref": "#/definitions/Confidence"
+            },
+            "type": {
+              "enum": [
+                "low_confidence"
+              ],
+              "type": "string"
+            }
+          },
+          "required": [
+            "computed",
+            "threshold",
+            "type"
+          ],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "of": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "type": {
+              "enum": [
+                "duplicate"
+              ],
+              "type": "string"
+            }
+          },
+          "required": [
+            "of",
+            "type"
+          ],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "type": {
+              "enum": [
+                "preexisting"
+              ],
+              "type": "string"
+            }
+          },
+          "required": [
+            "type"
+          ],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "gate": {
+              "type": "string"
+            },
+            "type": {
+              "enum": [
+                "not_actionable"
+              ],
+              "type": "string"
+            }
+          },
+          "required": [
+            "gate",
+            "type"
+          ],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "rule": {
+              "type": "string"
+            },
+            "type": {
+              "enum": [
+                "policy"
+              ],
+              "type": "string"
+            }
+          },
+          "required": [
+            "rule",
+            "type"
+          ],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "superseded_by": {
+              "format": "uuid",
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "type": {
+              "enum": [
+                "invalidated"
+              ],
+              "type": "string"
+            }
+          },
+          "required": [
+            "type"
+          ],
+          "type": "object"
+        }
+      ]
+    },
+    "SymbolKey": {
+      "pattern": "^[0-9a-f]{32}$",
+      "title": "SymbolKey",
+      "type": "string"
+    },
+    "SymbolRef": {
+      "additionalProperties": false,
+      "description": "A reference to a symbol with a short human-readable label (at most 200 characters).",
+      "properties": {
+        "display": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "key": {
+          "$ref": "#/definitions/SymbolKey"
+        }
+      },
+      "required": [
+        "display",
+        "id",
+        "key"
+      ],
+      "type": "object"
+    }
+  },
+  "description": "A finding proposed by a reviewer (PRD §49). Maps onto `candidate_findings` (DOM-009).\n\n`confidence_candidate` is the model's self-report: **informational only**, never a publication input (PRD §54, ADR-011). Text fields are length-capped to bound storage abuse from model output.",
+  "properties": {
+    "affected_symbols": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "category": {
+      "$ref": "#/definitions/FindingCategory"
+    },
+    "changed_location": {
+      "$ref": "#/definitions/SourceLocation"
+    },
+    "confidence_candidate": {
+      "anyOf": [
+        {
+          "$ref": "#/definitions/Confidence"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "created_at": {
+      "format": "date-time",
+      "type": "string"
+    },
+    "description": {
+      "description": "At most 8000 characters.",
+      "type": "string"
+    },
+    "evidence": {
+      "items": {
+        "$ref": "#/definitions/Evidence"
+      },
+      "type": "array"
+    },
+    "fingerprint": {
+      "$ref": "#/definitions/FindingFingerprint"
+    },
+    "id": {
+      "format": "uuid",
+      "type": "string"
+    },
+    "organization_id": {
+      "format": "uuid",
+      "type": "string"
+    },
+    "reasoning_artifacts": {
+      "items": {
+        "$ref": "#/definitions/FindingArtifact"
+      },
+      "type": "array"
+    },
+    "review_run_id": {
+      "format": "uuid",
+      "type": "string"
+    },
+    "reviewer": {
+      "$ref": "#/definitions/ReviewerType"
+    },
+    "reviewer_run_id": {
+      "format": "uuid",
+      "type": "string"
+    },
+    "severity_candidate": {
+      "$ref": "#/definitions/Severity"
+    },
+    "state": {
+      "$ref": "#/definitions/FindingState"
+    },
+    "suppression": {
+      "anyOf": [
+        {
+          "$ref": "#/definitions/Suppression"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "title": {
+      "description": "1 to 200 characters.",
+      "type": "string"
+    }
+  },
+  "required": [
+    "affected_symbols",
+    "category",
+    "changed_location",
+    "created_at",
+    "description",
+    "evidence",
+    "fingerprint",
+    "id",
+    "organization_id",
+    "reasoning_artifacts",
+    "review_run_id",
+    "reviewer",
+    "reviewer_run_id",
+    "severity_candidate",
+    "state",
+    "title"
+  ],
+  "title": "CandidateFinding",
+  "type": "object"
+}

@@ -4,6 +4,7 @@ pub mod change;
 pub mod contracts;
 pub mod error;
 pub mod evidence;
+pub mod finding;
 pub mod ids;
 pub mod language;
 pub mod location;

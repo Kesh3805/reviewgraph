@@ -1,9 +1,23 @@
 {
   "contracts_version": 1,
   "sha256": {
-    "SchemaInfo": "ca3d60da52b08b5383731c6965a1aad7b63c6438250f0f500182ecbbdefa20c0"
+    "CandidateFinding": "9670c71cc48ea3c00c1ebd8e4e3a46111c5ddb657475dc135eef606481ceef91",
+    "FindingCategory": "c144d9fc2215d96f811e617ed21d964af2f7f5ebd0c4da17a4b7c79224a0e7c3",
+    "FindingState": "4aae47795b3fea18a79076cfac48613207d391741e39ed0e84b2d6dd35de8ff4",
+    "PublishedFinding": "8f9cb4ed392300f9828e80df10902ca878f302ee181697b44e733a62a4a9055b",
+    "ReviewerType": "94bff761417089a75d78941f69f3acc4a56fcb7a7928aa18f74c0d706bb34960",
+    "SchemaInfo": "ca3d60da52b08b5383731c6965a1aad7b63c6438250f0f500182ecbbdefa20c0",
+    "Severity": "e0f2b2ce87277d01e81cfffbbdf7d9d303e84c3923eb662cc56c5f273417d6b0",
+    "VerifiedFinding": "286d89e5dec391b322bf5d13612aebdeea388a54107dad3673407674185ca2c9"
   },
   "types": [
-    "SchemaInfo"
+    "CandidateFinding",
+    "FindingCategory",
+    "FindingState",
+    "PublishedFinding",
+    "ReviewerType",
+    "SchemaInfo",
+    "Severity",
+    "VerifiedFinding"
   ]
 }

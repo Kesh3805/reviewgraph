@@ -1801,7 +1801,9 @@ pub struct ChangeCluster { pub key: ChangeClusterKey, pub members: Vec<SymbolKey
 ---
 
 ### DOM-006 — Finding entities and the FindingState lifecycle
-Status: ☐
+Status: ☑
+
+> **Implementation note:** Committed after DOM-007 (see its note): DOM-006 depends on `Evidence`, and `ReviewerType` is re-exported from `finding` (it lives in `reviewer_type.rs`). `CandidateFinding::new(id, CandidateDraft, created_at)` computes the v1 fingerprint and starts in `GENERATED`; `validated()` (also run on deserialize) additionally checks that the fingerprint matches the content and that `suppression` is present exactly when the state is suppressed or `INVALIDATED`, with a matching reason. `PublishedFinding::new` keeps the spec signature (with `#[allow(clippy::too_many_arguments)]`). Variant docs on `FindingState::Prioritized` and `PublicationBand` are plain comments so the exported schema stays a flat enum (a doc comment splits it into `oneOf`). `packages/contracts/scripts/generate.mjs` now writes the barrel as explicit `export type { Name }` lines, because several schemas embed the same sub-definitions (`Evidence`, `SourceLocation`, ...) and `export type *` would report duplicate names. The `Evidence` sub-types are therefore reachable only through their parent type. `ReviewerType`, `FindingCategory` and `Severity` are also registered as stand-alone contracts. Fingerprint golden: `v1:0c12182303a0432ce513dadc368ab1ca`.
 
 **Task ID:** DOM-006
 

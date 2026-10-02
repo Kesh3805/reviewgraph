@@ -19,12 +19,34 @@ pub struct ContractType {
     pub schema: fn() -> RootSchema,
 }
 
-/// All contract types, in registration order.
+fn schema_of<T: schemars::JsonSchema>() -> RootSchema {
+    schemars::gen::SchemaGenerator::default().into_root_schema_for::<T>()
+}
+
+fn entry<T: schemars::JsonSchema>(name: &'static str) -> ContractType {
+    ContractType {
+        name,
+        schema: schema_of::<T>,
+    }
+}
+
+/// All contract types, in registration order. Domain tasks register their own types here.
 pub fn registry() -> Vec<ContractType> {
-    vec![ContractType {
-        name: "SchemaInfo",
-        schema: || schemars::schema_for!(review_core::contracts::SchemaInfo),
-    }]
+    use review_core::contracts::SchemaInfo;
+    use review_core::finding::{
+        CandidateFinding, FindingCategory, FindingState, PublishedFinding, ReviewerType, Severity,
+        VerifiedFinding,
+    };
+    vec![
+        entry::<SchemaInfo>("SchemaInfo"),
+        entry::<FindingState>("FindingState"),
+        entry::<Severity>("Severity"),
+        entry::<FindingCategory>("FindingCategory"),
+        entry::<ReviewerType>("ReviewerType"),
+        entry::<CandidateFinding>("CandidateFinding"),
+        entry::<VerifiedFinding>("VerifiedFinding"),
+        entry::<PublishedFinding>("PublishedFinding"),
+    ]
 }
 
 /// Recursively sort object keys so output does not depend on map iteration order.
@@ -199,5 +221,24 @@ mod tests {
         assert_eq!(v["additionalProperties"], Value::Bool(false));
         assert_eq!(v["$id"], "urn:reviewgraph:contracts:SchemaInfo");
         assert!(text.ends_with("}\n"));
+    }
+
+    #[test]
+    fn contracts_export_contains_finding_state_enum_values() {
+        let dir = tempfile::tempdir().unwrap();
+        export(dir.path()).unwrap();
+        let text = fs::read_to_string(dir.path().join("FindingState.schema.json")).unwrap();
+        let v: Value = serde_json::from_str(&text).unwrap();
+        let exported: Vec<&str> = v["enum"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|x| x.as_str().unwrap())
+            .collect();
+        let expected: Vec<&str> = review_core::finding::FindingState::ALL
+            .iter()
+            .map(|s| s.as_str())
+            .collect();
+        assert_eq!(exported, expected);
     }
 }

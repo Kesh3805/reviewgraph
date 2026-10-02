@@ -339,6 +339,7 @@ CandidateFinding (GENERATED)
 
 - Publication thresholds: <0.55 suppress; 0.55–0.70 internal; 0.70–0.85 publish if severity ≥ medium; >0.85 publish. Each is overridable per repo (`confidence.minimum_publish`).
 - All suppressed findings are persisted with reasons. They are evaluation data.
+- The authoritative lifecycle table (allowed `FindingState` edges) is `ALLOWED` in [`engine/crates/review-core/src/finding/state.rs`](../../engine/crates/review-core/src/finding/state.rs).
 
 ### 4.4 Model Gateway (ADR-009, ADR-010)
 
