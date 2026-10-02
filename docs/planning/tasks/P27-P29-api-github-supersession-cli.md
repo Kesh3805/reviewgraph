@@ -370,7 +370,8 @@ Status: ☑
 ---
 
 ### API-006 — Provider ports RepositoryProvider and ReviewPublisher
-Status: ☐
+Status: ☑
+> **Implementation note:** Ports live in `apps/api/src/providers/ports/` (an `index.ts` barrel and a `provider-resolver.ts` port were added) and `apps/api/src/providers/provider.registry.ts`. Deviations: the ESLint config is the flat `apps/api/eslint.config.mjs` (not `.eslintrc.cjs`); the domain-module rule is a `no-restricted-imports` regex that allows only `providers/ports`, so domain modules obtain providers through the `PROVIDER_RESOLVER` port (implemented by `ProviderRegistry`) rather than importing the registry class. `RepositoryProvider.normalizeEvent` is async and returns `NormalizeResult` (`ProviderEvent | Ignored{reason}`) instead of `ProviderEvent | null`, because a `/review` command needs the commenter's permission lookup (GH-004 fails closed). The `ProviderEvent` union (head event, closed, review command) and the shared `Secret<T>` wrapper (`common/secret.ts`) are defined here. The "tsd" type test is a `@ts-expect-error` assertion compiled by `pnpm typecheck`; the lint fixture test spawns ESLint on stdin with a planted import. `CheckRunConclusion` deliberately omits `failure`/`action_required` so a check run cannot block a merge.
 
 - **Task ID:** API-006
 - **Title:** Provider ports RepositoryProvider/ReviewPublisher

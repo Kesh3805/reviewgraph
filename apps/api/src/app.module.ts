@@ -5,10 +5,18 @@ import { requestIdMiddleware } from './common/request-id.middleware';
 import { RedisModule } from './common/redis.module';
 import { InternalModule } from './internal/internal.module';
 import { HealthModule } from './health/health.module';
+import { ProvidersModule } from './providers/provider.registry';
 import { TelemetryModule } from './telemetry/telemetry.module';
 
 @Module({
-  imports: [ConfigModule, TelemetryModule, RedisModule, InternalModule, HealthModule],
+  imports: [
+    ConfigModule,
+    TelemetryModule,
+    RedisModule,
+    InternalModule,
+    ProvidersModule,
+    HealthModule,
+  ],
   providers: [ShutdownService],
 })
 export class AppModule implements NestModule {
