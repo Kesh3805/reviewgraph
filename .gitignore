@@ -1,0 +1,26 @@
+# build output
+target/
+**/target/
+node_modules/
+.next/
+dist/
+coverage/
+*.tsbuildinfo
+
+# local state
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+/fixtures/build/
+/.review-local/
+*.log
+
+# tooling
+.omc/
+.claude/
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
