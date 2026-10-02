@@ -10,7 +10,7 @@ The prototype CodeGraph builds node IDs by hashing `file_path + qualified_name`.
   - `module_path` is the repo-relative path without its extension.
   - `~n` is an ordinal, used only for overloads or duplicate names in the same scope.
   - Example: `ts:src/auth/auth.service#AuthService.authorize/method`.
-- **Storage key.** `SymbolKey = hex(blake3(SymbolId)[..16])`.
+- **Storage key.** `SymbolKey = hex(blake3(SymbolId)[..16])`. Implemented in [`engine/crates/review-core/src/ids.rs`](../../engine/crates/review-core/src/ids.rs).
 - **The signature is an attribute, not part of identity.** If it were part of the ID, every parameter change would look like a delete plus an add. Modifications are classified with `signature_hash` and `body_hash` (normalized tokens).
 - **Renames and moves.** `incremental::matcher` pairs removed and added symbols of the same kind, trying these rules in order:
   1. Identical `body_hash`.

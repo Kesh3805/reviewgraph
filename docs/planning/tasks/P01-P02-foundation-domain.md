@@ -1148,7 +1148,9 @@ None of the fixture code needs `node_modules`. Only syntax matters.
 ---
 
 ### DOM-001 — Typed IDs
-Status: ☐
+Status: ☑
+
+> **Implementation note:** The spec path `engine/tools/arch-tests` does not exist; the dependency-DAG test is `engine/xtask`, and it stays green (`review-core` has no internal dependencies). `CoreError` is introduced in `error.rs` with only `InvalidId` and `InvalidCommitSha` (adding the `thiserror` dependency here); DOM-002 extends it. UUID IDs deserialize through `FromStr` (hyphenated 36-character form only) so serde and `FromStr` give the same error. The workspace `schemars` dependency gained the `uuid1` and `chrono` features, and the workspace gained `hex` and `criterion`. Benchmark baseline: `SymbolKey::of` on a 63-byte ID is about 77 ns. Golden value for `ts:src/auth/auth.service#AuthService.authorize/method` is `97ac70ec2191e38555c6678614fc4699`.
 
 **Task ID:** DOM-001
 
