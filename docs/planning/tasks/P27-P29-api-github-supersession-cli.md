@@ -313,7 +313,8 @@ Status: ☐
 ---
 
 ### API-005 — Service-to-service auth (engine ↔ API)
-Status: ☐
+Status: ☑
+> **Implementation note:** TS side only (`apps/api/src/internal/{service-token.ts,service-auth.guard.ts,internal.module.ts}`); the Rust signer/verifier (`review-core::service_auth`, `pipeline::service_token`, the Axum extractor) is left to the engine work. The cross-language golden vectors live in `packages/contracts/fixtures/service-token/`: `ts-signed.json` is produced by the TS signer (the Rust verifier must accept it) and `rust-signed.json` is built with the `jsonwebtoken` field layout by a test helper and must be regenerated from the real Rust signer when it lands; no `service-token.json` schema was added (it would be picked up by the contracts generator, which is Rust-sourced). `SERVICE_JWT_KEYS` (`kid:base64,...`) is optional and falls back to `SERVICE_JWT_SECRET` as kid `default`. `ServiceAuthGuard` is a global guard that acts only on `/internal/**` (mounted outside the `/api/v1` prefix): a route without a `@ServiceAuth({scopes, repoParam?})` policy is denied (403), so a new internal route is authenticated by construction. The jti cache is Redis `SET rg:jti:{jti} NX EX 120`; a Redis outage fails closed with 503. The route-table test enumerates routes of a fake internal controller since the real internal routes (GH-006) do not exist yet. A shared Redis provider (`RedisModule`) and a counter/gauge helper (`common/metrics.ts`, OTel meter plus a local tally for tests) were added; `pnpm test` in apps/api now runs jest with `--experimental-vm-modules` so ESM-only dependencies (`jose`, `@octokit/*`) load.
 
 - **Task ID:** API-005
 - **Title:** Service-to-service auth (engine↔api, HMAC or signed JWT)

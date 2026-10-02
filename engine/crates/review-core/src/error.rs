@@ -25,6 +25,17 @@ pub enum ErrorClass {
 }
 
 impl ErrorClass {
+    pub const ALL: [ErrorClass; 8] = [
+        Self::InvalidInput,
+        Self::NotFound,
+        Self::Conflict,
+        Self::Transient,
+        Self::RateLimited,
+        Self::Permanent,
+        Self::Cancelled,
+        Self::Internal,
+    ];
+
     /// Wire name, used as the `error.class` span attribute and the `error_class` metric label.
     pub const fn as_str(self) -> &'static str {
         match self {
@@ -106,25 +117,14 @@ impl Classify for CoreError {
 mod tests {
     use super::*;
 
-    const ALL: [ErrorClass; 8] = [
-        ErrorClass::InvalidInput,
-        ErrorClass::NotFound,
-        ErrorClass::Conflict,
-        ErrorClass::Transient,
-        ErrorClass::RateLimited,
-        ErrorClass::Permanent,
-        ErrorClass::Cancelled,
-        ErrorClass::Internal,
-    ];
-
     #[test]
     fn error_class_wire_names_stable() {
-        let names: Vec<(&str, String)> = ALL
+        let names: Vec<(&str, String)> = ErrorClass::ALL
             .iter()
             .map(|c| (c.as_str(), serde_json::to_string(c).unwrap()))
             .collect();
         insta::assert_yaml_snapshot!(names);
-        for c in ALL {
+        for c in ErrorClass::ALL {
             assert_eq!(
                 serde_json::to_string(&c).unwrap(),
                 format!("\"{}\"", c.as_str())
@@ -134,7 +134,7 @@ mod tests {
 
     #[test]
     fn only_transient_and_rate_limited_retryable() {
-        for c in ALL {
+        for c in ErrorClass::ALL {
             let expected = matches!(c, ErrorClass::Transient | ErrorClass::RateLimited);
             assert_eq!(c.is_retryable(), expected, "{c:?}");
         }

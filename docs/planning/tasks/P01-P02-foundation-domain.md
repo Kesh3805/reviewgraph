@@ -2254,7 +2254,9 @@ pub struct TokenUsage { pub input: u64, pub output: u64, pub cached_read: u64, p
 ---
 
 ### DOM-009 — Initial PostgreSQL migrations
-Status: ☐
+Status: ☑
+
+> **Implementation note:** Tests use a small per-test harness (CREATE DATABASE, embedded migrator, DROP DATABASE) instead of `#[sqlx::test]`, because `#[sqlx::test]` only reads `DATABASE_URL` while the integration stack and `pnpm test:integration` provide `TEST_DATABASE_URL`; the harness reads `TEST_DATABASE_URL`, falling back to `DATABASE_URL`, and the role needs CREATEDB. `review-worker` gained a library target (`review_worker::migrate`) so the binary and the tests share the migrator, plus a `build.rs` that re-embeds migrations when they change. The self-references `review_runs.superseded_by` and `retry_of` are tenant-scoped composite foreign keys (`ON DELETE SET NULL (col)`, PostgreSQL 15+) instead of single-column ones, and base/head SHA columns of `review_runs`, `reviewer_runs.error_class` and `published_findings` line ranges carry CHECKs too. `every_tenant_table_has_organization_id` skips `organizations` as well as `users` (the organization row is the tenant root), and `no_credential_columns` exempts the token usage counters (`input_tokens`, `output_tokens`, `cached_read_tokens`, `cached_write_tokens`). `ErrorClass::ALL` was added to `review-core` for the enum-mirroring test. `migrate::run` logs `migration_applied{version}` inside a `db_migrate` span; the "relation already exists, skipping" notice on re-runs comes from sqlx ensuring its bookkeeping table. Verified against the dev Postgres: `pnpm migrate` applied five versions, `pnpm migrate:info` lists them, `review-worker migrate` is a no-op on a second run, `\dt` shows the 13 tables plus `_sqlx_migrations`, and `cargo test --workspace --features integration` passes all 21 integration tests (the `pnpm test:integration` stack on its own ports was not started).
 
 **Task ID:** DOM-009
 
