@@ -1,0 +1,10 @@
+{
+  "$id": "urn:reviewgraph:contracts:ReviewEvent",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "description": "The ONLY provider review events ReviewGraph can express. There is deliberately no approve, request-changes or merge variant (legacy `core.rs:316-317`, `github.rs:5-6`). Deserializing anything other than `\"COMMENT\"` fails, in Rust and in the generated TypeScript type.",
+  "enum": [
+    "COMMENT"
+  ],
+  "title": "ReviewEvent",
+  "type": "string"
+}

@@ -37,11 +37,14 @@ pub fn registry() -> Vec<ContractType> {
         CandidateFinding, FindingCategory, FindingState, PublishedFinding, ReviewerType, Severity,
         VerifiedFinding,
     };
+    use review_core::publication::{CheckConclusion, ReviewEvent};
     use review_core::review::{ReviewState, ReviewTrigger, ReviewerRunState};
     use review_core::ErrorClass;
     vec![
         entry::<SchemaInfo>("SchemaInfo"),
         entry::<ErrorClass>("ErrorClass"),
+        entry::<ReviewEvent>("ReviewEvent"),
+        entry::<CheckConclusion>("CheckConclusion"),
         entry::<ReviewState>("ReviewState"),
         entry::<ReviewerRunState>("ReviewerRunState"),
         entry::<ReviewTrigger>("ReviewTrigger"),

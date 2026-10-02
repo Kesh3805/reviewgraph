@@ -9,6 +9,7 @@ pub mod ids;
 pub mod language;
 pub mod location;
 pub mod provenance;
+pub mod publication;
 pub mod pull_request;
 pub mod repository;
 pub mod review;

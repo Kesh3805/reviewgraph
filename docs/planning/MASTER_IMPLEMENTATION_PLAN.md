@@ -101,7 +101,7 @@ The PRD §10/§148 package names map onto the implementation as follows:
 9. **No infrastructure without a measured reason.** No Kubernetes, Kafka, Neo4j, ClickHouse or service mesh until a benchmark demands it.
 10. **Legacy safety guarantees are kept as invariants:**
     - never merge
-    - failure is never approval
+    - failure is never approval (the domain-layer choke point is [`publication_decision`](../../engine/crates/review-core/src/publication.rs), which can only express a COMMENT review)
     - completeness is computed, not self-reported
     - NOT_EXECUTED ≠ PASS
     - out-of-diff findings go to the summary, never silently dropped

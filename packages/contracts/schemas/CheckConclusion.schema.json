@@ -1,0 +1,11 @@
+{
+  "$id": "urn:reviewgraph:contracts:CheckConclusion",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "description": "Check-run conclusion. Never `failure` in the MVP.",
+  "enum": [
+    "success",
+    "neutral"
+  ],
+  "title": "CheckConclusion",
+  "type": "string"
+}

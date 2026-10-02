@@ -2571,7 +2571,9 @@ Plus the function `rg_set_updated_at()` and the `<table>_set_updated_at` trigger
 ---
 
 ### DOM-010 — Port the legacy fail-safe publication decision
-Status: ☐
+Status: ☑
+
+> **Implementation note:** Two items from the definition of done are not done here: the invariant-suite index lives in `docs/planning/tasks/P30-P37-ui-ops-quality.md`, which another engineer is editing concurrently, so the INV-011/INV-012 entries there should be marked as implemented at the domain layer when that file is next touched (the tests are `inv_011_review_event_cannot_represent_approve_or_merge`, `inv_012_failure_states_publish_nothing`, `inv_012_quota_style_failure_posts_nothing`, `inv_012_degraded_run_never_reports_success` in `publication.rs`). Master plan §4.10 now links `publication.rs`. The `grep -rnE "Approve|RequestChanges|Merge"` acceptance check matches only the legacy-mapping table in the module doc comment. Variant docs are placed on the enums, not the variants, so the exported schemas stay flat enums (`ReviewEvent.ts` is exactly `"COMMENT"`). `PublicationInput` rejects unknown fields (a `confidence` field fails to deserialize). The TS-side test is `packages/contracts/test/review-event.test.mjs`.
 
 **Task ID:** DOM-010
 
