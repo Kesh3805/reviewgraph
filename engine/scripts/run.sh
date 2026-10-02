@@ -2,7 +2,8 @@
 # Run any command inside the Linux engine build container (ADR-001).
 #   engine/scripts/run.sh sqlx migrate run --source migrations
 # The repository root is mounted at /repo; the cargo registry and target/ live in named
-# volumes. Set REVIEWGRAPH_DOCKER_NETWORK to join a compose network (e.g. reviewgraph_default)
+# volumes (REVIEWGRAPH_TARGET_VOLUME picks a per-lane target volume so parallel builds do not
+# block each other). Set REVIEWGRAPH_DOCKER_NETWORK to join a compose network (e.g. reviewgraph_default)
 # so services are reachable by name; otherwise host services are at host.docker.internal.
 set -euo pipefail
 ENGINE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -41,7 +42,7 @@ exec env MSYS_NO_PATHCONV=1 docker run --rm "${TTY_FLAGS[@]}" "${NET_FLAGS[@]}" 
   -v "$(host_path "$REPO_DIR"):/repo" \
   -v rg-cargo-registry:/usr/local/cargo/registry \
   -v rg-cargo-git:/usr/local/cargo/git \
-  -v rg-engine-target:/target \
+  -v "${REVIEWGRAPH_TARGET_VOLUME:-rg-engine-target}:/target" \
   -e CARGO_TARGET_DIR=/target \
   "${ENV_FLAGS[@]}" \
   -w "$WORKDIR" \
