@@ -72,7 +72,8 @@ Status markers: ☐ todo · ◐ in progress · ☑ done (acceptance criteria exe
 ---
 
 ### API-001 — NestJS app skeleton (config validation, health, graceful shutdown)
-Status: ☐
+Status: ☑
+> **Implementation note:** Readiness probes use their own minimal `pg`/`ioredis` connections (the typed `DbModule` arrives with API-002); the Pino logger is a Nest `LoggerService` with the redaction injection point for OBS-006; the `api_ready{dependency}` gauge is deferred to OBS-005 (no metric instruments yet); `ShutdownService.register()` is the seam where the API-007 publish consumer stops and releases leases; the webhook raw-body (25 MiB) route is left to the webhooks module (only the 1 MiB JSON limit is wired). An unprefixed `GET /health` liveness alias is also served. The SIGTERM drain test closes the app programmatically (same path the signal hook runs). Config falls back to `.env` via `process.loadEnvFile` for local dev.
 
 - **Task ID:** API-001
 - **Title:** NestJS app skeleton (config validation, health, graceful shutdown)

@@ -1,0 +1,62 @@
+import {
+  ArgumentsHost,
+  Catch,
+  ExceptionFilter,
+  HttpException,
+  HttpStatus,
+  Logger,
+} from '@nestjs/common';
+import type { Response } from 'express';
+import type { RequestWithId } from './request-id.middleware';
+
+export interface ProblemDetails {
+  type: string;
+  title: string;
+  status: number;
+  detail?: string;
+  instance?: string;
+  request_id?: string;
+}
+
+/** Maps every exception to an RFC 9457 `application/problem+json` response. */
+@Catch()
+export class ProblemFilter implements ExceptionFilter {
+  private readonly logger = new Logger(ProblemFilter.name);
+
+  catch(exception: unknown, host: ArgumentsHost): void {
+    const http = host.switchToHttp();
+    const res = http.getResponse<Response>();
+    const req = http.getRequest<RequestWithId>();
+
+    const status =
+      exception instanceof HttpException ? exception.getStatus() : HttpStatus.INTERNAL_SERVER_ERROR;
+    if (status >= 500) {
+      this.logger.error(
+        exception instanceof Error ? (exception.stack ?? exception.message) : String(exception),
+      );
+    }
+
+    const problem: ProblemDetails = {
+      type: 'about:blank',
+      title: titleFor(status),
+      status,
+      // Never leak internals of unexpected errors.
+      detail: exception instanceof HttpException ? detailOf(exception) : undefined,
+      instance: req.originalUrl,
+      request_id: req.requestId,
+    };
+    if (res.headersSent) return;
+    res.status(status).type('application/problem+json').json(problem);
+  }
+}
+
+function titleFor(status: number): string {
+  return (HttpStatus[status]?.toString() ?? 'error').replace(/_/g, ' ').toLowerCase();
+}
+
+function detailOf(exception: HttpException): string | undefined {
+  const body = exception.getResponse();
+  if (typeof body === 'string') return body;
+  const message = (body as { message?: string | string[] }).message;
+  return Array.isArray(message) ? message.join('; ') : message;
+}
