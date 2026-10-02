@@ -36,7 +36,7 @@ The governing principle is: **understand the repository → model the change →
           ▼       ▼       ▼
      Qdrant   Object    Model providers (Anthropic, OpenAI)
      vectors  storage   via the in-engine Model Gateway
-              (GCS/MinIO)
+              (GCS / S3-compatible)
 
 All components → OpenTelemetry (OTLP/HTTP) → OpenObserve (logs, traces, metrics, dashboards, alerts)
 ```
@@ -82,7 +82,7 @@ reviewgraph/
 │   ├── contracts/                  JSON Schemas (generated from Rust via schemars) + generated TS types
 │   └── config/                     shared eslint/tsconfig/prettier
 ├── infra/
-│   ├── compose/                    docker-compose.yml (pg, redis, qdrant, openobserve, minio, api, engine, worker, web)
+│   ├── compose/                    docker-compose.yml (pg, redis, qdrant, openobserve, objectstore, api, engine, worker, web)
 │   ├── docker/                     Dockerfiles (engine, api, web)
 │   └── openobserve/                dashboards + alert definitions (JSON)
 ├── fixtures/
@@ -447,7 +447,7 @@ claim: UPDATE jobs SET state='running', locked_by=$w, locked_until=now()+$lease,
 
 ## 9. Deployment
 
-- **Local:** `infra/compose/docker-compose.yml` brings up postgres 16, redis 7, qdrant, openobserve, minio, api, engine, worker and web (`make up` / `pnpm dev:up`). The Rust engine builds inside `rust:1-bookworm` because the Windows host toolchain cannot compile C dependencies (audit §1.3).
+- **Local:** `infra/compose/docker-compose.yml` brings up postgres 16, redis 7, qdrant, openobserve, object store (SeaweedFS S3), api, engine, worker and web (`make up` / `pnpm dev:up`). The Rust engine builds inside `rust:1-bookworm` because the Windows host toolchain cannot compile C dependencies (audit §1.3).
 - **Target (GCP):**
   - Cloud Run for `api`, `web`, `review-engine`.
   - Cloud Run Jobs or a GCE managed instance group for `review-worker` (needs a local disk for checkouts).
