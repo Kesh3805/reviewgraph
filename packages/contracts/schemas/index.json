@@ -1,0 +1,9 @@
+{
+  "contracts_version": 1,
+  "sha256": {
+    "SchemaInfo": "ca3d60da52b08b5383731c6965a1aad7b63c6438250f0f500182ecbbdefa20c0"
+  },
+  "types": [
+    "SchemaInfo"
+  ]
+}

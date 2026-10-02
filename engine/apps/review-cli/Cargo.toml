@@ -11,6 +11,14 @@ workspace = true
 
 [dependencies]
 anyhow.workspace = true
+clap.workspace = true
+review-core.workspace = true
+schemars.workspace = true
+serde_json.workspace = true
+sha2.workspace = true
+
+[dev-dependencies]
+tempfile.workspace = true
 
 [[bin]]
 name = "review"

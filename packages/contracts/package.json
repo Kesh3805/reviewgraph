@@ -7,11 +7,16 @@
   "types": "dist/index.d.ts",
   "scripts": {
     "build": "tsc -p tsconfig.json",
-    "typecheck": "tsc -p tsconfig.json --noEmit"
+    "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.test.json",
+    "test": "node --test test/*.test.mjs && tsc -p tsconfig.test.json",
+    "generate": "node scripts/generate.mjs",
+    "check": "node scripts/check.mjs"
   },
   "devDependencies": {
     "@reviewgraph/config": "workspace:*",
     "@types/node": "^24.0.0",
+    "json-schema-to-typescript": "15.0.4",
     "typescript": "^5.9.0"
-  }
+  },
+  "description": "Shared Rust-defined contracts. Do not edit src/generated or schemas/ by hand: change the Rust type in review-core, then run pnpm contracts:export && pnpm contracts:generate."
 }

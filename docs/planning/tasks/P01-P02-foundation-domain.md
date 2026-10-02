@@ -867,7 +867,9 @@ The integration feature: crates that own DB tests declare `[features] integratio
 ---
 
 ### FND-007 — Contracts pipeline: Rust → JSON Schema → TypeScript, with drift check
-Status: ☐
+Status: ☑
+
+> **Implementation note:** `check.mjs` accepts `--schemas`, `--generated` and `--fresh <dir>`; `--fresh` skips the container export so the TS drift test runs without Docker (the default path still exports through `rg.mjs cargo`). Added workspace dependency `sha2` for the `index.json` hashes, `clap` for the CLI, and the `v7` feature on `uuid`. The `.tmp/` gitignore entry is `/packages/contracts/.tmp/`.
 
 **Task ID:** FND-007
 
