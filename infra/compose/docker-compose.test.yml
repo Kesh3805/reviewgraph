@@ -19,28 +19,34 @@ services:
       POSTGRES_USER: reviewgraph
       POSTGRES_PASSWORD: reviewgraph-test
       POSTGRES_DB: reviewgraph
-    command: ["postgres", "-c", "fsync=off", "-c", "synchronous_commit=off", "-c", "max_connections=300"]
-    ports: ["127.0.0.1:${RG_TEST_PG_PORT:-35432}:5432"]
-    tmpfs: ["/var/lib/postgresql/data"]
-    restart: "no"
+    command:
+      ['postgres', '-c', 'fsync=off', '-c', 'synchronous_commit=off', '-c', 'max_connections=300']
+    ports: ['127.0.0.1:${RG_TEST_PG_PORT:-35432}:5432']
+    tmpfs: ['/var/lib/postgresql/data']
+    restart: 'no'
     healthcheck:
       <<: *health
-      test: ["CMD-SHELL", "pg_isready -U reviewgraph -d reviewgraph"]
+      test: ['CMD-SHELL', 'pg_isready -U reviewgraph -d reviewgraph']
 
   redis:
     image: ${RG_REDIS_IMAGE:-redis:7.4.9-alpine}
-    command: ["redis-server", "--save", "", "--appendonly", "no", "--maxmemory-policy", "noeviction"]
-    ports: ["127.0.0.1:${RG_TEST_REDIS_PORT:-36379}:6379"]
-    restart: "no"
+    command:
+      ['redis-server', '--save', '', '--appendonly', 'no', '--maxmemory-policy', 'noeviction']
+    ports: ['127.0.0.1:${RG_TEST_REDIS_PORT:-36379}:6379']
+    restart: 'no'
     healthcheck:
       <<: *health
-      test: ["CMD", "redis-cli", "ping"]
+      test: ['CMD', 'redis-cli', 'ping']
 
   qdrant:
     image: ${RG_QDRANT_IMAGE:-qdrant/qdrant:v1.19.1}
-    ports: ["127.0.0.1:${RG_TEST_QDRANT_PORT:-36333}:6333"]
-    tmpfs: ["/qdrant/storage"]
-    restart: "no"
+    ports: ['127.0.0.1:${RG_TEST_QDRANT_PORT:-36333}:6333']
+    tmpfs: ['/qdrant/storage']
+    restart: 'no'
     healthcheck:
       <<: *health
-      test: ["CMD-SHELL", "bash -c 'exec 3<>/dev/tcp/127.0.0.1/6333; printf \"GET /readyz HTTP/1.0\\r\\n\\r\\n\" >&3; grep -q \" 200 \" <&3'"]
+      test:
+        [
+          'CMD-SHELL',
+          "bash -c 'exec 3<>/dev/tcp/127.0.0.1/6333; printf \"GET /readyz HTTP/1.0\\r\\n\\r\\n\" >&3; grep -q \" 200 \" <&3'",
+        ]

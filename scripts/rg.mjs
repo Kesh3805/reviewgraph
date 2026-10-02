@@ -73,7 +73,8 @@ async function integration(extra) {
     return await exec(
       ...resolve('cargo', ['test', '--workspace', '--features', 'integration', ...extra]),
       {
-        TEST_DATABASE_URL: 'postgres://reviewgraph:reviewgraph-test@host.docker.internal:35432/reviewgraph',
+        TEST_DATABASE_URL:
+          'postgres://reviewgraph:reviewgraph-test@host.docker.internal:35432/reviewgraph',
         QDRANT_URL: 'http://host.docker.internal:36333',
         REDIS_URL: 'redis://host.docker.internal:36379',
       },

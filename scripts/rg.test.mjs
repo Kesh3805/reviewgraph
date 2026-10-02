@@ -7,7 +7,10 @@ test('prefers Git Bash on win32 and never the WSL shim', () => {
   const env = { ProgramFiles: 'C:\\Program Files' };
   const gitBash = bashFor('win32', env, (p) => p.includes('Git'));
   assert.match(gitBash, /Git[\\/]bin[\\/]bash\.exe$/);
-  assert.equal(bashFor('win32', {}, () => false), 'bash.exe');
+  assert.equal(
+    bashFor('win32', {}, () => false),
+    'bash.exe',
+  );
   assert.equal(bashFor('win32', { RG_BASH: 'X:\\bash.exe' }), 'X:\\bash.exe');
 });
 

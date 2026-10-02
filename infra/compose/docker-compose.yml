@@ -4,7 +4,7 @@
 name: reviewgraph
 
 x-hardening: &hardening
-  security_opt: ["no-new-privileges:true"]
+  security_opt: ['no-new-privileges:true']
   restart: unless-stopped
 
 x-health: &health
@@ -21,37 +21,59 @@ services:
       POSTGRES_USER: ${RG_PG_USER:-reviewgraph}
       POSTGRES_PASSWORD: ${RG_PG_PASSWORD:-reviewgraph-dev}
       POSTGRES_DB: reviewgraph
-    command: ["postgres", "-c", "log_min_duration_statement=500", "-c", "max_connections=200",
-              "-c", "shared_preload_libraries=pg_stat_statements"]
-    ports: ["127.0.0.1:${RG_PG_PORT:-25432}:5432"]
+    command:
+      [
+        'postgres',
+        '-c',
+        'log_min_duration_statement=500',
+        '-c',
+        'max_connections=200',
+        '-c',
+        'shared_preload_libraries=pg_stat_statements',
+      ]
+    ports: ['127.0.0.1:${RG_PG_PORT:-25432}:5432']
     volumes:
       - rg-pg-data:/var/lib/postgresql/data
       - ./postgres/init:/docker-entrypoint-initdb.d:ro
     healthcheck:
       <<: *health
-      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d reviewgraph"]
+      test: ['CMD-SHELL', 'pg_isready -U $${POSTGRES_USER} -d reviewgraph']
 
   redis:
     <<: *hardening
     image: ${RG_REDIS_IMAGE:-redis:7.4.9-alpine}
     # Idempotency keys and locks must never be evicted silently: OOM is an explicit error.
-    command: ["redis-server", "--save", "", "--appendonly", "no", "--maxmemory", "256mb",
-              "--maxmemory-policy", "noeviction"]
-    ports: ["127.0.0.1:${RG_REDIS_PORT:-26379}:6379"]
+    command:
+      [
+        'redis-server',
+        '--save',
+        '',
+        '--appendonly',
+        'no',
+        '--maxmemory',
+        '256mb',
+        '--maxmemory-policy',
+        'noeviction',
+      ]
+    ports: ['127.0.0.1:${RG_REDIS_PORT:-26379}:6379']
     healthcheck:
       <<: *health
-      test: ["CMD", "redis-cli", "ping"]
+      test: ['CMD', 'redis-cli', 'ping']
 
   qdrant:
     <<: *hardening
     image: ${RG_QDRANT_IMAGE:-qdrant/qdrant:v1.19.1}
     ports:
-      - "127.0.0.1:${RG_QDRANT_PORT:-26333}:6333"
-      - "127.0.0.1:${RG_QDRANT_GRPC_PORT:-26334}:6334"
-    volumes: ["rg-qdrant-data:/qdrant/storage"]
+      - '127.0.0.1:${RG_QDRANT_PORT:-26333}:6333'
+      - '127.0.0.1:${RG_QDRANT_GRPC_PORT:-26334}:6334'
+    volumes: ['rg-qdrant-data:/qdrant/storage']
     healthcheck:
       <<: *health
-      test: ["CMD-SHELL", "bash -c 'exec 3<>/dev/tcp/127.0.0.1/6333; printf \"GET /readyz HTTP/1.0\\r\\n\\r\\n\" >&3; grep -q \" 200 \" <&3'"]
+      test:
+        [
+          'CMD-SHELL',
+          "bash -c 'exec 3<>/dev/tcp/127.0.0.1/6333; printf \"GET /readyz HTTP/1.0\\r\\n\\r\\n\" >&3; grep -q \" 200 \" <&3'",
+        ]
 
   openobserve:
     <<: *hardening
@@ -60,45 +82,52 @@ services:
       ZO_ROOT_USER_EMAIL: ${RG_OO_EMAIL:-dev@reviewgraph.local}
       ZO_ROOT_USER_PASSWORD: ${RG_OO_PASSWORD:-Reviewgraph-Dev-0o!}
       ZO_DATA_DIR: /data
-    ports: ["127.0.0.1:${RG_OO_PORT:-25080}:5080"]
-    volumes: ["rg-oo-data:/data"]
+    ports: ['127.0.0.1:${RG_OO_PORT:-25080}:5080']
+    volumes: ['rg-oo-data:/data']
 
   # The OpenObserve image ships no probe tooling; this sidecar makes `up --wait` block on it.
   openobserve-ready:
     image: ${RG_CURL_IMAGE:-curlimages/curl:8.16.0}
-    command: ["sleep", "infinity"]
-    security_opt: ["no-new-privileges:true"]
+    command: ['sleep', 'infinity']
+    security_opt: ['no-new-privileges:true']
     restart: unless-stopped
     depends_on: [openobserve]
     healthcheck:
       <<: *health
-      test: ["CMD", "curl", "-fsS", "http://openobserve:5080/healthz"]
+      test: ['CMD', 'curl', '-fsS', 'http://openobserve:5080/healthz']
 
   # S3-compatible object store for local development (GCS in the target environment).
   # SeaweedFS is used because the MinIO images are no longer publicly pullable.
   objectstore:
     <<: *hardening
     image: ${RG_OBJECTSTORE_IMAGE:-chrislusf/seaweedfs:4.48}
-    command: ["server", "-dir=/data", "-s3", "-s3.port=8333", "-s3.config=/etc/seaweedfs/s3.json",
-              "-volume.max=8"]
-    ports: ["127.0.0.1:${RG_S3_PORT:-29000}:8333"]
+    command:
+      [
+        'server',
+        '-dir=/data',
+        '-s3',
+        '-s3.port=8333',
+        '-s3.config=/etc/seaweedfs/s3.json',
+        '-volume.max=8',
+      ]
+    ports: ['127.0.0.1:${RG_S3_PORT:-29000}:8333']
     volumes:
       - rg-s3-data:/data
       - ./objectstore/s3.json:/etc/seaweedfs/s3.json:ro
     healthcheck:
       <<: *health
-      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:9333/cluster/status >/dev/null"]
+      test: ['CMD-SHELL', 'wget -qO- http://127.0.0.1:9333/cluster/status >/dev/null']
 
   objectstore-init:
     image: ${RG_OBJECTSTORE_IMAGE:-chrislusf/seaweedfs:4.48}
-    security_opt: ["no-new-privileges:true"]
-    restart: "no"
+    security_opt: ['no-new-privileges:true']
+    restart: 'no'
     depends_on:
       objectstore: { condition: service_healthy }
-    entrypoint: ["sh", "-c"]
+    entrypoint: ['sh', '-c']
     command:
       # Idempotent: "already exists" counts as success, anything else fails the init.
-      - "out=$$(echo 's3.bucket.create -name reviewgraph-artifacts' | weed shell -master=objectstore:9333 2>&1); echo \"$$out\"; echo \"$$out\" | grep -Eq 'created bucket|already exists' && echo bucket-ready"
+      - 'out=$$(echo ''s3.bucket.create -name reviewgraph-artifacts'' | weed shell -master=objectstore:9333 2>&1); echo "$$out"; echo "$$out" | grep -Eq ''created bucket|already exists'' && echo bucket-ready'
 
 volumes:
   rg-pg-data:
