@@ -1687,7 +1687,9 @@ A `Delta` snapshot's base is part of its type, so a delta without a base cannot 
 ---
 
 ### DOM-005 — PullRequest / ChangedFile / ChangedSymbol / ChangeCluster entities
-Status: ☐
+Status: ☑
+
+> **Implementation note:** `ChangedFile`, `SymbolChange` and `ChangeCluster` validate on deserialize (through private raw types), so invalid values cannot enter via JSON. `SymbolChange` uses an internal `"kind"` tag and has validating constructors `modified` and `renamed`. `ChangeCluster::new` derives the key from the sorted, deduplicated members, and deserialization rejects members that are unsorted or a key that does not match.
 
 **Task ID:** DOM-005
 
