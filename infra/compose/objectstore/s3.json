@@ -1,0 +1,11 @@
+{
+  "identities": [
+    {
+      "name": "reviewgraph-dev",
+      "credentials": [
+        { "accessKey": "reviewgraph-dev", "secretKey": "reviewgraph-dev-secret" }
+      ],
+      "actions": ["Admin", "Read", "Write", "List", "Tagging"]
+    }
+  ]
+}
