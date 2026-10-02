@@ -3,6 +3,7 @@
  * `packages/contracts/openapi/api.json`, run `pnpm --filter @reviewgraph/web gen:api` and
  * switch `api-client.ts` to import `paths` from the generated `schema.d.ts`.
  */
+import type { DashboardSummary } from '../dashboard';
 import type { Session } from '../session';
 
 export interface paths {
@@ -17,6 +18,14 @@ export interface paths {
     post: {
       responses: {
         204: { content: never };
+      };
+    };
+  };
+  '/api/v1/organizations/{id}/dashboard': {
+    get: {
+      parameters: { path: { id: string } };
+      responses: {
+        200: { content: { 'application/json': DashboardSummary } };
       };
     };
   };

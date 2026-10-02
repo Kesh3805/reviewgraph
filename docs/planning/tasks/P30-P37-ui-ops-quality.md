@@ -131,7 +131,8 @@ Status: ☑
 ---
 
 ### WEB-002 — Layout, navigation and Dashboard
-Status: ☐
+Status: ☑
+> **Implementation note:** Web side only. The API half (`apps/api/src/dashboard/*`, `GET /api/v1/organizations/:id/dashboard`, the 60 s Redis cache and the `dashboard_endpoint_tenant_scoped` / 150 ms benchmark) is deferred: it needs the database layer and review/finding tables (API-002, API-009, API-012) that are not built yet. The web client codes against the response shape in `lib/dashboard.ts` (sections may be null for a per-card unavailable state) and is tested with MSW; until the endpoint exists the cards show their error state. Active runs come from the same dashboard payload and the query polls every 5 s only while any run is non-terminal (`refetchInterval`). The org switcher stores the preference in a non-credential `rg_org` cookie that is always re-resolved against the session memberships. Nav targets other than `/` (Repositories, Pull Requests, Rules, Integrations, Usage, Settings) render the not-found page until WEB-003..009 add them. The root `app/layout.tsx` needed no change.
 
 - **Task ID:** WEB-002
 - **Title:** Layout/nav + Dashboard

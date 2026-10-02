@@ -58,11 +58,18 @@ export const apiMiddleware: Middleware = {
 };
 
 /**
- * Typed client for the browser. `baseUrl` is empty so requests are same-origin and the
+ * Typed client for the browser. Requests are same-origin (`window.location.origin`) and the
  * Next rewrite forwards `/api/*` to the API.
  */
-export function createApiClient(baseUrl = '') {
-  const client = createClient<paths>({ baseUrl, credentials: 'same-origin' });
+export function createApiClient(
+  baseUrl = typeof window === 'undefined' ? '' : window.location.origin,
+) {
+  const client = createClient<paths>({
+    baseUrl,
+    credentials: 'same-origin',
+    // Resolve fetch per call so test doubles and polyfills installed later are honoured.
+    fetch: (request) => globalThis.fetch(request),
+  });
   client.use(apiMiddleware);
   return client;
 }
