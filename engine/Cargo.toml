@@ -1,0 +1,77 @@
+[workspace]
+resolver = "2"
+members = ["crates/*", "apps/*"]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.85"
+license = "UNLICENSED"
+publish = false
+
+[workspace.lints.rust]
+unsafe_code = "forbid"
+missing_debug_implementations = "warn"
+
+[workspace.lints.clippy]
+unwrap_used = "deny"
+expect_used = "deny"
+panic = "deny"
+dbg_macro = "deny"
+todo = "deny"
+
+[workspace.dependencies]
+# internal
+review-core = { path = "crates/review-core" }
+telemetry = { path = "crates/telemetry" }
+repository = { path = "crates/repository" }
+analysis-ir = { path = "crates/analysis-ir" }
+lang-typescript = { path = "crates/lang-typescript" }
+codegraph = { path = "crates/codegraph" }
+graph-storage = { path = "crates/graph-storage" }
+incremental = { path = "crates/incremental" }
+diff-engine = { path = "crates/diff-engine" }
+impact = { path = "crates/impact" }
+semantic = { path = "crates/semantic" }
+context-engine = { path = "crates/context-engine" }
+model-gateway = { path = "crates/model-gateway" }
+reviewers = { path = "crates/reviewers" }
+verification = { path = "crates/verification" }
+profile = { path = "crates/profile" }
+pipeline = { path = "crates/pipeline" }
+
+# external
+anyhow = "1"
+thiserror = "2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+serde_yaml = "0.9"
+blake3 = "1"
+uuid = { version = "1", features = ["v4", "v5", "serde"] }
+chrono = { version = "0.4", default-features = false, features = ["clock", "serde", "std"] }
+tokio = { version = "1", features = ["rt-multi-thread", "macros", "sync", "time", "signal", "process", "fs"] }
+tokio-util = "0.7"
+futures = "0.3"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter", "json", "fmt"] }
+clap = { version = "4", features = ["derive", "env"] }
+tree-sitter = "0.25"
+tree-sitter-typescript = "0.23"
+ignore = "0.4"
+globset = "0.4"
+rayon = "1"
+sqlx = { version = "0.8", default-features = false, features = ["runtime-tokio", "tls-rustls", "postgres", "macros", "json", "uuid", "chrono", "migrate"] }
+reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls"] }
+bincode = "1"
+zstd = "0.13"
+regex = "1"
+once_cell = "1"
+schemars = "0.8"
+axum = "0.8"
+imara-diff = "0.1"
+
+# dev
+proptest = "1"
+insta = { version = "1", features = ["yaml", "json"] }
+tempfile = "3"
+pretty_assertions = "1"
