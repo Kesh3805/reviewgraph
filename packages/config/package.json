@@ -1,0 +1,16 @@
+{
+  "name": "@reviewgraph/config",
+  "version": "0.1.0",
+  "private": true,
+  "files": ["tsconfig.base.json", "tsconfig.node.json", "eslint.config.mjs"],
+  "exports": {
+    "./tsconfig.base.json": "./tsconfig.base.json",
+    "./tsconfig.node.json": "./tsconfig.node.json",
+    "./eslint": "./eslint.config.mjs"
+  },
+  "dependencies": {
+    "@eslint/js": "^9.30.0",
+    "typescript-eslint": "^8.40.0"
+  },
+  "peerDependencies": { "eslint": "^9" }
+}

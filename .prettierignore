@@ -1,0 +1,7 @@
+engine/
+docs/product/
+pnpm-lock.yaml
+**/dist
+**/.next
+packages/contracts/schemas
+packages/contracts/src/generated
