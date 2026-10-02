@@ -11,3 +11,4 @@ workspace = true
 
 [dependencies]
 anyhow.workspace = true
+telemetry.workspace = true

@@ -3046,6 +3046,7 @@ dependencies = [
  "schemars",
  "serde_json",
  "sha2",
+ "telemetry",
  "tempfile",
 ]
 
@@ -3072,6 +3073,7 @@ name = "review-engine"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "telemetry",
 ]
 
 [[package]]
@@ -3090,6 +3092,7 @@ dependencies = [
  "review-core",
  "serde_json",
  "sqlx",
+ "telemetry",
  "tokio",
  "tracing",
  "tracing-subscriber",

@@ -11,6 +11,7 @@ workspace = true
 
 [dependencies]
 anyhow.workspace = true
+telemetry.workspace = true
 clap.workspace = true
 review-core.workspace = true
 schemars.workspace = true

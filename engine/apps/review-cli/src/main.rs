@@ -31,6 +31,10 @@ enum ContractsAction {
 }
 
 fn main() -> anyhow::Result<()> {
+    let _telemetry = telemetry::init(telemetry::TelemetryConfig::from_env_with_format(
+        "review-cli",
+        telemetry::LogFormat::Pretty,
+    )?)?;
     match Cli::parse().command {
         Command::Contracts {
             action: ContractsAction::Export { out },

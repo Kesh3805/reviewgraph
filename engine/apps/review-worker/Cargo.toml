@@ -16,6 +16,7 @@ integration = []
 
 [dependencies]
 anyhow.workspace = true
+telemetry.workspace = true
 clap.workspace = true
 review-core.workspace = true
 sqlx.workspace = true

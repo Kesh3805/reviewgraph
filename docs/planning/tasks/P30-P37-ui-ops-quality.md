@@ -619,7 +619,8 @@ Status: ☐
 ---
 
 ### OBS-001 — Rust telemetry crate (tracing JSON + OTLP HTTP to OpenObserve)
-Status: ☐
+Status: ☑
+> **Implementation note:** Pinned set is opentelemetry/-sdk/-otlp/-appender-tracing 0.33 with tracing-opentelemetry 0.34 (exporters use the blocking reqwest client on their own threads, so `init` needs no runtime; the OTLP HTTP client has no TLS yet, so `https` endpoints need the `reqwest-rustls` feature later). The JSON format is a custom layer (`json_format.rs`) because trace/span ids cannot be read through `Span::current()` inside a subscriber callback; the layer keeps a weak dispatch handle instead. `telemetry_export_failures_total` is implemented (atomic plus OTel counter, stderr line at most once per minute); `telemetry_dropped_spans_total` is not, because the SDK batch processors do not expose drops. The OTel crates' own tracing events are filtered off by default. The redaction slot is `init_with(config, Some(layer))`. The `span_overhead` Criterion bench and an `emit` example (OpenObserve verification) are included; `review-cli doctor` does not exist yet, so the OpenObserve check used `examples/emit.rs` (traces and logs verified in OpenObserve search). Extra test files: `init_twice.rs`, `json_log.rs`, `otlp_shutdown.rs`, `otlp_unreachable.rs`. The "Environment variables" table is in `docs/operations/observability.md`.
 
 - **Task ID:** OBS-001
 - **Title:** `telemetry` crate: `tracing` JSON logs, OTLP/HTTP traces, metrics and logs to OpenObserve, single `init()` for every Rust binary
