@@ -19,9 +19,11 @@ import { isIgnored } from '../providers/ports';
 import { TRACER_NAME } from '../telemetry/tracer.service';
 import { verifyWebhookSignature } from './signature';
 import {
+  COMMAND_ACKNOWLEDGER,
   DELIVERY_STORE,
   EVENT_NORMALIZER,
   PROVIDER_EVENT_SINK,
+  type CommandAcknowledger,
   type DeliveryStore,
   type EventNormalizer,
   type ProviderEventSink,
@@ -55,6 +57,7 @@ export class GithubWebhookController {
     @Inject(DELIVERY_STORE) private readonly deliveries: DeliveryStore,
     @Inject(EVENT_NORMALIZER) private readonly normalizer: EventNormalizer,
     @Inject(PROVIDER_EVENT_SINK) private readonly sink: ProviderEventSink,
+    @Inject(COMMAND_ACKNOWLEDGER) private readonly acknowledger: CommandAcknowledger,
   ) {}
 
   @Post('github')
@@ -156,6 +159,14 @@ export class GithubWebhookController {
       incCounter('webhook_dispatch_failures_total', { event: eventName });
       this.logger.error(`event dispatch failed delivery=${deliveryId} (${errorName(err)})`);
     });
+    if (normalized.type === 'review_command') {
+      // Best effort: a failed reaction must not affect the review.
+      void this.acknowledger.acknowledge(normalized).catch((err: unknown) => {
+        this.logger.warn(
+          `command acknowledgement failed delivery=${deliveryId} (${errorName(err)})`,
+        );
+      });
+    }
     return { delivery_id: deliveryId, accepted: true };
   }
 }

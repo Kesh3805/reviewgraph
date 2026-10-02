@@ -2,10 +2,13 @@ import { Module } from '@nestjs/common';
 import type { Redis } from 'ioredis';
 import { REDIS } from '../../common/redis.module';
 import { APP_CONFIG, type AppConfig } from '../../config/config.module';
+import { RepositoriesModule } from '../../repositories/repository-settings.port';
 import { GithubAppAuth, loadPrivateKey } from './app-auth.service';
+import { GithubCommandAcknowledger } from './command-reaction';
+import { GithubEventNormalizer } from './event-normalizer.service';
+import { GITHUB_APP_AUTH } from './github.tokens';
+import { ACTOR_PERMISSION_LOOKUP, GithubActorPermissions } from './permissions';
 import { InstallationTokenCache } from './token-cache';
-
-export const GITHUB_APP_AUTH = Symbol('GITHUB_APP_AUTH');
 
 /** Null when `GITHUB_ENABLED=false` (CLI-only local development). */
 export function createGithubAppAuth(config: AppConfig, redis: Redis): GithubAppAuth | null {
@@ -21,13 +24,18 @@ export function createGithubAppAuth(config: AppConfig, redis: Redis): GithubAppA
 }
 
 @Module({
+  imports: [RepositoriesModule],
   providers: [
     {
       provide: GITHUB_APP_AUTH,
       inject: [APP_CONFIG, REDIS],
       useFactory: createGithubAppAuth,
     },
+    GithubActorPermissions,
+    { provide: ACTOR_PERMISSION_LOOKUP, useExisting: GithubActorPermissions },
+    GithubEventNormalizer,
+    GithubCommandAcknowledger,
   ],
-  exports: [GITHUB_APP_AUTH],
+  exports: [GITHUB_APP_AUTH, GithubEventNormalizer, GithubCommandAcknowledger],
 })
 export class GithubModule {}

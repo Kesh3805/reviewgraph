@@ -60,6 +60,7 @@ export type IgnoreReason =
   | 'draft'
   | 'bot_author'
   | 'branch_not_targeted'
+  | 'repository_disabled'
   | 'not_a_pull_request_comment'
   | 'not_a_command'
   | 'permission_denied'

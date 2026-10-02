@@ -62,6 +62,8 @@ const baseShape = {
   GITHUB_WEBHOOK_SECRET: nonEmpty.optional(),
   /** Previous secret, accepted during webhook secret rotation. */
   GITHUB_WEBHOOK_SECRET_PREVIOUS: nonEmpty.optional(),
+  /** App slug; the bot login `<slug>[bot]` is the only reviewer whose request starts a review. */
+  GITHUB_APP_SLUG: nonEmpty.optional(),
   GITHUB_CLIENT_ID: nonEmpty.optional(),
   GITHUB_CLIENT_SECRET: nonEmpty.optional(),
   GITHUB_API_URL: url(['http:', 'https:']).default('https://api.github.com'),

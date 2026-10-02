@@ -1,14 +1,17 @@
 import { Injectable, Logger, Module } from '@nestjs/common';
-import type { NormalizeResult, ProviderEvent } from '../providers/ports';
+import type { ProviderEvent } from '../providers/ports';
+import { GithubCommandAcknowledger } from '../providers/github/command-reaction';
+import { GithubEventNormalizer } from '../providers/github/event-normalizer.service';
+import { GithubModule } from '../providers/github/github.module';
 import { GithubWebhookController } from './github-webhook.controller';
 import {
   DELIVERY_STORE,
+  COMMAND_ACKNOWLEDGER,
   EVENT_NORMALIZER,
   PROVIDER_EVENT_SINK,
   type DeliveryOutcome,
   type DeliveryRecord,
   type DeliveryStore,
-  type EventNormalizer,
   type ProviderEventSink,
 } from './webhook.ports';
 
@@ -32,14 +35,6 @@ export class InMemoryDeliveryStore implements DeliveryStore {
   }
 }
 
-/** Placeholder until GH-004 provides the real normalizer. */
-@Injectable()
-export class UnimplementedEventNormalizer implements EventNormalizer {
-  normalize(): Promise<NormalizeResult> {
-    return Promise.resolve({ ignored: true, reason: 'unsupported_event' });
-  }
-}
-
 /** Placeholder until SUP-001 wires the orchestrator; makes the missing handoff visible. */
 @Injectable()
 export class UnwiredEventSink implements ProviderEventSink {
@@ -52,12 +47,14 @@ export class UnwiredEventSink implements ProviderEventSink {
 }
 
 @Module({
+  imports: [GithubModule],
   controllers: [GithubWebhookController],
   providers: [
     { provide: DELIVERY_STORE, useClass: InMemoryDeliveryStore },
-    { provide: EVENT_NORMALIZER, useClass: UnimplementedEventNormalizer },
+    { provide: EVENT_NORMALIZER, useExisting: GithubEventNormalizer },
+    { provide: COMMAND_ACKNOWLEDGER, useExisting: GithubCommandAcknowledger },
     { provide: PROVIDER_EVENT_SINK, useClass: UnwiredEventSink },
   ],
-  exports: [DELIVERY_STORE, EVENT_NORMALIZER, PROVIDER_EVENT_SINK],
+  exports: [DELIVERY_STORE, EVENT_NORMALIZER, PROVIDER_EVENT_SINK, COMMAND_ACKNOWLEDGER],
 })
 export class WebhooksModule {}

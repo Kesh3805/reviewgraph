@@ -19,6 +19,7 @@ import {
   type DeliveryStore,
 } from '../../src/webhooks/webhook.ports';
 import { createTestApp } from '../helpers';
+import { fixture } from '../helpers/fixtures';
 import { generateAppKey } from '../helpers/fake-github';
 
 const SECRET = 'whsec_current_0123456789';
@@ -54,6 +55,7 @@ describe('GitHub webhook endpoint (e2e)', () => {
   let normalized: NormalizeResult = EVENT;
   let sinkDelayMs = 0;
   let store: DeliveryStore | undefined;
+  let realNormalizer = false;
   const exporter = new InMemorySpanExporter();
 
   beforeAll(() => {
@@ -67,16 +69,17 @@ describe('GitHub webhook endpoint (e2e)', () => {
       env: GITHUB_ENV,
       ...options,
       configure: (builder) => {
-        builder
-          .overrideProvider(EVENT_NORMALIZER)
-          .useValue({ normalize: () => Promise.resolve(normalized) })
-          .overrideProvider(PROVIDER_EVENT_SINK)
-          .useValue({
-            dispatch: async (event: ProviderEvent) => {
-              dispatched.push(event);
-              if (sinkDelayMs) await new Promise((r) => setTimeout(r, sinkDelayMs));
-            },
-          });
+        if (!realNormalizer) {
+          builder
+            .overrideProvider(EVENT_NORMALIZER)
+            .useValue({ normalize: () => Promise.resolve(normalized) });
+        }
+        builder.overrideProvider(PROVIDER_EVENT_SINK).useValue({
+          dispatch: async (event: ProviderEvent) => {
+            dispatched.push(event);
+            if (sinkDelayMs) await new Promise((r) => setTimeout(r, sinkDelayMs));
+          },
+        });
         if (store) builder.overrideProvider(DELIVERY_STORE).useValue(store);
         return builder;
       },
@@ -89,6 +92,7 @@ describe('GitHub webhook endpoint (e2e)', () => {
     normalized = EVENT;
     sinkDelayMs = 0;
     store = undefined;
+    realNormalizer = false;
     exporter.reset();
     resetCounterTotals();
   });
@@ -285,6 +289,27 @@ describe('GitHub webhook endpoint (e2e)', () => {
     expect(output).toContain('installation=99');
     expect(output).not.toContain('héllo');
     expect(output).not.toContain(SECRET);
+  });
+
+  it('normalizes a golden pull_request.opened delivery end to end', async () => {
+    realNormalizer = true;
+    await start();
+    const body = JSON.stringify(fixture('pull_request.opened.json'));
+    const res = await post(body, { 'x-github-delivery': 'd-golden' });
+    expect(res.body).toEqual({ delivery_id: 'd-golden', accepted: true });
+    expect(dispatched).toHaveLength(1);
+    expect(dispatched[0]).toMatchObject({
+      type: 'pull_request_head',
+      kind: 'opened',
+      deliveryId: 'd-golden',
+      headSha: 'ec26c3e57ca3a959ca5aad62de7213c562f8c821',
+    });
+    // A draft PR is acknowledged but not dispatched.
+    const draft = fixture('pull_request.opened.json');
+    draft.pull_request.draft = true;
+    const ignoredRes = await post(JSON.stringify(draft), { 'x-github-delivery': 'd-draft' });
+    expect(ignoredRes.body).toEqual({ delivery_id: 'd-draft', accepted: false, reason: 'draft' });
+    expect(dispatched).toHaveLength(1);
   });
 
   it('createHmac reference: header format is sha256=<hex>', () => {

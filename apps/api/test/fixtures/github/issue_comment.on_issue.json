@@ -1,0 +1,45 @@
+{
+  "action": "created",
+  "issue": {
+    "url": "https://api.github.com/repos/acme/billing/issues/1347",
+    "number": 1347,
+    "title": "Tighten admin authorization",
+    "user": {
+      "login": "octocat",
+      "id": 1,
+      "type": "User"
+    },
+    "state": "open",
+    "draft": false
+  },
+  "comment": {
+    "id": 9001,
+    "body": "/review",
+    "user": {
+      "login": "maintainer",
+      "id": 7,
+      "type": "User"
+    },
+    "created_at": "2026-10-01T10:00:00Z"
+  },
+  "repository": {
+    "id": 1296269,
+    "name": "billing",
+    "full_name": "acme/billing",
+    "private": true,
+    "owner": {
+      "login": "acme",
+      "id": 5,
+      "type": "Organization"
+    },
+    "default_branch": "main"
+  },
+  "sender": {
+    "login": "maintainer",
+    "id": 7,
+    "type": "User"
+  },
+  "installation": {
+    "id": 4242
+  }
+}

@@ -1,4 +1,4 @@
-import type { NormalizeResult, ProviderEvent } from '../providers/ports';
+import type { NormalizeResult, ProviderEvent, ReviewCommandEvent } from '../providers/ports';
 
 /** What the webhook endpoint knows about a verified delivery. */
 export interface DeliveryRecord {
@@ -33,3 +33,9 @@ export interface ProviderEventSink {
   dispatch(event: ProviderEvent): Promise<void>;
 }
 export const PROVIDER_EVENT_SINK = Symbol('PROVIDER_EVENT_SINK');
+
+/** Best-effort acknowledgement of an accepted /review command (an emoji reaction). */
+export interface CommandAcknowledger {
+  acknowledge(event: ReviewCommandEvent): Promise<void>;
+}
+export const COMMAND_ACKNOWLEDGER = Symbol('COMMAND_ACKNOWLEDGER');

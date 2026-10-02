@@ -1,0 +1,64 @@
+{
+  "action": "synchronize",
+  "number": 1347,
+  "pull_request": {
+    "url": "https://api.github.com/repos/acme/billing/pulls/1347",
+    "id": 1,
+    "number": 1347,
+    "state": "open",
+    "locked": false,
+    "title": "Tighten admin authorization",
+    "user": {
+      "login": "octocat",
+      "id": 1,
+      "type": "User",
+      "site_admin": false
+    },
+    "body": "Please take a look at the authorize() change.",
+    "draft": false,
+    "merged": false,
+    "head": {
+      "label": "acme:feature/authz",
+      "ref": "feature/authz",
+      "sha": "9049f1265b7d61be4a8904a9a27120d2064dab3b",
+      "user": {
+        "login": "octocat",
+        "type": "User"
+      }
+    },
+    "base": {
+      "label": "acme:main",
+      "ref": "main",
+      "sha": "6dcb09b5b57875f334f61aebed695e2e4193db5e",
+      "user": {
+        "login": "acme",
+        "type": "Organization"
+      }
+    },
+    "requested_reviewers": [],
+    "labels": []
+  },
+  "repository": {
+    "id": 1296269,
+    "name": "billing",
+    "full_name": "acme/billing",
+    "private": true,
+    "owner": {
+      "login": "acme",
+      "id": 5,
+      "type": "Organization"
+    },
+    "default_branch": "main"
+  },
+  "sender": {
+    "login": "octocat",
+    "id": 1,
+    "type": "User"
+  },
+  "installation": {
+    "id": 4242,
+    "node_id": "MDIzOkludGVncmF0aW9uSW5zdGFsbGF0aW9uNDI0Mg=="
+  },
+  "before": "6dcb09b5b57875f334f61aebed695e2e4193db5e",
+  "after": "9049f1265b7d61be4a8904a9a27120d2064dab3b"
+}
