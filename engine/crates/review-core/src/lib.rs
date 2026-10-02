@@ -11,6 +11,7 @@ pub mod location;
 pub mod provenance;
 pub mod pull_request;
 pub mod repository;
+pub mod review;
 pub mod reviewer_type;
 pub(crate) mod schema;
 pub mod version;

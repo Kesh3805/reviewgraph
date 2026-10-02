@@ -2094,7 +2094,9 @@ The map from `ClaimedRelation` to edge kinds (`Calls` → `CALLS`, `HandlesRoute
 ---
 
 ### DOM-008 — ReviewRun / ReviewerRun entities and the ReviewState machine
-Status: ☐
+Status: ☑
+
+> **Implementation note:** Runs are created through `ReviewRun::new(ReviewRunSpec, at)` (a spec struct avoids a long argument list) and start in `RECEIVED`. `ReviewRun::validated()` (also applied on deserialize) enforces that `failure` is present exactly in `FAILED_*` states, `superseded_by` exactly in `SUPERSEDED`, `completed_at` exactly in terminal states, and normalizes `degraded_reviewers`; `record_degraded` is the idempotent mutator. `ReviewState::failure_state()` was added as a helper (stage to its `FAILED_*` state). `ReviewerRun::transition` also validates the state edge and sets `started_at` / `finished_at`. Contracts registered: `ReviewState`, `ReviewerRunState`, `ReviewTrigger`, `ErrorClass` (and `ReviewerType`, `FindingCategory`, `Severity` from DOM-006); `ReviewState.ts` has exactly the 13 literals.
 
 **Task ID:** DOM-008
 

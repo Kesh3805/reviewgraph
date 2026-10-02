@@ -1,0 +1,17 @@
+{
+  "$id": "urn:reviewgraph:contracts:ErrorClass",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "description": "Coarse failure category with a stable snake_case wire form.",
+  "enum": [
+    "invalid_input",
+    "not_found",
+    "conflict",
+    "transient",
+    "rate_limited",
+    "permanent",
+    "cancelled",
+    "internal"
+  ],
+  "title": "ErrorClass",
+  "type": "string"
+}

@@ -1,0 +1,22 @@
+{
+  "$id": "urn:reviewgraph:contracts:ReviewState",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "description": "Run state. Wire form is SCREAMING_SNAKE_CASE.",
+  "enum": [
+    "RECEIVED",
+    "INDEXING",
+    "ANALYZING",
+    "REVIEWING",
+    "VERIFYING",
+    "PUBLISHING",
+    "COMPLETED",
+    "FAILED_INDEXING",
+    "FAILED_ANALYSIS",
+    "FAILED_REVIEW",
+    "FAILED_PUBLISH",
+    "SUPERSEDED",
+    "CANCELLED"
+  ],
+  "title": "ReviewState",
+  "type": "string"
+}

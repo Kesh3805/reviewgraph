@@ -311,6 +311,9 @@ failures: FAILED_INDEXING | FAILED_ANALYSIS | FAILED_REVIEW | FAILED_PUBLISH
 
 - Transitions are guarded by `UPDATE ... WHERE id=$1 AND state=$expected AND NOT superseded`, which is an optimistic compare-and-set.
 - Every stage writes its outputs before transitioning, so a retried job resumes from the last completed stage (`stage_outputs` keyed by `(review_run_id, stage, input_hash)`).
+- `FAILED_*` states are terminal: a manual retry creates a new run with `retry_of` set, never reopens the failed one. `VERIFYING` failures end in `FAILED_REVIEW` (verification is part of review).
+- `ANALYZING → PUBLISHING` is a legal edge: when no reviewer applies, the run publishes a summary only, and that is recorded, never a silent skip.
+- The authoritative edge table is `ALLOWED` in [`engine/crates/review-core/src/review/state.rs`](../../engine/crates/review-core/src/review/state.rs).
 
 ### 4.2 Reviewers
 

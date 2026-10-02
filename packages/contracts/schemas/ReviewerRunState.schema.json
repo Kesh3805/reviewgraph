@@ -1,0 +1,15 @@
+{
+  "$id": "urn:reviewgraph:contracts:ReviewerRunState",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "description": "Wire form is snake_case. `Pending` goes to `Running` or `Skipped`; `Running` goes to `Succeeded`, `Failed` or `TimedOut`; everything else is terminal.",
+  "enum": [
+    "pending",
+    "running",
+    "succeeded",
+    "failed",
+    "skipped",
+    "timed_out"
+  ],
+  "title": "ReviewerRunState",
+  "type": "string"
+}

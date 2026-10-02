@@ -37,8 +37,14 @@ pub fn registry() -> Vec<ContractType> {
         CandidateFinding, FindingCategory, FindingState, PublishedFinding, ReviewerType, Severity,
         VerifiedFinding,
     };
+    use review_core::review::{ReviewState, ReviewTrigger, ReviewerRunState};
+    use review_core::ErrorClass;
     vec![
         entry::<SchemaInfo>("SchemaInfo"),
+        entry::<ErrorClass>("ErrorClass"),
+        entry::<ReviewState>("ReviewState"),
+        entry::<ReviewerRunState>("ReviewerRunState"),
+        entry::<ReviewTrigger>("ReviewTrigger"),
         entry::<FindingState>("FindingState"),
         entry::<Severity>("Severity"),
         entry::<FindingCategory>("FindingCategory"),
@@ -240,5 +246,25 @@ mod tests {
             .map(|s| s.as_str())
             .collect();
         assert_eq!(exported, expected);
+    }
+
+    #[test]
+    fn contracts_export_contains_review_state_values() {
+        let dir = tempfile::tempdir().unwrap();
+        export(dir.path()).unwrap();
+        let text = fs::read_to_string(dir.path().join("ReviewState.schema.json")).unwrap();
+        let v: Value = serde_json::from_str(&text).unwrap();
+        let exported: Vec<&str> = v["enum"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|x| x.as_str().unwrap())
+            .collect();
+        let expected: Vec<&str> = review_core::review::ReviewState::ALL
+            .iter()
+            .map(|s| s.as_str())
+            .collect();
+        assert_eq!(exported, expected);
+        assert_eq!(exported.len(), 13);
     }
 }

@@ -1,0 +1,17 @@
+---
+source: crates/review-core/src/review/state.rs
+expression: names
+---
+- RECEIVED
+- INDEXING
+- ANALYZING
+- REVIEWING
+- VERIFYING
+- PUBLISHING
+- COMPLETED
+- FAILED_INDEXING
+- FAILED_ANALYSIS
+- FAILED_REVIEW
+- FAILED_PUBLISH
+- SUPERSEDED
+- CANCELLED
