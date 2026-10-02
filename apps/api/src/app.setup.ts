@@ -1,4 +1,4 @@
-import type { INestApplication } from '@nestjs/common';
+import { RequestMethod, type INestApplication } from '@nestjs/common';
 import type { NestExpressApplication } from '@nestjs/platform-express';
 import helmet from 'helmet';
 import { ProblemFilter } from './common/problem.filter';
@@ -15,7 +15,10 @@ export function configureApp(app: INestApplication, webOrigin: string): void {
   express.useBodyParser('urlencoded', { limit: JSON_BODY_LIMIT, extended: true });
   app.use(helmet());
   app.enableCors({ origin: webOrigin, credentials: true });
-  app.setGlobalPrefix('api/v1', { exclude: ['health'] });
+  // Internal service-to-service routes live under /internal/** (API-005), outside the public prefix.
+  app.setGlobalPrefix('api/v1', {
+    exclude: ['health', { path: 'internal/{*path}', method: RequestMethod.ALL }],
+  });
   app.useGlobalFilters(new ProblemFilter());
   app.enableShutdownHooks();
 }

@@ -1,0 +1,19 @@
+{
+  "description": "Built with the jsonwebtoken field layout (serde order). Regenerate from engine/crates/pipeline once the Rust signer lands; the TS verifier must keep accepting it.",
+  "kid": "k1",
+  "secret_utf8": "golden-vector-secret-0123456789ab",
+  "now": 1700000000,
+  "audience": "rg-api",
+  "claims": {
+    "iss": "rg-worker",
+    "aud": "rg-api",
+    "sub": "worker-1",
+    "scope": ["clone-credentials"],
+    "org": "0197a1c2-3d4e-7f50-8a6b-7c8d9e0f1a2b",
+    "repo": "0197a1c2-3d4e-7f50-8a6b-7c8d9e0f1a2c",
+    "iat": 1700000000,
+    "exp": 1700000060,
+    "jti": "golden-jti-0001"
+  },
+  "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiIsImtpZCI6ImsxIn0.eyJpc3MiOiJyZy13b3JrZXIiLCJhdWQiOiJyZy1hcGkiLCJzdWIiOiJ3b3JrZXItMSIsInNjb3BlIjpbImNsb25lLWNyZWRlbnRpYWxzIl0sIm9yZyI6IjAxOTdhMWMyLTNkNGUtN2Y1MC04YTZiLTdjOGQ5ZTBmMWEyYiIsInJlcG8iOiIwMTk3YTFjMi0zZDRlLTdmNTAtOGE2Yi03YzhkOWUwZjFhMmMiLCJpYXQiOjE3MDAwMDAwMDAsImV4cCI6MTcwMDAwMDA2MCwianRpIjoiZ29sZGVuLWp0aS0wMDAxIn0.-Wzm_eLgCID6O0_WKsl3-MM2aT403ursAL55k9HDxGo"
+}

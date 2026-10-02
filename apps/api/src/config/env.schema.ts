@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { ServiceKeyRing } from '../internal/service-token';
 import { telemetryEnvShape } from '../telemetry/config';
 
 /** Exit code for configuration errors (sysexits EX_CONFIG). */
@@ -17,6 +18,18 @@ const secretMin32Bytes = z
 const tokenCacheKey = z.string().refine((v) => Buffer.from(v, 'base64').length === 32, {
   message: 'must be 32 bytes, base64 encoded',
 });
+
+const serviceJwtKeys = z.string().refine(
+  (v) => {
+    try {
+      ServiceKeyRing.parse(v);
+      return true;
+    } catch {
+      return false;
+    }
+  },
+  { message: 'must be kid:base64[,kid:base64...] with keys of at least 32 bytes' },
+);
 
 const url = (protocols: string[]) =>
   z.string().refine(
@@ -37,6 +50,8 @@ const baseShape = {
   REDIS_URL: url(['redis:', 'rediss:']),
   ENGINE_INTERNAL_URL: url(['http:', 'https:']),
   SERVICE_JWT_SECRET: secretMin32Bytes,
+  /** `kid1:base64,kid2:base64`; the first key signs, all verify. Defaults to SERVICE_JWT_SECRET. */
+  SERVICE_JWT_KEYS: serviceJwtKeys.optional(),
   SESSION_JWT_SECRET: secretMin32Bytes,
   TOKEN_CACHE_KEY: tokenCacheKey,
   WEB_ORIGIN: url(['http:', 'https:']),

@@ -1,8 +1,10 @@
 import { Controller, Get, type INestApplication, type Type } from '@nestjs/common';
 import type { NestExpressApplication } from '@nestjs/platform-express';
 import { Test } from '@nestjs/testing';
+import RedisMock from 'ioredis-mock';
 import { AppModule } from '../src/app.module';
 import { configureApp } from '../src/app.setup';
+import { REDIS } from '../src/common/redis.module';
 import { APP_CONFIG } from '../src/config/config.module';
 import { parseEnv, type Env } from '../src/config/env.schema';
 import { DependencyProbes, type HealthProbes } from '../src/health/health.probes';
@@ -33,13 +35,16 @@ export const healthyProbes: HealthProbes = {
 export async function createTestApp(
   probes: HealthProbes = healthyProbes,
   extraControllers: Type<unknown>[] = [],
+  options: { redis?: unknown; env?: NodeJS.ProcessEnv } = {},
 ): Promise<NestExpressApplication> {
   const moduleRef = await Test.createTestingModule({
     imports: [AppModule],
     controllers: extraControllers,
   })
     .overrideProvider(APP_CONFIG)
-    .useValue(testConfig())
+    .useValue(testConfig(options.env))
+    .overrideProvider(REDIS)
+    .useValue(options.redis ?? new RedisMock())
     .overrideProvider(DependencyProbes)
     .useValue(probes)
     .compile();

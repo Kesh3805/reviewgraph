@@ -1,0 +1,19 @@
+{
+  "description": "Signed by apps/api (TS, jose). The Rust verifier must accept it at now=1700000000.",
+  "kid": "k1",
+  "secret_utf8": "golden-vector-secret-0123456789ab",
+  "now": 1700000000,
+  "audience": "rg-api",
+  "claims": {
+    "iss": "rg-worker",
+    "aud": "rg-api",
+    "sub": "worker-1",
+    "scope": ["clone-credentials"],
+    "org": "0197a1c2-3d4e-7f50-8a6b-7c8d9e0f1a2b",
+    "repo": "0197a1c2-3d4e-7f50-8a6b-7c8d9e0f1a2c",
+    "iat": 1700000000,
+    "exp": 1700000060,
+    "jti": "golden-jti-0001"
+  },
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImsxIn0.eyJzY29wZSI6WyJjbG9uZS1jcmVkZW50aWFscyJdLCJvcmciOiIwMTk3YTFjMi0zZDRlLTdmNTAtOGE2Yi03YzhkOWUwZjFhMmIiLCJyZXBvIjoiMDE5N2ExYzItM2Q0ZS03ZjUwLThhNmItN2M4ZDllMGYxYTJjIiwiaXNzIjoicmctd29ya2VyIiwiYXVkIjoicmctYXBpIiwic3ViIjoid29ya2VyLTEiLCJpYXQiOjE3MDAwMDAwMDAsImV4cCI6MTcwMDAwMDA2MCwianRpIjoiZ29sZGVuLWp0aS0wMDAxIn0.7M1_7XKyqpQIIXz6yLsA0u0WIQgJpM2iSwf7gZ4Xh5Q"
+}
