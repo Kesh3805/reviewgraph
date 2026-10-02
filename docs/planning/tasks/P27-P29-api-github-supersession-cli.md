@@ -861,7 +861,8 @@ Status: ☑
 ---
 
 ### GH-002 — Webhook endpoint and HMAC verification
-Status: ☐
+Status: ☑
+> **Implementation note:** The endpoint (`apps/api/src/webhooks/`) is built against three ports in `webhook.ports.ts` because their owners do not exist yet: `DeliveryStore` (GH-003; an in-memory bounded set stands in), `EventNormalizer` (GH-004; a stub that ignores everything stands in) and `ProviderEventSink` (SUP-001; a stub that logs and drops stands in). Because there is no database transaction yet, the handoff to the sink is detached (`void sink.dispatch(...)` with failures logged and counted in `webhook_dispatch_failures_total`) rather than "verify, record, normalize, orchestrate in one transaction"; the atomic record-plus-enqueue wiring belongs to GH-003/API-007/SUP-001. The raw body comes from a route-specific `express.raw` parser registered in `configureApp` (`app.setup.ts`, 25 MiB, `express` added as a direct dependency) ahead of the 1 MiB JSON parsers; `ProblemFilter` now maps body-parser 4xx errors (for example 413) instead of answering 500. A bad or missing signature answers 401 with an empty body; once the signature is valid, missing `X-GitHub-Event`/`X-GitHub-Delivery` or invalid JSON answers 400. `GITHUB_WEBHOOK_SECRET_PREVIOUS` is accepted during rotation. `ping` and events outside `pull_request|issue_comment|installation|installation_repositories` answer 202 `accepted:false`. The endpoint is a 404 when `GITHUB_ENABLED=false`. The `webhook_received` span is created with the OTel API directly (the attribute set `event/action/delivery_id` is not in the shared `Attr` list); the span is a child of the HTTP server span rather than a separate trace root until OBS-003 defines propagation. The k6 benchmark and the DEV-005 signed replay tool are out of scope here.
 
 - **Task ID:** GH-002
 - **Title:** Webhook endpoint + HMAC verification

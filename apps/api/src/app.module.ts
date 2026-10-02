@@ -7,6 +7,7 @@ import { InternalModule } from './internal/internal.module';
 import { HealthModule } from './health/health.module';
 import { GithubModule } from './providers/github/github.module';
 import { ProvidersModule } from './providers/provider.registry';
+import { WebhooksModule } from './webhooks/webhooks.module';
 import { TelemetryModule } from './telemetry/telemetry.module';
 
 @Module({
@@ -17,6 +18,7 @@ import { TelemetryModule } from './telemetry/telemetry.module';
     InternalModule,
     ProvidersModule,
     GithubModule,
+    WebhooksModule,
     HealthModule,
   ],
   providers: [ShutdownService],

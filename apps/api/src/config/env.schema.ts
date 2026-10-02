@@ -60,6 +60,8 @@ const baseShape = {
   GITHUB_APP_PRIVATE_KEY: nonEmpty.optional(),
   GITHUB_APP_PRIVATE_KEY_FILE: nonEmpty.optional(),
   GITHUB_WEBHOOK_SECRET: nonEmpty.optional(),
+  /** Previous secret, accepted during webhook secret rotation. */
+  GITHUB_WEBHOOK_SECRET_PREVIOUS: nonEmpty.optional(),
   GITHUB_CLIENT_ID: nonEmpty.optional(),
   GITHUB_CLIENT_SECRET: nonEmpty.optional(),
   GITHUB_API_URL: url(['http:', 'https:']).default('https://api.github.com'),

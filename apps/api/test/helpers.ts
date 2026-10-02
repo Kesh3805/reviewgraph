@@ -1,6 +1,6 @@
 import { Controller, Get, type INestApplication, type Type } from '@nestjs/common';
 import type { NestExpressApplication } from '@nestjs/platform-express';
-import { Test } from '@nestjs/testing';
+import { Test, type TestingModuleBuilder } from '@nestjs/testing';
 import RedisMock from 'ioredis-mock';
 import { AppModule } from '../src/app.module';
 import { configureApp } from '../src/app.setup';
@@ -35,9 +35,14 @@ export const healthyProbes: HealthProbes = {
 export async function createTestApp(
   probes: HealthProbes = healthyProbes,
   extraControllers: Type<unknown>[] = [],
-  options: { redis?: unknown; env?: NodeJS.ProcessEnv } = {},
+  options: {
+    redis?: unknown;
+    env?: NodeJS.ProcessEnv;
+    webhookBodyLimit?: string;
+    configure?: (builder: TestingModuleBuilder) => TestingModuleBuilder;
+  } = {},
 ): Promise<NestExpressApplication> {
-  const moduleRef = await Test.createTestingModule({
+  let builder = Test.createTestingModule({
     imports: [AppModule],
     controllers: extraControllers,
   })
@@ -46,10 +51,13 @@ export async function createTestApp(
     .overrideProvider(REDIS)
     .useValue(options.redis ?? new RedisMock())
     .overrideProvider(DependencyProbes)
-    .useValue(probes)
-    .compile();
+    .useValue(probes);
+  if (options.configure) builder = options.configure(builder);
+  const moduleRef = await builder.compile();
   const app = moduleRef.createNestApplication<NestExpressApplication>({ bodyParser: false });
-  configureApp(app as INestApplication, 'http://localhost:3000');
+  configureApp(app as INestApplication, 'http://localhost:3000', {
+    webhookBodyLimit: options.webhookBodyLimit,
+  });
   return app;
 }
 

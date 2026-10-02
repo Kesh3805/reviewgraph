@@ -29,7 +29,9 @@ export class ProblemFilter implements ExceptionFilter {
     const req = http.getRequest<RequestWithId>();
 
     const status =
-      exception instanceof HttpException ? exception.getStatus() : HttpStatus.INTERNAL_SERVER_ERROR;
+      exception instanceof HttpException
+        ? exception.getStatus()
+        : (clientErrorStatus(exception) ?? HttpStatus.INTERNAL_SERVER_ERROR);
     if (status >= 500) {
       this.logger.error(
         exception instanceof Error ? (exception.stack ?? exception.message) : String(exception),
@@ -48,6 +50,12 @@ export class ProblemFilter implements ExceptionFilter {
     if (res.headersSent) return;
     res.status(status).type('application/problem+json').json(problem);
   }
+}
+
+/** Body-parser style errors (`http-errors`) carry a 4xx `status`, e.g. 413 for oversized bodies. */
+function clientErrorStatus(exception: unknown): number | undefined {
+  const status = (exception as { status?: unknown } | null)?.status;
+  return typeof status === 'number' && status >= 400 && status < 500 ? status : undefined;
 }
 
 function titleFor(status: number): string {
