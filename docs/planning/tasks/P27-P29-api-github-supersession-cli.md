@@ -806,7 +806,8 @@ Status: ☐
 ---
 
 ### GH-001 — GitHub App auth (JWT, installation tokens cached encrypted in Redis)
-Status: ☐
+Status: ☑
+> **Implementation note:** Uses `@octokit/rest` with `@octokit/plugin-throttling` and `@octokit/plugin-retry`; the App JWT is signed with `jose` (RS256) and the key is parsed once into a `KeyObject` (PKCS1 or PKCS8). Tests run against an in-process fake GitHub HTTP server (`test/helpers/fake-github.ts`) and `ioredis-mock`; no real GitHub or Redis is called. A 401 on a cached token evicts it and retries once, implemented by mutating the request options inside an Octokit `request` hook (Octokit binds inner hooks to the original options object, so replacing it has no effect). The span `github_token_mint` uses the OTel API directly because it is not in the shared `SPAN_NAMES` list (kept identical to the Rust list). Primary rate limits are waited out at most twice via the throttling plugin; secondary limits surface as `ProviderError{rate_limited}` through `toProviderError`. The Redis lock is per installation (`rg:gh:itok-lock:{id}`) and waiters poll for their own cache key, so different scopes do not serialize for the 10 s timeout. `GithubModule` yields `null` when `GITHUB_ENABLED=false`; the `GithubAppAuth` is not yet registered with the `ProviderRegistry` (the provider implementation arrives with GH-005/GH-009). The `github_app_permissions_valid` boot check is GH-010.
 
 - **Task ID:** GH-001
 - **Title:** GitHub App auth (JWT, installation tokens cached encrypted in Redis)

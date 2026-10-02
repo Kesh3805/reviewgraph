@@ -5,6 +5,7 @@ import { requestIdMiddleware } from './common/request-id.middleware';
 import { RedisModule } from './common/redis.module';
 import { InternalModule } from './internal/internal.module';
 import { HealthModule } from './health/health.module';
+import { GithubModule } from './providers/github/github.module';
 import { ProvidersModule } from './providers/provider.registry';
 import { TelemetryModule } from './telemetry/telemetry.module';
 
@@ -15,6 +16,7 @@ import { TelemetryModule } from './telemetry/telemetry.module';
     RedisModule,
     InternalModule,
     ProvidersModule,
+    GithubModule,
     HealthModule,
   ],
   providers: [ShutdownService],
