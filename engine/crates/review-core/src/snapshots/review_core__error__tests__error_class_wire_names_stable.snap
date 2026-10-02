@@ -1,0 +1,20 @@
+---
+source: crates/review-core/src/error.rs
+expression: names
+---
+- - invalid_input
+  - "\"invalid_input\""
+- - not_found
+  - "\"not_found\""
+- - conflict
+  - "\"conflict\""
+- - transient
+  - "\"transient\""
+- - rate_limited
+  - "\"rate_limited\""
+- - permanent
+  - "\"permanent\""
+- - cancelled
+  - "\"cancelled\""
+- - internal
+  - "\"internal\""

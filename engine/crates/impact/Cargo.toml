@@ -10,3 +10,5 @@ publish.workspace = true
 workspace = true
 
 [dependencies]
+review-core.workspace = true
+thiserror.workspace = true

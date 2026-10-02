@@ -214,6 +214,14 @@ pub fn check(engine_dir: &Path) -> anyhow::Result<Vec<Violation>> {
                     });
                 }
             }
+            if !info.is_app && dep == "anyhow" {
+                violations.push(Violation {
+                    krate: name.clone(),
+                    dependency: dep.clone(),
+                    reason:
+                        "library crates must use typed errors; anyhow is for apps only (DOM-002)",
+                });
+            }
             if banned
                 .get(name.as_str())
                 .is_some_and(|b| b.contains(&dep.as_str()))

@@ -32,6 +32,47 @@ fn every_library_crate_is_declared() {
 }
 
 #[test]
+fn no_library_depends_on_anyhow() {
+    let violations = xtask::check(&engine_dir()).unwrap();
+    let offenders: Vec<_> = violations
+        .iter()
+        .filter(|v| v.dependency == "anyhow")
+        .collect();
+    assert!(
+        offenders.is_empty(),
+        "libraries depending on anyhow: {offenders:#?}"
+    );
+}
+
+#[test]
+fn anyhow_rule_flags_libraries_but_not_apps() {
+    let tmp = tempdir();
+    let mk = |group: &str, name: &str, deps: &str| {
+        let p = tmp.join(group).join(name);
+        std::fs::create_dir_all(&p).unwrap();
+        std::fs::write(
+            p.join("Cargo.toml"),
+            format!(
+                "[package]
+name = \"{name}\"
+[dependencies]
+{deps}
+"
+            ),
+        )
+        .unwrap();
+    };
+    mk("crates", "review-core", "anyhow = \"1\"");
+    mk("apps", "review-cli", "anyhow = \"1\"");
+    let v = xtask::check(&tmp).unwrap();
+    std::fs::remove_dir_all(&tmp).unwrap();
+    assert!(v
+        .iter()
+        .any(|v| v.krate == "review-core" && v.dependency == "anyhow"));
+    assert!(!v.iter().any(|v| v.krate == "review-cli"));
+}
+
+#[test]
 fn detects_forbidden_internal_edge_and_banned_external_dependency() {
     let tmp = tempdir();
     let mk = |group: &str, name: &str, deps: &str| {

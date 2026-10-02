@@ -4,4 +4,4 @@ pub mod contracts;
 pub mod error;
 pub mod ids;
 
-pub use error::CoreError;
+pub use error::{Classify, CoreError, ErrorClass};

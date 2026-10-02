@@ -1277,7 +1277,9 @@ macro_rules! uuid_id { ($name:ident) => {
 ---
 
 ### DOM-002 — Error taxonomy
-Status: ☐
+Status: ☑
+
+> **Implementation note:** The arch-test rule lives in `engine/xtask` (the spec path `engine/tools/arch-tests/src/rules.rs` does not exist): `xtask::check` reports a violation when any non-app crate lists `anyhow` as a dependency, tested by `no_library_depends_on_anyhow` and `anyhow_rule_flags_libraries_but_not_apps`. No `cargo deny` entry was added, since a per-crate ban of `anyhow` cannot be expressed without banning it in the apps; `cargo deny check bans` passes. `ErrorClass` is re-exported at the crate root and the wire-name snapshot is `crates/review-core/src/snapshots/`. The `pipeline` crate counts as a library crate for the `anyhow` rule.
 
 **Task ID:** DOM-002
 

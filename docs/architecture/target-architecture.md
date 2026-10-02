@@ -122,6 +122,7 @@ Rules:
 - `lang-typescript` is the only crate that knows TypeScript.
 - Nothing below `pipeline` knows about jobs, tenants or providers.
 - Framework-specific (NestJS) and repository-specific (the reference consumer) knowledge never appears in `codegraph`.
+- Library crates use typed errors and never depend on `anyhow`; see [error-handling.md](error-handling.md).
 
 ---
 
