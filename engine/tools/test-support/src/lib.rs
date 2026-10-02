@@ -169,3 +169,75 @@ pub fn write_file(dir: &Path, rel: &str, contents: impl AsRef<[u8]>) {
         fs::write(path, contents).expect("write file");
     }
 }
+
+/// Canary strings planted in sensitive files. No output of the repository crate may contain one.
+pub const CANARIES: &[&str] = &["RG_CANARY_5f1c", "RG_CANARY_ENV_77"];
+
+/// A private copy of the `init-edge-cases` fixture with the content a plain-file fixture cannot
+/// hold: ignored files, symlinks, binary and oversized files, sensitive files with canary
+/// content, an LFS pointer, a non-UTF-8 file name and a case collision.
+pub fn edge_case_tree() -> TempDir {
+    #[allow(clippy::unwrap_used, clippy::expect_used)]
+    {
+        let tmp = fixture_copy("init-edge-cases");
+        let dir = tmp.path();
+        // Files that the fixture's own ignore rules exclude.
+        write_file(dir, "src/ignored-by-git.ts", "export const ignored = 1;\n");
+        write_file(dir, "build-cache/x.js", "x\n");
+        write_file(dir, "debug.log", "log\n");
+        write_file(dir, "packages/a/local.ts", "export const local = 1;\n");
+        write_file(dir, "packages/b/scratch.ts", "export const scratch = 1;\n");
+        // Vendored directories.
+        write_file(dir, "node_modules/pkg/index.js", "module.exports = 1;\n");
+        write_file(
+            dir,
+            "nested/node_modules/pkg/index.js",
+            "module.exports = 2;\n",
+        );
+        // Build output.
+        write_file(dir, "dist/bundle.js", "var a = 1;\n");
+        write_file(dir, "dist/types.d.ts", "export {};\n");
+        write_file(dir, "coverage/lcov.info", "TN:\n");
+        write_file(dir, "assets/app.min.js", "var a=1;\n");
+        write_file(dir, "package-lock.json", "{\"lockfileVersion\": 3}\n");
+        // Binary by extension and by NUL sniff.
+        fs::write(dir.join("logo.png"), [0x89, b'P', b'N', b'G', 0, 1, 2]).expect("png");
+        fs::write(dir.join("blob.dat"), [b'a', 0, b'b']).expect("dat");
+        // LFS pointer.
+        write_file(
+            dir,
+            "model.weights",
+            "version https://git-lfs.github.com/spec/v1\noid sha256:abc\nsize 12345\n",
+        );
+        // Oversized (2 MiB of text).
+        write_file(dir, "big.txt", "x".repeat(2 * 1024 * 1024));
+        // Sensitive files with canary content.
+        write_file(
+            dir,
+            "gcs-key.json",
+            "{\"private_key\": \"RG_CANARY_5f1c\"}\n",
+        );
+        write_file(dir, ".env.production", "SECRET=RG_CANARY_5f1c\n");
+        write_file(dir, ".env.test", "TOKEN=RG_CANARY_ENV_77\n");
+        write_file(dir, "certs/server.pem", "-----BEGIN-----\nRG_CANARY_5f1c\n");
+        // Case collision.
+        write_file(dir, "Readme.md", "# one\n");
+        write_file(dir, "README.md", "# two\n");
+        // Non-UTF-8 file name.
+        #[cfg(unix)]
+        {
+            use std::ffi::OsStr;
+            use std::os::unix::ffi::OsStrExt;
+            let name = OsStr::from_bytes(b"bad-\xff-name.ts");
+            fs::write(dir.join(name), "export {};\n").expect("non utf8");
+        }
+        // Symlinks: one inside the tree, one escaping it.
+        #[cfg(unix)]
+        {
+            std::os::unix::fs::symlink("src/app.ts", dir.join("link-in.ts")).expect("symlink");
+            std::os::unix::fs::symlink("/etc/passwd", dir.join("link-out")).expect("symlink");
+            std::os::unix::fs::symlink("../../outside.txt", dir.join("link-up")).expect("symlink");
+        }
+        tmp
+    }
+}

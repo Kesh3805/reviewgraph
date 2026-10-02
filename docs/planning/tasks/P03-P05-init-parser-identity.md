@@ -286,7 +286,9 @@ Status: â
 
 ### INIT-002 — File walker with ignore rules
 
-Status: ☐
+Status: â
+
+> **Implementation note:** The fixture builder rejects symlinks and the root .gitignore would hide .env.* and *.key files, so init-edge-cases holds the plain-file content and review-test-support::edge_case_tree() adds symlinks, binary/oversized/LFS files, sensitive files with canary content, node_modules and a non-UTF-8 name at test time. walk_with() takes a FileSource so tests can prove which paths are opened (CountingFiles). IgnoreReason counts only what the walker can observe (built-in dirs, bad paths): files excluded by .gitignore/.reviewignore/config globs are never enumerated by the ignore crate. git.rs reads .gitmodules/.gitattributes directly because they are git metadata, not detector content; the read-path guard test allows it. Metrics are not emitted until the telemetry crate lands.
 
 - **Task ID:** INIT-002
 - **Title:** File walker with ignore rules (.gitignore via `ignore` crate, .reviewignore, size limits, binary detection, symlink policy)

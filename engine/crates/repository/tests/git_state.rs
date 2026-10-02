@@ -1,4 +1,4 @@
-#![allow(clippy::unwrap_used, clippy::expect_used)]
+#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 
 use repository::git::{discover, DefaultBranchSource, GitOpenOptions, HeadState};
 use repository::remote_url::ProviderHint;

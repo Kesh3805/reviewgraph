@@ -5,6 +5,9 @@
 
 pub mod error;
 pub mod git;
+pub mod read;
 pub mod remote_url;
+pub mod sensitive;
+pub mod walk;
 
 pub use error::{Error, InitError, InitWarning, Result};

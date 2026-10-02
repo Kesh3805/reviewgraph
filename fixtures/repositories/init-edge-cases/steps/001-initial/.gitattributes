@@ -1,0 +1,2 @@
+src/generated/forced.ts -linguist-generated
+src/plain.ts linguist-generated
