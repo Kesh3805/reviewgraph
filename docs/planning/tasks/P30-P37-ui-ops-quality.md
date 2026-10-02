@@ -71,7 +71,8 @@ Status markers: ☐ todo · ◐ in progress · ☑ done (acceptance criteria exe
 ---
 
 ### WEB-001 — Next.js skeleton (Tailwind, shadcn/ui, session via API, TanStack Query)
-Status: ☐
+Status: ☑
+> **Implementation note:** Built against the stubbed API contract: `lib/api/schema.ts` hand-writes the `paths` type for `GET /api/v1/auth/me` and `POST /api/v1/auth/logout` and `pnpm --filter @reviewgraph/web gen:api` is wired to regenerate from `packages/contracts/openapi/api.json` once API-008 publishes it (then swap the import in `lib/api-client.ts`). The session cookie name `rg_session` and the login URL `/api/v1/auth/github/login` are assumptions to confirm in API-004 (the middleware only checks cookie presence; `getSession()` validates through `/auth/me`). Playwright and Lighthouse are deferred (no browsers in this environment): `middleware_redirects_without_session` is a Vitest unit test on the middleware and the app was smoke-tested with `next build`, `next start` and `next dev`. shadcn/ui components are committed by hand in the generator output style (`components.json` is present for the CLI); only button and card exist so far. Server OTel uses `@vercel/otel` via `instrumentation.ts`, active only when `OTEL_EXPORTER_OTLP_ENDPOINT` is set. The nonce CSP forces dynamic rendering (root layout reads the nonce). `/` is a placeholder authenticated page until WEB-002.
 
 - **Task ID:** WEB-001
 - **Title:** Next.js skeleton (Tailwind, shadcn/ui, session via API, TanStack Query)
