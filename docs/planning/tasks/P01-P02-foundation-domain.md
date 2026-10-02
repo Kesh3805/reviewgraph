@@ -759,7 +759,9 @@ The test compose:
 ---
 
 ### FND-006 — Root task runner (package.json scripts + Makefile)
-Status: ☐
+Status: ☑
+
+> **Implementation note:** Done. `scripts/rg.mjs` drives everything. On Windows the engine scripts run through Git Bash, never the WSL `bash.exe` shim. `migrate` targets `host.docker.internal:25432` from the build container.
 
 **Task ID:** FND-006
 

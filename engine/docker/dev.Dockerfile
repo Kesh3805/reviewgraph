@@ -5,6 +5,7 @@ RUN rustup toolchain install 1.97 --profile minimal --component rustfmt,clippy \
  && rustup default 1.97
 RUN apt-get update && apt-get install -y --no-install-recommends git postgresql-client nodejs npm \
  && rm -rf /var/lib/apt/lists/*
-RUN cargo install cargo-deny --locked --version ^0.18 || true
+RUN cargo install cargo-deny --locked --version ^0.18
+RUN cargo install sqlx-cli --locked --version ^0.8 --no-default-features --features postgres,rustls
 ENV CARGO_TERM_COLOR=always
 WORKDIR /repo/engine

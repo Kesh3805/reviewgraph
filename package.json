@@ -2,13 +2,26 @@
   "name": "reviewgraph",
   "private": true,
   "packageManager": "pnpm@10.15.0",
-  "engines": { "node": ">=24" },
+  "engines": {
+    "node": ">=24"
+  },
   "scripts": {
-    "lint": "pnpm -r --if-present lint",
-    "typecheck": "pnpm -r --if-present typecheck",
-    "test": "pnpm -r --if-present test",
+    "dev:up": "node scripts/rg.mjs compose dev up -d --wait",
+    "dev:down": "node scripts/rg.mjs compose dev down",
+    "dev:reset": "node scripts/rg.mjs compose dev down -v",
+    "cargo": "node scripts/rg.mjs cargo",
+    "test:rust": "node scripts/rg.mjs cargo test --workspace",
+    "test:ts": "pnpm -r --if-present test && node --test \"scripts/**/*.test.mjs\"",
+    "test": "pnpm test:rust && pnpm test:ts",
+    "test:integration": "node scripts/rg.mjs integration",
+    "lint:rust": "node scripts/rg.mjs cargo fmt --all --check && node scripts/rg.mjs cargo clippy --workspace --all-targets -- -D warnings && node scripts/rg.mjs cargo deny check bans licenses sources",
+    "lint:ts": "pnpm -r --if-present lint && pnpm -r --if-present typecheck && pnpm format:check",
+    "lint": "pnpm lint:rust && pnpm lint:ts",
+    "fmt": "node scripts/rg.mjs cargo fmt --all && prettier --write .",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "migrate": "node scripts/rg.mjs run sqlx migrate run --source migrations --database-url postgres://reviewgraph:reviewgraph-dev@host.docker.internal:25432/reviewgraph",
+    "migrate:info": "node scripts/rg.mjs run sqlx migrate info --source migrations --database-url postgres://reviewgraph:reviewgraph-dev@host.docker.internal:25432/reviewgraph"
   },
   "devDependencies": {
     "prettier": "^3.6.0",
