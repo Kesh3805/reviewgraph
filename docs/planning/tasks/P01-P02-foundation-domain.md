@@ -1557,7 +1557,9 @@ Violations return `CoreError::InvalidVersion`.
 ---
 
 ### DOM-004 — Repository / RepositorySnapshot / SourceFile entities
-Status: ☐
+Status: ☑
+
+> **Implementation note:** The cache identity is returned as a named struct, `SourceFileCacheKey`, rather than a bare tuple. `RepositorySnapshot` also has `new_full` next to `new_delta` (both start in `Building`). `Position`, `LineRange` and `SourceRange` validate on deserialize through private raw structs. `ParseStatus` uses an internal `"status"` tag. `Visibility` and `SkipReason` wire forms are lowercase and snake_case. The 1-based line / 0-based byte-column convention is also recorded in target-arch §3.1.
 
 **Task ID:** DOM-004
 

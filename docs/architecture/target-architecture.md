@@ -148,6 +148,7 @@ ParsedUnit {
 }
 ```
 
+- **Range convention.** Every `range` in the IR uses `review_core::location::Position`: lines are 1-based, columns are 0-based UTF-8 byte offsets within the line (tree-sitter columns).
 - A `LanguageAnalyzer` is pure: `(path, bytes, AnalyzerConfig) → ParsedUnit`. It does no cross-file work, so per-file results can be cached by `(content_hash, path, analyzer_version)`.
 - **Cross-file resolution** happens in `codegraph::linker`. It consumes all ParsedUnits of a snapshot plus a `ModuleResolver` (tsconfig `paths`/`baseUrl`, node resolution, workspace packages). It produces edges with `confidence` and `resolved_by`.
 

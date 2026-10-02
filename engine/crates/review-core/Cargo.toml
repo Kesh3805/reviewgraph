@@ -13,6 +13,7 @@ workspace = true
 blake3.workspace = true
 hex.workspace = true
 semver.workspace = true
+chrono.workspace = true
 schemars.workspace = true
 serde.workspace = true
 thiserror.workspace = true
