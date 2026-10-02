@@ -25,3 +25,4 @@ coverage/
 .DS_Store
 Thumbs.db
 /packages/contracts/.tmp/
+/fixtures/.build/

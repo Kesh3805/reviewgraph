@@ -999,7 +999,9 @@ Root scripts: `contracts:export`, `contracts:generate` and `contracts:check`. `l
 ---
 
 ### FND-008 — Fixture repository builder
-Status: ☐
+Status: ☑
+
+> **Implementation note:** `.gitignore` already ignored `/fixtures/build/`; `/fixtures/.build/` was added. `build.sh` also accepts `--src DIR` (fixture root override, used by the self-tests) and `--out DIR`. Executable and symlink modes are checked from the git index (symlinks additionally on disk) because file modes on a Windows checkout are not reliable. On the host with Git 2.49, `%aI` prints `2026-01-01T02:00:00Z` rather than `+00:00` (git formats a zero offset as `Z`); the stored commit date is identical. `build.sh --all` takes about 13 s on the Windows host (process spawn cost), above the 10 s target; it is about 13 s in the container as well because of container start-up. `host_and_container_same_shas` is verified by running `check.sh` in both environments (both pass against the same `EXPECTED_SHAS`) rather than being a `--self-test` case.
 
 **Task ID:** FND-008
 
