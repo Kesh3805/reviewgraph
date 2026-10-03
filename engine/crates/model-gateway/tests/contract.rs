@@ -94,6 +94,7 @@ impl ProviderAdapter for CountingAdapter {
             model: "m".into(),
             provider_request_id: None,
             tool_use_id: None,
+            served_from: model_gateway::ServedFrom::Live,
         })
     }
 }

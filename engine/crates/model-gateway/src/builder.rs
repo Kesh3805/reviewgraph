@@ -15,7 +15,7 @@ use crate::request_hash::request_hash;
 use crate::retry::{retry, RetryPolicy};
 use crate::types::{
     ModelRequest, ModelResponse, ModelTier, PrivacyClass, ProviderId, RiskBand, RouteCandidate,
-    RouteDecision, ServedFrom,
+    RouteDecision,
 };
 
 /// Upper bound for one provider HTTP attempt.
@@ -233,6 +233,7 @@ impl ModelGateway for Gateway {
 
         let started = Instant::now();
         let req_ref = &req;
+        let hash_ref = &hash;
         let outcome = retry(&self.retry, &req.budget, &cancel, |_attempt| async move {
             let remaining = req_ref
                 .budget
@@ -241,6 +242,7 @@ impl ModelGateway for Gateway {
             let provider_req = ProviderRequest {
                 request: req_ref,
                 candidate,
+                request_hash: hash_ref,
                 timeout: remaining.min(MAX_ATTEMPT_TIMEOUT),
             };
             adapter.send(&provider_req).await
@@ -259,7 +261,7 @@ impl ModelGateway for Gateway {
             request_hash: hash,
             route: route.clone(),
             attempts,
-            served_from: ServedFrom::Live,
+            served_from: resp.served_from,
         })
     }
 }

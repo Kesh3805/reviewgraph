@@ -8,6 +8,7 @@ pub mod adapters;
 pub mod builder;
 pub mod classify;
 pub mod error;
+pub mod fixture;
 pub mod redact;
 pub mod request_hash;
 pub mod retry;
@@ -15,6 +16,7 @@ pub mod schema_strict;
 #[cfg(any(test, feature = "testing"))]
 pub mod testing;
 pub mod types;
+pub mod validate;
 
 pub use adapter::{ProviderAdapter, ProviderRequest, ProviderResponse};
 pub use builder::{

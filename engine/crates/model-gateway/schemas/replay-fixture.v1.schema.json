@@ -1,0 +1,179 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "FinishReason": {
+      "oneOf": [
+        {
+          "enum": [
+            "complete",
+            "max_tokens",
+            "refusal",
+            "content_filter"
+          ],
+          "type": "string"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "other": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "other"
+          ],
+          "type": "object"
+        }
+      ]
+    },
+    "FixtureResponse": {
+      "properties": {
+        "finish_reason": {
+          "$ref": "#/definitions/FinishReason"
+        },
+        "output": {
+          "$ref": "#/definitions/ModelOutput"
+        },
+        "usage": {
+          "$ref": "#/definitions/Usage"
+        }
+      },
+      "required": [
+        "finish_reason",
+        "output",
+        "usage"
+      ],
+      "type": "object"
+    },
+    "ModelOutput": {
+      "oneOf": [
+        {
+          "additionalProperties": false,
+          "properties": {
+            "json": true
+          },
+          "required": [
+            "json"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "text": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "text"
+          ],
+          "type": "object"
+        }
+      ]
+    },
+    "Usage": {
+      "description": "Token usage with provider semantics normalised: `input_uncached` excludes cache reads and writes, and `output` includes reasoning tokens.",
+      "properties": {
+        "cache_read": {
+          "format": "uint32",
+          "minimum": 0.0,
+          "type": "integer"
+        },
+        "cache_write": {
+          "format": "uint32",
+          "minimum": 0.0,
+          "type": "integer"
+        },
+        "input_uncached": {
+          "format": "uint32",
+          "minimum": 0.0,
+          "type": "integer"
+        },
+        "output": {
+          "format": "uint32",
+          "minimum": 0.0,
+          "type": "integer"
+        },
+        "reasoning": {
+          "format": "uint32",
+          "minimum": 0.0,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "cache_read",
+        "cache_write",
+        "input_uncached",
+        "output",
+        "reasoning"
+      ],
+      "type": "object"
+    }
+  },
+  "properties": {
+    "engine_git_sha": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "fixture_version": {
+      "format": "uint32",
+      "minimum": 0.0,
+      "type": "integer"
+    },
+    "latency_ms": {
+      "format": "uint32",
+      "minimum": 0.0,
+      "type": "integer"
+    },
+    "model": {
+      "type": "string"
+    },
+    "prompt_id": {
+      "type": "string"
+    },
+    "prompt_version": {
+      "type": "string"
+    },
+    "provider": {
+      "type": "string"
+    },
+    "recorded_at": {
+      "type": "string"
+    },
+    "request_hash": {
+      "type": "string"
+    },
+    "response": {
+      "$ref": "#/definitions/FixtureResponse"
+    },
+    "schema_hash": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "synthetic": {
+      "type": "boolean"
+    },
+    "task": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "fixture_version",
+    "latency_ms",
+    "model",
+    "prompt_id",
+    "prompt_version",
+    "provider",
+    "recorded_at",
+    "request_hash",
+    "response",
+    "synthetic",
+    "task"
+  ],
+  "title": "Fixture",
+  "type": "object"
+}

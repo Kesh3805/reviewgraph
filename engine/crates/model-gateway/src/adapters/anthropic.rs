@@ -9,7 +9,7 @@ use super::anthropic_wire::{build_request, ContentBlock, MessagesResponse, TOOL_
 use super::http::{build_client, check_base_url, execute, unexpected};
 use crate::adapter::{ProviderAdapter, ProviderRequest, ProviderResponse};
 use crate::error::{Error, GatewayError};
-use crate::types::{FinishReason, ModelOutput, ProviderId, SchemaErrorSummary, Usage};
+use crate::types::{FinishReason, ModelOutput, ProviderId, SchemaErrorSummary, ServedFrom, Usage};
 
 pub const DEFAULT_BASE_URL: &str = "https://api.anthropic.com";
 const API_VERSION: &str = "2023-06-01";
@@ -99,6 +99,7 @@ fn map_response(
             model,
             provider_request_id: request_id,
             tool_use_id: None,
+            served_from: ServedFrom::Live,
         });
     }
 
@@ -114,6 +115,7 @@ fn map_response(
             model,
             provider_request_id: request_id,
             tool_use_id: Some(id),
+            served_from: ServedFrom::Live,
         }),
         None if matches!(
             finish_reason,
@@ -127,6 +129,7 @@ fn map_response(
                 model,
                 provider_request_id: request_id,
                 tool_use_id: None,
+                served_from: ServedFrom::Live,
             })
         }
         None => Err(GatewayError::SchemaViolation {

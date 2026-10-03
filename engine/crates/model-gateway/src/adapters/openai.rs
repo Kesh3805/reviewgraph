@@ -9,7 +9,7 @@ use super::openai_wire::{build_request, ContentPart, OutputItem, ResponsesRespon
 use crate::adapter::{ProviderAdapter, ProviderRequest, ProviderResponse};
 use crate::error::{Error, GatewayError, PermanentKind};
 use crate::schema_strict::check_strict_compatible;
-use crate::types::{FinishReason, ModelOutput, ProviderId, SchemaErrorSummary, Usage};
+use crate::types::{FinishReason, ModelOutput, ProviderId, SchemaErrorSummary, ServedFrom, Usage};
 
 pub const DEFAULT_BASE_URL: &str = "https://api.openai.com";
 
@@ -110,6 +110,7 @@ fn map_response(
         model: model.clone(),
         provider_request_id: request_id.clone(),
         tool_use_id: None,
+        served_from: ServedFrom::Live,
     };
 
     if let Some(r) = refusal {

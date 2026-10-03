@@ -35,7 +35,9 @@ async fn send(
     req: &model_gateway::ModelRequest,
 ) -> Result<model_gateway::ProviderResponse, GatewayError> {
     let c = candidate(false);
+    let h = model_gateway::request_hash(req);
     a.send(&ProviderRequest {
+        request_hash: &h,
         request: req,
         candidate: &c,
         timeout: Duration::from_secs(5),

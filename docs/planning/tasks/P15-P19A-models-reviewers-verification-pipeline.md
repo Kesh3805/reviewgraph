@@ -475,7 +475,8 @@ Status: ☑
 ---
 
 ### GW-005 — Replay adapter and fixture recorder
-Status: ☐
+Status: ☑
+> **Implementation note:** The fixture format README is `docs/operations/model-replay-fixtures.md` (not `fixtures/model-replay/README.md`) because `fixtures/` is owned by another workstream right now; the fixture root default is still `fixtures/model-replay/` and the schema test passes while that directory is absent. `ReplayAdapter` impersonates one provider name, so register one per routed provider on a shared `FixtureStore`. `ProviderRequest` gained `request_hash` and `ProviderResponse` gained `served_from` (the replay adapter reports `Replay`). The recorder validates through `validate.rs` (`SchemaValidators`, the jsonschema core that GW-009 builds the repair flow on, with default features off so no remote `$ref` resolution) and skips, but still serves, outputs that are invalid, incomplete or match a secret pattern; a non-fixture organisation or a missing `MODEL_GATEWAY_RECORD=1` fails closed. `llm_replay_misses_total` is emitted by GW-010. `MODEL_GATEWAY_MODE` is parsed by `GatewayMode::parse`; the recording adapter must be wrapped around the live adapter by the composition root.
 
 **Task ID:** GW-005
 

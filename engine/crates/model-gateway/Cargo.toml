@@ -25,19 +25,28 @@ tokio.workspace = true
 tokio-util.workspace = true
 async-trait = "0.1"
 serde_jcs = "0.2"
+jsonschema = { version = "0.58", default-features = false }
+dashmap = "6"
+uuid.workspace = true
 httpdate = "1"
 regex.workspace = true
 tracing.workspace = true
+chrono.workspace = true
 reqwest = { workspace = true, features = ["http2"] }
 
 [dev-dependencies]
 tokio = { workspace = true, features = ["test-util"] }
 proptest.workspace = true
 insta.workspace = true
+tempfile.workspace = true
 wiremock.workspace = true
 model-gateway = { path = ".", features = ["testing"] }
 criterion.workspace = true
 
 [[bench]]
 name = "gateway_request_hash"
+harness = false
+
+[[bench]]
+name = "replay_lookup"
 harness = false

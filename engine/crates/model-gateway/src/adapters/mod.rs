@@ -6,3 +6,5 @@ pub mod anthropic_wire;
 pub(crate) mod http;
 pub mod openai;
 pub mod openai_wire;
+pub mod record;
+pub mod replay;
