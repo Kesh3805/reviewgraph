@@ -458,7 +458,9 @@ Status: â
 
 ### INIT-004 — Package manager, manifest & build-system detection
 
-Status: ☐
+Status: â
+
+> **Implementation note:** RepoPath forbids the empty path, so directory scopes (scope_dir, later config_dir/paths_base) use the new repository::RepoDir, which is the empty string for the repository root. ManifestFact gained members (Maven modules, Gradle includes, Cargo workspace members) and meta (go version, poetry/ruff tool markers) fields, and the Python parsers keep names and ranges only. Build systems are separate kinds (Webpack, Vite, Rollup, Esbuild, Tsup, Swc) rather than one Swc bucket. polyglot-manifests and monorepo-pnpm fixtures were created here (monorepo-pnpm is also used by INIT-005).
 
 - **Task ID:** INIT-004
 - **Title:** Package manager & manifest detection (npm/pnpm/yarn/bun lockfiles; pyproject, go.mod, Cargo.toml, pom/gradle recorded)

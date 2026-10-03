@@ -14,6 +14,12 @@ review-core.workspace = true
 thiserror.workspace = true
 serde.workspace = true
 tracing.workspace = true
+serde_json.workspace = true
+toml.workspace = true
+quick-xml.workspace = true
+regex.workspace = true
+schemars.workspace = true
+semver.workspace = true
 ignore.workspace = true
 globset.workspace = true
 rayon.workspace = true
@@ -21,7 +27,6 @@ gix = { workspace = true, features = ["max-performance-safe", "status", "revisio
 
 [dev-dependencies]
 review-test-support.workspace = true
-serde_json.workspace = true
 tempfile.workspace = true
 proptest.workspace = true
 criterion.workspace = true

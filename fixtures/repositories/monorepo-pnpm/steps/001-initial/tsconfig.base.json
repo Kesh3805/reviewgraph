@@ -1,0 +1,16 @@
+{
+  // shared compiler options
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "commonjs",
+    "strict": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "baseUrl": ".",
+    "paths": {
+      "@acme/shared": ["packages/shared/src/index.ts"],
+      "@acme/shared/*": ["packages/shared/src/*"],
+      "@acme/db": ["packages/db/src/index.ts"], /* trailing comma */
+    },
+  },
+}

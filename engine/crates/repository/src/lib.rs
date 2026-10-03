@@ -3,12 +3,17 @@
 //! Repository discovery and `review init` detectors. Everything here is deterministic and never
 //! executes repository code.
 
+pub mod build_systems;
+pub mod dirs;
 pub mod error;
 pub mod git;
+pub mod jsonc;
 pub mod language;
+pub mod manifests;
 pub mod read;
 pub mod remote_url;
 pub mod sensitive;
 pub mod walk;
 
+pub use dirs::RepoDir;
 pub use error::{Error, InitError, InitWarning, Result};

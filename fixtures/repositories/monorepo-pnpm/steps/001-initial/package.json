@@ -1,0 +1,6 @@
+{
+  "name": "acme-monorepo",
+  "private": true,
+  "packageManager": "pnpm@10.4.1",
+  "devDependencies": { "turbo": "^2.0.0", "typescript": "^5.4.0" }
+}

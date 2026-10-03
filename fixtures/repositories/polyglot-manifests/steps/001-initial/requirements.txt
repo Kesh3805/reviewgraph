@@ -1,0 +1,4 @@
+# runtime
+flask==3.0.0
+-r other.txt
+numpy>=1.26  # math

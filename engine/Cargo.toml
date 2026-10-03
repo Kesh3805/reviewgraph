@@ -74,6 +74,7 @@ schemars = { version = "0.8", features = ["uuid1", "chrono"] }
 axum = "0.8"
 imara-diff = "0.1"
 toml = "0.8"
+quick-xml = "0.37"
 opentelemetry = "0.33"
 opentelemetry_sdk = { version = "0.33", features = ["rt-tokio"] }
 opentelemetry-otlp = { version = "0.33", default-features = false, features = ["http-proto", "reqwest-blocking-client", "trace", "metrics", "logs"] }

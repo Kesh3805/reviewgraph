@@ -1,0 +1,10 @@
+[project]
+name = "polyglot-py"
+version = "0.3.0"
+dependencies = ["requests>=2.31", "pydantic[email]~=2.5; python_version >= '3.9'"]
+
+[project.optional-dependencies]
+dev = ["pytest>=8"]
+
+[tool.ruff]
+line-length = 100
