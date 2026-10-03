@@ -2452,8 +2452,11 @@ dependencies = [
  "async-trait",
  "blake3",
  "criterion",
+ "httpdate",
  "insta",
  "model-gateway",
+ "proptest",
+ "regex",
  "review-core",
  "schemars",
  "serde",
@@ -2463,6 +2466,7 @@ dependencies = [
  "thiserror",
  "tokio",
  "tokio-util",
+ "tracing",
 ]
 
 [[package]]

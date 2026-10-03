@@ -12,6 +12,7 @@ use tokio_util::sync::CancellationToken;
 use crate::adapter::{ProviderAdapter, ProviderRequest};
 use crate::error::{BudgetKind, Error, GatewayError, PermanentKind};
 use crate::request_hash::request_hash;
+use crate::retry::{retry, RetryPolicy};
 use crate::types::{
     ModelRequest, ModelResponse, ModelTier, PrivacyClass, ProviderId, RiskBand, RouteCandidate,
     RouteDecision, ServedFrom,
@@ -112,6 +113,7 @@ pub fn estimate_input_tokens(req: &ModelRequest) -> u32 {
 pub struct GatewayBuilder {
     adapters: Vec<Arc<dyn ProviderAdapter>>,
     router: Option<Arc<dyn RouteSource>>,
+    retry: Option<RetryPolicy>,
 }
 
 impl std::fmt::Debug for GatewayBuilder {
@@ -132,6 +134,11 @@ impl GatewayBuilder {
         self
     }
 
+    pub fn retry_policy(mut self, policy: RetryPolicy) -> Self {
+        self.retry = Some(policy);
+        self
+    }
+
     pub fn router(mut self, router: Arc<dyn RouteSource>) -> Self {
         self.router = Some(router);
         self
@@ -149,7 +156,11 @@ impl GatewayBuilder {
         if adapters.is_empty() {
             return Err(Error::Config("at least one adapter is required".into()));
         }
-        Ok(Gateway { adapters, router })
+        Ok(Gateway {
+            adapters,
+            router,
+            retry: self.retry.unwrap_or_default(),
+        })
     }
 }
 
@@ -157,6 +168,7 @@ impl GatewayBuilder {
 pub struct Gateway {
     adapters: HashMap<ProviderId, Arc<dyn ProviderAdapter>>,
     router: Arc<dyn RouteSource>,
+    retry: RetryPolicy,
 }
 
 impl std::fmt::Debug for Gateway {
@@ -213,20 +225,23 @@ impl ModelGateway for Gateway {
                     detail: "provider not registered".into(),
                 })?;
 
-        let remaining = req
-            .budget
-            .deadline
-            .saturating_duration_since(Instant::now());
-        let provider_req = ProviderRequest {
-            request: &req,
-            candidate,
-            timeout: remaining.min(MAX_ATTEMPT_TIMEOUT),
-        };
         let started = Instant::now();
-        let resp = tokio::select! {
-            () = cancel.cancelled() => return Err(GatewayError::Cancelled),
-            r = adapter.send(&provider_req) => r?,
-        };
+        let req_ref = &req;
+        let outcome = retry(&self.retry, &req.budget, &cancel, |_attempt| async move {
+            let remaining = req_ref
+                .budget
+                .deadline
+                .saturating_duration_since(Instant::now());
+            let provider_req = ProviderRequest {
+                request: req_ref,
+                candidate,
+                timeout: remaining.min(MAX_ATTEMPT_TIMEOUT),
+            };
+            adapter.send(&provider_req).await
+        })
+        .await;
+        let attempts = outcome.attempts;
+        let resp = outcome.result?;
         Ok(ModelResponse {
             output: resp.output,
             usage: resp.usage,
@@ -237,7 +252,7 @@ impl ModelGateway for Gateway {
             finish_reason: resp.finish_reason,
             request_hash: hash,
             route: route.clone(),
-            attempts: 1,
+            attempts,
             served_from: ServedFrom::Live,
         })
     }

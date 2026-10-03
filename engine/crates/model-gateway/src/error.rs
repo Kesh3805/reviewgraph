@@ -110,6 +110,58 @@ pub enum GatewayError {
     Cancelled,
 }
 
+impl GatewayError {
+    /// Only `Transient` and `RateLimited` are retried by the retry loop.
+    pub fn is_retryable(&self) -> bool {
+        matches!(self, Self::Transient { .. } | Self::RateLimited { .. })
+    }
+
+    /// Whether the router may try the next candidate after this error (retries exhausted).
+    pub fn fallback_eligible(&self) -> bool {
+        match self {
+            Self::Transient { .. } | Self::RateLimited { .. } => true,
+            Self::Permanent { kind, .. } => matches!(
+                kind,
+                PermanentKind::Auth
+                    | PermanentKind::Forbidden
+                    | PermanentKind::ModelNotFound
+                    | PermanentKind::QuotaExhausted
+                    | PermanentKind::UnsupportedParameter
+            ),
+            Self::SchemaViolation { .. }
+            | Self::BudgetExceeded { .. }
+            | Self::NoEligibleProvider { .. }
+            | Self::Cancelled => false,
+        }
+    }
+
+    /// Stable class string, used as a metric label and in `reviewer_runs.error_class`.
+    pub fn class(&self) -> &'static str {
+        match self {
+            Self::Transient { .. } => "transient",
+            Self::RateLimited { .. } => "rate_limited",
+            Self::Permanent { .. } => "permanent",
+            Self::SchemaViolation { .. } => "schema_violation",
+            Self::BudgetExceeded { .. } => "budget_exceeded",
+            Self::NoEligibleProvider { .. } => "no_eligible_provider",
+            Self::Cancelled => "cancelled",
+        }
+    }
+
+    /// The pipeline-wide error class this failure maps to.
+    pub fn error_class(&self) -> ErrorClass {
+        match self {
+            Self::Transient { .. } => ErrorClass::Transient,
+            Self::RateLimited { .. } => ErrorClass::RateLimited,
+            Self::Cancelled => ErrorClass::Cancelled,
+            Self::Permanent { .. }
+            | Self::SchemaViolation { .. }
+            | Self::BudgetExceeded { .. }
+            | Self::NoEligibleProvider { .. } => ErrorClass::Permanent,
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

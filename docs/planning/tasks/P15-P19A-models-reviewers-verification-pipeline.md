@@ -176,7 +176,8 @@ pub struct ModelResponse {
 ---
 
 ### GW-002 — Typed GatewayError and retry policy
-Status: ☐
+Status: ☑
+> **Implementation note:** The retry loop is `retry::retry` (used by the gateway core around every `send`); jitter uses an internal splitmix generator (`SystemJitter`) rather than the `rand` crate. Error `detail` text is scrubbed by `redact::scrub_text` (secret patterns live in `model-gateway/src/redact.rs` because `telemetry::redact` does not exist until OBS-006; GW-010 reuses the same patterns). `llm_retries_total` and `llm_rate_limited_total` are emitted by GW-010 with the rest of the metric set; the `retry` span event is a `tracing` info event. The proptest checks that the (paused-clock) elapsed time never exceeds the deadline.
 
 **Task ID:** GW-002
 

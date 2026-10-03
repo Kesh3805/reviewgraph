@@ -25,9 +25,13 @@ tokio.workspace = true
 tokio-util.workspace = true
 async-trait = "0.1"
 serde_jcs = "0.2"
+httpdate = "1"
+regex.workspace = true
+tracing.workspace = true
 
 [dev-dependencies]
-tokio.workspace = true
+tokio = { workspace = true, features = ["test-util"] }
+proptest.workspace = true
 insta.workspace = true
 model-gateway = { path = ".", features = ["testing"] }
 criterion.workspace = true

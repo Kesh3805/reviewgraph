@@ -5,8 +5,11 @@
 
 pub mod adapter;
 pub mod builder;
+pub mod classify;
 pub mod error;
+pub mod redact;
 pub mod request_hash;
+pub mod retry;
 #[cfg(any(test, feature = "testing"))]
 pub mod testing;
 pub mod types;
@@ -18,4 +21,5 @@ pub use builder::{
 };
 pub use error::{BudgetKind, Error, GatewayError, PermanentKind, RateScope, Result, TransientKind};
 pub use request_hash::request_hash;
+pub use retry::{retry, JitterRng, RetryOutcome, RetryPolicy};
 pub use types::*;
