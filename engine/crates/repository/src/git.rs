@@ -476,3 +476,24 @@ fn read_lfs_patterns(root: &Path) -> Vec<String> {
     }
     out
 }
+
+/// The subset of `candidates` that is tracked in the git index of the repository at `root`.
+/// Returns an empty set when `root` is not a repository or the index cannot be read.
+pub fn tracked_among(root: &Path, candidates: &[RepoPath]) -> BTreeSet<RepoPath> {
+    use gix::bstr::ByteSlice;
+    let Ok(repo) = open_isolated(root) else {
+        return BTreeSet::new();
+    };
+    let Ok(index) = repo.index_or_empty() else {
+        return BTreeSet::new();
+    };
+    candidates
+        .iter()
+        .filter(|path| {
+            index
+                .entry_by_path(path.as_str().as_bytes().as_bstr())
+                .is_some()
+        })
+        .cloned()
+        .collect()
+}

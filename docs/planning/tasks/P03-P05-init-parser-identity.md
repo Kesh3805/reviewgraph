@@ -893,7 +893,9 @@ Status: â
 
 ### INIT-009 — Entrypoints, migration dirs, infra config, env files (names only)
 
-Status: ☐
+Status: â
+
+> **Implementation note:** InitWarning gained a severity field (info/warning/high) because the spec's warning shape and env_file_committed require it. tracked_in_git comes from repository::git::tracked_among (index lookup through gix, no subprocess). Entrypoints are deduplicated per (path, kind) keeping the strongest source, so a bootstrap-call hit hides the weaker script/Dockerfile source for the same file. The nest-api fixture does not exist yet; tests use inline trees, monorepo-pnpm and init-edge-cases (canaries) instead.
 
 - **Task ID:** INIT-009
 - **Title:** Entrypoints (main.ts/bin/scripts/workers), migration dirs, infra config (Dockerfile, compose, terraform), env files (names only, never values)

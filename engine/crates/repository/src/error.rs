@@ -4,6 +4,7 @@ use std::path::PathBuf;
 
 use review_core::location::RepoPath;
 use review_core::{Classify, CoreError, ErrorClass};
+use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
 /// Errors returned by this crate. Add domain variants as the crate gains behaviour, and keep
@@ -92,11 +93,36 @@ impl Classify for InitError {
     }
 }
 
+/// How serious a warning is.
+#[derive(
+    Debug,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
+    PartialOrd,
+    Ord,
+    Hash,
+    Default,
+    Serialize,
+    Deserialize,
+    JsonSchema,
+)]
+#[serde(rename_all = "snake_case")]
+pub enum WarningSeverity {
+    Info,
+    #[default]
+    Warning,
+    High,
+}
+
 /// A non-fatal observation made while initializing a repository.
-#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize, JsonSchema)]
 pub struct InitWarning {
     /// Stable snake_case code, for example `non_utf8_path` or `symlink_escapes_root`.
     pub code: String,
+    #[serde(default)]
+    pub severity: WarningSeverity,
     pub path: Option<RepoPath>,
     pub message: String,
 }
@@ -105,9 +131,15 @@ impl InitWarning {
     pub fn new(code: &str, path: Option<RepoPath>, message: impl Into<String>) -> Self {
         Self {
             code: code.to_owned(),
+            severity: WarningSeverity::Warning,
             path,
             message: message.into(),
         }
+    }
+
+    pub fn with_severity(mut self, severity: WarningSeverity) -> Self {
+        self.severity = severity;
+        self
     }
 }
 

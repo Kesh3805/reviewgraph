@@ -10,6 +10,8 @@ mod npm;
 mod other;
 mod python;
 
+pub(crate) use npm::script_entry_hints;
+
 use std::collections::{BTreeMap, BTreeSet};
 
 use rayon::prelude::*;
