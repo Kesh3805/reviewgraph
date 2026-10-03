@@ -29,6 +29,7 @@ gix = { workspace = true, features = ["max-performance-safe", "status", "revisio
 [dev-dependencies]
 review-test-support.workspace = true
 tempfile.workspace = true
+insta.workspace = true
 proptest.workspace = true
 criterion.workspace = true
 

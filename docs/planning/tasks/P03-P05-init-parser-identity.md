@@ -814,7 +814,9 @@ Status: â
 
 ### INIT-008 — Generated code detection
 
-Status: ☐
+Status: â
+
+> **Implementation note:** Header marker and pattern names are Strings (not static str) in GeneratedReason so the type is deserializable. The false-positive, @generated, Go-marker, vendor and linguist cases live in the init-edge-cases fixture (extended in INIT-002); dist/coverage/min.js/lockfile cases are added dynamically by edge_case_tree() because the root .gitignore excludes dist/ and coverage/. GitAttributesView is a small in-crate parser (globset with **/ prefixing) rather than gix-attributes.
 
 - **Task ID:** INIT-008
 - **Title:** Generated code detection (dirs like dist/build/generated, headers "@generated"/"DO NOT EDIT", config globs)

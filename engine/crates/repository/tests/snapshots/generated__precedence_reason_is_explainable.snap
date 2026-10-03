@@ -1,0 +1,22 @@
+---
+source: crates/repository/tests/generated.rs
+expression: reasons
+---
+- - api.pb.go
+  - header
+- - assets/app.min.js
+  - pattern
+- - coverage/lcov.info
+  - directory
+- - dist/bundle.js
+  - directory
+- - dist/types.d.ts
+  - directory
+- - package-lock.json
+  - pattern
+- - src/generated/client.ts
+  - header
+- - src/plain.ts
+  - git_attributes
+- - vendor/lib.js
+  - directory
