@@ -14,3 +14,13 @@ No test needs a key: tests use the replay adapter or mocked HTTP.
 
 A live smoke command (`review-cli model smoke --provider anthropic`) is not implemented yet; use
 the wiremock suite (`engine/scripts/cargo.sh test -p model-gateway`) for adapter verification.
+
+## Model gateway rate limiting
+
+| Variable | Meaning |
+| --- | --- |
+| `REDIS_URL` | Shared token buckets across workers (dev: `redis://127.0.0.1:26379`, from the build container `redis://host.docker.internal:26379`). Unset means process-local buckets. |
+| `RG_WORKER_COUNT_HINT` | Divisor for the local fallback buckets when Redis is unreachable (default 4). |
+
+Limits are configured per model in `routing.yaml` (`providers.<p>.limits`). Tests that need Redis
+are behind the `integration` feature: `engine/scripts/cargo.sh test -p model-gateway --features integration`.

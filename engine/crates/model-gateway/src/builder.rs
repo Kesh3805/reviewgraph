@@ -10,7 +10,9 @@ use tokio::time::Instant;
 use tokio_util::sync::CancellationToken;
 
 use crate::adapter::{ProviderAdapter, ProviderRequest};
+use crate::budget::{precheck_cost, precheck_tokens, WorstCasePricer};
 use crate::error::{BudgetKind, Error, GatewayError, PermanentKind};
+use crate::ratelimit::{LimitRequest, ModelLimits, NoLimit, RateLimiter};
 use crate::request_hash::request_hash;
 use crate::retry::{retry, RetryPolicy};
 use crate::types::{
@@ -56,6 +58,11 @@ pub trait RouteSource: Send + Sync {
     /// again right before every send (defence in depth).
     fn permits(&self, _provider: &ProviderId, _privacy: PrivacyClass) -> bool {
         true
+    }
+
+    /// Configured account limits for a routed model, if any (GW-007).
+    fn limits(&self, _provider: &ProviderId, _model: &str) -> Option<ModelLimits> {
+        None
     }
 }
 
@@ -120,6 +127,8 @@ pub struct GatewayBuilder {
     adapters: Vec<Arc<dyn ProviderAdapter>>,
     router: Option<Arc<dyn RouteSource>>,
     retry: Option<RetryPolicy>,
+    limiter: Option<Arc<dyn RateLimiter>>,
+    pricer: Option<Arc<dyn WorstCasePricer>>,
 }
 
 impl std::fmt::Debug for GatewayBuilder {
@@ -145,6 +154,16 @@ impl GatewayBuilder {
         self
     }
 
+    pub fn rate_limiter(mut self, limiter: Arc<dyn RateLimiter>) -> Self {
+        self.limiter = Some(limiter);
+        self
+    }
+
+    pub fn pricer(mut self, pricer: Arc<dyn WorstCasePricer>) -> Self {
+        self.pricer = Some(pricer);
+        self
+    }
+
     pub fn router(mut self, router: Arc<dyn RouteSource>) -> Self {
         self.router = Some(router);
         self
@@ -166,6 +185,8 @@ impl GatewayBuilder {
             adapters,
             router,
             retry: self.retry.unwrap_or_default(),
+            limiter: self.limiter.unwrap_or_else(|| Arc::new(NoLimit)),
+            pricer: self.pricer,
         })
     }
 }
@@ -175,6 +196,8 @@ pub struct Gateway {
     adapters: HashMap<ProviderId, Arc<dyn ProviderAdapter>>,
     router: Arc<dyn RouteSource>,
     retry: RetryPolicy,
+    limiter: Arc<dyn RateLimiter>,
+    pricer: Option<Arc<dyn WorstCasePricer>>,
 }
 
 impl std::fmt::Debug for Gateway {
@@ -202,6 +225,8 @@ impl ModelGateway for Gateway {
             return Err(GatewayError::Cancelled);
         }
         let hash = request_hash(&req);
+        let est_input = estimate_input_tokens(&req);
+        precheck_tokens(&req, est_input)?;
         let registered: HashSet<ProviderId> = self.adapters.keys().cloned().collect();
         let mut strict_ok = registered.clone();
         if let Some(schema) = &req.output_schema {
@@ -213,7 +238,7 @@ impl ModelGateway for Gateway {
             tier: req.tier,
             risk_band: req.risk_band,
             privacy: req.privacy,
-            est_input_tokens: estimate_input_tokens(&req),
+            est_input_tokens: est_input,
             max_output_tokens: req.max_output_tokens,
             remaining_budget_fraction: req.budget.remaining_fraction,
             schema_strict_ok: strict_ok,
@@ -247,9 +272,34 @@ impl ModelGateway for Gateway {
                 });
                 continue;
             };
+            precheck_cost(
+                &req,
+                est_input,
+                &candidate.provider,
+                &candidate.model,
+                self.pricer.as_deref(),
+            )?;
+            let limit_req = self
+                .router
+                .limits(&candidate.provider, &candidate.model)
+                .map(|limits| LimitRequest {
+                    provider: candidate.provider.clone(),
+                    model: candidate.model.clone(),
+                    limits,
+                    est_input,
+                    max_output: req.max_output_tokens,
+                    deadline: req.budget.deadline,
+                });
             let req_ref = &req;
             let hash_ref = &hash;
+            let limiter = &self.limiter;
+            let limit_ref = limit_req.as_ref();
+            let cancel_ref = &cancel;
             let outcome = retry(&self.retry, &req.budget, &cancel, |_attempt| async move {
+                let reservation = match limit_ref {
+                    Some(lr) => Some(limiter.acquire(lr, cancel_ref).await?),
+                    None => None,
+                };
                 let remaining = req_ref
                     .budget
                     .deadline
@@ -260,7 +310,14 @@ impl ModelGateway for Gateway {
                     request_hash: hash_ref,
                     timeout: remaining.min(MAX_ATTEMPT_TIMEOUT),
                 };
-                adapter.send(&provider_req).await
+                let resp = adapter.send(&provider_req).await?;
+                if let Some(r) = &reservation {
+                    let u = resp.usage;
+                    limiter
+                        .reconcile(r, u.input_uncached + u.cache_write + u.cache_read, u.output)
+                        .await;
+                }
+                Ok(resp)
             })
             .await;
             attempts_total = attempts_total.saturating_add(outcome.attempts);

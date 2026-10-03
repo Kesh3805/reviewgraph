@@ -111,9 +111,15 @@ pub enum GatewayError {
 }
 
 impl GatewayError {
-    /// Only `Transient` and `RateLimited` are retried by the retry loop.
+    /// Only `Transient` and `RateLimited` are retried by the retry loop. A denial produced by
+    /// the local rate limiter (scope other than `Provider`) already waited as long as the
+    /// deadline allows, so it is not retried; it is fallback-eligible instead.
     pub fn is_retryable(&self) -> bool {
-        matches!(self, Self::Transient { .. } | Self::RateLimited { .. })
+        match self {
+            Self::Transient { .. } => true,
+            Self::RateLimited { scope, .. } => *scope == RateScope::Provider,
+            _ => false,
+        }
     }
 
     /// Whether the router may try the next candidate after this error (retries exhausted).

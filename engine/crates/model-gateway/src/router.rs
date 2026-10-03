@@ -18,6 +18,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::builder::{RouteQuery, RouteSource};
 use crate::error::{Error, GatewayError};
+use crate::ratelimit::ModelLimits;
 use crate::types::{ModelTier, PrivacyClass, ProviderId, RiskBand, RouteCandidate, RouteDecision};
 
 /// The default table (ADR-010 provisional defaults).
@@ -39,6 +40,9 @@ pub struct ProviderEntry {
     /// Operator attestation of a zero-retention agreement. Defaults to false.
     #[serde(default)]
     pub zero_retention: bool,
+    /// Account rate limits per model id (GW-007). A model without an entry is not limited.
+    #[serde(default)]
+    pub limits: BTreeMap<String, ModelLimits>,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
@@ -197,7 +201,7 @@ impl RoutingTable {
     ) -> Result<Self, Error> {
         let canonical = serde_json::json!({
             "providers": providers.iter().map(|(k, v)| serde_json::json!({
-                "name": k, "kind": v.kind, "self_hosted": v.self_hosted, "zero_retention": v.zero_retention,
+                "name": k, "kind": v.kind, "self_hosted": v.self_hosted, "zero_retention": v.zero_retention, "limits": v.limits,
             })).collect::<Vec<_>>(),
             "rows": rows.iter().map(|((t, b, p), c)| serde_json::json!({
                 "tier": t, "risk_band": b, "privacy": p, "candidates": c,
@@ -418,5 +422,12 @@ impl RouteSource for TableRouter {
     fn permits(&self, provider: &ProviderId, privacy: PrivacyClass) -> bool {
         let table = self.table.load();
         table.provider_permits(provider.as_str(), privacy.max(table.privacy_floor))
+    }
+
+    fn limits(&self, provider: &ProviderId, model: &str) -> Option<ModelLimits> {
+        self.table
+            .load()
+            .provider(provider.as_str())
+            .and_then(|p| p.limits.get(model).copied())
     }
 }

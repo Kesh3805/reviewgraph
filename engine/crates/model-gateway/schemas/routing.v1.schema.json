@@ -51,6 +51,32 @@
       ],
       "type": "object"
     },
+    "ModelLimits": {
+      "description": "Per-model account limits from `routing.yaml` (`providers.<p>.limits`).",
+      "properties": {
+        "input_tpm": {
+          "format": "uint32",
+          "minimum": 0.0,
+          "type": "integer"
+        },
+        "output_tpm": {
+          "format": "uint32",
+          "minimum": 0.0,
+          "type": "integer"
+        },
+        "rpm": {
+          "format": "uint32",
+          "minimum": 0.0,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "input_tpm",
+        "output_tpm",
+        "rpm"
+      ],
+      "type": "object"
+    },
     "ModelTier": {
       "description": "Capability tier a caller asks for. Callers never name a model (ADR-010).",
       "enum": [
@@ -74,6 +100,14 @@
       "properties": {
         "kind": {
           "$ref": "#/definitions/ProviderKind"
+        },
+        "limits": {
+          "additionalProperties": {
+            "$ref": "#/definitions/ModelLimits"
+          },
+          "default": {},
+          "description": "Account rate limits per model id (GW-007). A model without an entry is not limited.",
+          "type": "object"
         },
         "self_hosted": {
           "default": false,

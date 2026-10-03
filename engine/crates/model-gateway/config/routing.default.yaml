@@ -48,3 +48,14 @@ deep_reasoner:
   min_risk_band: critical
   min_remaining_budget_fraction: 0.4
   downgrade_to: review_reasoner
+# Account rate limits are operator-set to match the provider account tier (GW-007). Example:
+#
+# providers:
+#   anthropic:
+#     kind: anthropic
+#     limits:
+#       claude-sonnet-5-5: { rpm: 1000, input_tpm: 400000, output_tpm: 80000 }
+#
+# A model without an entry is not rate limited by the gateway (provider 429s are still handled).
+# Buckets live in Redis (REDIS_URL) so all workers share them; if Redis is unreachable the
+# gateway falls back to local buckets sized capacity / RG_WORKER_COUNT_HINT (default 4).

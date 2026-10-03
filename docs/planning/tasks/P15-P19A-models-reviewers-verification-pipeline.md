@@ -683,7 +683,8 @@ pub fn route(table: &RoutingTable, registered: &HashSet<ProviderId>, q: &RouteQu
 ---
 
 ### GW-007 — Rate limiting (Redis token bucket per provider) and call budgets
-Status: ☐
+Status: ☑
+> **Implementation note:** The in-process limiter is a small tokio-time token bucket (`ratelimit::local`) instead of `governor`, so it runs under a paused clock in unit tests. The limiter logic (`TokenBucketLimiter`) is separate from the bucket store; the Redis store (feature `redis`, two Lua scripts: take and capped refund) and `FallbackStore` (50 ms timeout, 30 s circuit, local buckets scaled by `RG_WORKER_COUNT_HINT`) plug into it, and `limiter_from_lookup` builds the production limiter from `REDIS_URL`. A limiter denial (`RateLimited` with a scope other than `Provider`) is fallback-eligible but not retried by the retry loop (it already waited up to the deadline). Limits come from `providers.<p>.limits` in `routing.yaml` through `RouteSource::limits`; the limiter is acquired inside every attempt and reconciled with the actual usage. The cost pre-check uses the `WorstCasePricer` trait, which the GW-008 price table implements (so without a pricer only token budgets are enforced). `llm_ratelimit_*` metrics are emitted by GW-010 (`FallbackStore::degraded_total` exposes the degraded count). Redis tests are `tests/ratelimit_redis.rs` behind `--features integration` and passed against the local Redis (`two_gateways_share_one_bucket` uses four connections for 3 s rather than four gateway instances for 10 s).
 
 **Task ID:** GW-007
 

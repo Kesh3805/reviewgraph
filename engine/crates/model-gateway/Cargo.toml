@@ -12,6 +12,10 @@ workspace = true
 [features]
 # FakeGateway and other helpers for unit tests in `reviewers` and `verification`.
 testing = []
+# Redis-backed rate limiting (needs a Redis server only at run time).
+redis = ["dep:redis"]
+# Tests that need Redis (REDIS_URL, default redis://host.docker.internal:26379).
+integration = ["redis"]
 
 [dependencies]
 review-core.workspace = true
@@ -26,6 +30,7 @@ tokio-util.workspace = true
 async-trait = "0.1"
 serde_jcs = "0.2"
 arc-swap = "1"
+redis = { version = "1", optional = true, default-features = false, features = ["tokio-comp", "connection-manager", "script"] }
 serde_yaml.workspace = true
 jsonschema = { version = "0.58", default-features = false }
 dashmap = "6"
