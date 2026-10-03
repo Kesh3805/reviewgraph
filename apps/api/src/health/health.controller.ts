@@ -1,7 +1,9 @@
 import { Controller, Get, HttpException, HttpStatus, Res } from '@nestjs/common';
 import type { Response } from 'express';
+import { Public } from '../auth/public.decorator';
 import { HealthService, type ReadyReport } from './health.service';
 
+@Public()
 @Controller('health')
 export class HealthController {
   constructor(private readonly health: HealthService) {}
@@ -24,6 +26,7 @@ export class HealthController {
 }
 
 /** Unprefixed `GET /health` alias of liveness for simple probes and local use. */
+@Public()
 @Controller()
 export class HealthAliasController {
   constructor(private readonly health: HealthService) {}

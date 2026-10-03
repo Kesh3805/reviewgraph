@@ -6,6 +6,7 @@ import { Redis } from 'ioredis';
 import { createServer, type Server, type Socket } from 'node:net';
 import { Client } from 'pg';
 import { AppModule } from '../../src/app.module';
+import { Public } from '../../src/auth/public.decorator';
 import { configureApp } from '../../src/app.setup';
 import { TracerService } from '../../src/telemetry/tracer.service';
 import { PARENT_SPAN_ID, TRACE_ID } from './constants';
@@ -78,6 +79,7 @@ function fakeRedis(): Promise<Server> {
 
 const ports = { pg: 0, redis: 0 };
 
+@Public()
 @Controller('things')
 class ThingsController {
   constructor(private readonly tracer: TracerService) {}

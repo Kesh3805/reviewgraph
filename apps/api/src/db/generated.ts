@@ -190,7 +190,17 @@ export interface ReviewRuns {
   updated_at: Generated<Timestamp>;
 }
 
+export interface Sessions {
+  created_at: Generated<Timestamp>;
+  expires_at: Timestamp;
+  id: Generated<string>;
+  revoked_at: Timestamp | null;
+  user_agent_hash: string | null;
+  user_id: string;
+}
+
 export interface Users {
+  avatar_url: string | null;
   created_at: Generated<Timestamp>;
   display_name: string | null;
   email: string | null;
@@ -246,6 +256,7 @@ export interface DB {
   repositories: Repositories;
   review_runs: ReviewRuns;
   reviewer_runs: ReviewerRuns;
+  sessions: Sessions;
   users: Users;
   verified_findings: VerifiedFindings;
   webhook_deliveries: WebhookDeliveries;

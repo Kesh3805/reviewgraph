@@ -5,7 +5,13 @@ import { MembershipService } from '../../src/tenancy/membership.service';
 import type { MembershipRole } from '../../src/tenancy/request-context';
 import { satisfies } from '../../src/tenancy/roles.decorator';
 import { createTestApp } from '../helpers';
-import { installTestAuth, TenancyProbeController } from '../helpers/tenancy-probe';
+import { SessionService } from '../../src/auth/session.service';
+import {
+  asUser,
+  CSRF_HEADERS,
+  TenancyProbeController,
+  testSessions,
+} from '../helpers/tenancy-probe';
 
 const USER = '0190f3a2-0000-7000-8000-0000000000aa';
 const OWN_REPO = '0190f3a2-0000-7000-8000-0000000000b1';
@@ -19,14 +25,17 @@ describe('TenancyGuard (unit, fake lookups)', () => {
   beforeAll(async () => {
     app = await createTestApp(undefined, [TenancyProbeController], {
       configure: (builder) =>
-        builder.overrideProvider(MembershipService).useValue({
-          resolveOrg: (_kind: string, id: string) =>
-            Promise.resolve(id === OWN_REPO ? ORG : id === FOREIGN_REPO ? 'other-org' : null),
-          roleOf: (_user: string, org: string) => Promise.resolve(org === ORG ? role : null),
-          listForUser: () => Promise.resolve([{ organizationId: ORG, role: 'viewer' }]),
-        }),
+        builder
+          .overrideProvider(SessionService)
+          .useValue(testSessions)
+          .overrideProvider(MembershipService)
+          .useValue({
+            resolveOrg: (_kind: string, id: string) =>
+              Promise.resolve(id === OWN_REPO ? ORG : id === FOREIGN_REPO ? 'other-org' : null),
+            roleOf: (_user: string, org: string) => Promise.resolve(org === ORG ? role : null),
+            listForUser: () => Promise.resolve([{ organizationId: ORG, role: 'viewer' }]),
+          }),
     });
-    installTestAuth(app);
     await app.init();
   });
 
@@ -38,7 +47,7 @@ describe('TenancyGuard (unit, fake lookups)', () => {
 
   const get = (path: string, user: string | undefined = USER) => {
     const req = request(app.getHttpServer()).get(`/api/v1/probe/repos${path}`);
-    return user ? req.set('x-test-user', user) : req;
+    return user ? req.set('cookie', asUser(user)) : req;
   };
 
   it('guard_404_for_foreign_repo', async () => {
@@ -55,7 +64,8 @@ describe('TenancyGuard (unit, fake lookups)', () => {
     const patch = () =>
       request(app.getHttpServer())
         .patch(`/api/v1/probe/repos/${OWN_REPO}`)
-        .set('x-test-user', USER);
+        .set('cookie', asUser(USER))
+        .set(CSRF_HEADERS);
     await patch().expect(403);
     expect(counterTotal('tenancy_denied_total', { reason: 'role' })).toBe(1);
     role = 'member';

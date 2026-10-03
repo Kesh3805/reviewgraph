@@ -73,6 +73,10 @@ const baseShape = {
   GITHUB_CLIENT_ID: nonEmpty.optional(),
   GITHUB_CLIENT_SECRET: nonEmpty.optional(),
   GITHUB_API_URL: url(['http:', 'https:']).default('https://api.github.com'),
+  /** Where the OAuth web flow lives (authorize and token endpoints); tests point it at the fake. */
+  GITHUB_OAUTH_URL: url(['http:', 'https:']).default('https://github.com'),
+  /** Optional explicit OAuth redirect_uri; otherwise GitHub uses the callback configured on the App. */
+  GITHUB_OAUTH_REDIRECT_URI: url(['http:', 'https:']).optional(),
   ...telemetryEnvShape,
 };
 

@@ -1,8 +1,6 @@
 import { Controller, Get, Patch } from '@nestjs/common';
-import type { NestExpressApplication } from '@nestjs/platform-express';
-import type { NextFunction, Response } from 'express';
 import { RequireRole } from '../../src/tenancy/roles.decorator';
-import { Tenant, type RequestTenant, type TenantRequest } from '../../src/tenancy/request-context';
+import { Tenant, type RequestTenant } from '../../src/tenancy/request-context';
 
 /** Probe routes: a viewer route and a maintainer route, both scoped by `:repoId`. */
 @Controller('probe/repos')
@@ -26,11 +24,18 @@ export class TenancyProbeController {
   }
 }
 
-/** Stands in for the SessionGuard: `x-test-user` becomes the authenticated user. */
-export function installTestAuth(app: NestExpressApplication): void {
-  app.use((req: TenantRequest, _res: Response, next: NextFunction) => {
-    const userId = req.headers['x-test-user'];
-    if (typeof userId === 'string') req.rgUser = { userId, sessionId: 'test-session' };
-    next();
-  });
-}
+/**
+ * Stands in for SessionService: the cookie `rg_session=test:<userId>` authenticates that user.
+ * The real session, CSRF and tenancy guards stay in place, so their ordering is exercised too.
+ */
+export const testSessions = {
+  verify: (token: string) =>
+    Promise.resolve(
+      token.startsWith('test:') ? { userId: token.slice(5), sessionId: 'test-session' } : null,
+    ),
+};
+
+export const asUser = (userId: string): string => `rg_session=test:${userId}; rg_csrf=csrf`;
+
+/** Headers that satisfy the CSRF guard for a mutation. */
+export const CSRF_HEADERS = { origin: 'http://localhost:3000', 'x-csrf-token': 'csrf' };

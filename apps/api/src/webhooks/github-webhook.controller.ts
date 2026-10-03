@@ -13,6 +13,7 @@ import {
 } from '@nestjs/common';
 import { SpanStatusCode, trace } from '@opentelemetry/api';
 import type { Request, Response } from 'express';
+import { Public } from '../auth/public.decorator';
 import { incCounter } from '../common/metrics';
 import { APP_CONFIG, type AppConfig } from '../config/config.module';
 import { isIgnored } from '../providers/ports';
@@ -48,6 +49,7 @@ export interface WebhookAck {
  * delivery, normalize, hand off, and answer 202 without waiting for review work.
  * Nothing from the payload is logged: only event, action, delivery id and installation id.
  */
+@Public()
 @Controller('webhooks')
 export class GithubWebhookController {
   private readonly logger = new Logger(GithubWebhookController.name);

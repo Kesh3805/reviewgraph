@@ -4,6 +4,7 @@ import { ShutdownService } from './common/shutdown.service';
 import { requestIdMiddleware } from './common/request-id.middleware';
 import { RedisModule } from './common/redis.module';
 import { DbModule } from './db/db.module';
+import { AuthModule } from './auth/auth.module';
 import { TenancyModule } from './tenancy/tenancy.module';
 import { InternalModule } from './internal/internal.module';
 import { HealthModule } from './health/health.module';
@@ -18,6 +19,7 @@ import { TelemetryModule } from './telemetry/telemetry.module';
     TelemetryModule,
     RedisModule,
     DbModule,
+    AuthModule,
     TenancyModule,
     InternalModule,
     ProvidersModule,

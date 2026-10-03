@@ -1,3 +1,4 @@
+import { Public } from '../src/auth/public.decorator';
 import { Controller, Get, type INestApplication, type Type } from '@nestjs/common';
 import type { NestExpressApplication } from '@nestjs/platform-express';
 import { Test, type TestingModuleBuilder } from '@nestjs/testing';
@@ -61,6 +62,7 @@ export async function createTestApp(
   return app;
 }
 
+@Public()
 @Controller('slow')
 export class SlowController {
   @Get()

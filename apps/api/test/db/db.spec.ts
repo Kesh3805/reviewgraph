@@ -6,9 +6,11 @@ import request from 'supertest';
 import { DbService, PG_POOL } from '../../src/db/db.module';
 import { isDbUnavailable } from '../../src/db/errors';
 import { createKysely, createPool } from '../../src/db/kysely.provider';
+import { Public } from '../../src/auth/public.decorator';
 import { createTestApp } from '../helpers';
 
 @Controller('db-probe')
+@Public()
 class DbProbeController {
   constructor(private readonly dbs: DbService) {}
 

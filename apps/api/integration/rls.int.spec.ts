@@ -4,7 +4,13 @@ import request from 'supertest';
 import { createKysely, createPool } from '../src/db/kysely.provider';
 import { runInTx } from '../src/db/tx';
 import { createTestApp } from '../test/helpers';
-import { installTestAuth, TenancyProbeController } from '../test/helpers/tenancy-probe';
+import { SessionService } from '../src/auth/session.service';
+import {
+  asUser,
+  CSRF_HEADERS,
+  TenancyProbeController,
+  testSessions,
+} from '../test/helpers/tenancy-probe';
 import { addMember, adminDb, cleanup, seedOrg, seedUser, type SeededOrg } from './seed';
 
 const ROLE = { role: 'rg_api' };
@@ -195,8 +201,8 @@ describe('row level security (integration)', () => {
       await addMember(admin, a.organizationId, member, 'member');
       app = await createTestApp(undefined, [TenancyProbeController], {
         env: { DATABASE_URL: process.env.RG_TEST_DATABASE_URL!, DB_APP_ROLE: 'rg_api' },
+        configure: (builder) => builder.overrideProvider(SessionService).useValue(testSessions),
       });
-      installTestAuth(app);
       await app.init();
     });
 
@@ -205,8 +211,14 @@ describe('row level security (integration)', () => {
       await cleanup(admin, [], [viewer, member, outsider]);
     });
 
-    const call = (method: 'get' | 'patch', repo: string, user: string) =>
-      request(app.getHttpServer())[method](`/api/v1/probe/repos/${repo}`).set('x-test-user', user);
+    const call = (method: 'get' | 'patch', repo: string, user: string) => {
+      const agent = request(app.getHttpServer());
+      const send = method === 'get' ? agent.get : agent.patch;
+      return send
+        .call(agent, `/api/v1/probe/repos/${repo}`)
+        .set('cookie', asUser(user))
+        .set(CSRF_HEADERS);
+    };
 
     it('guard_404_for_foreign_repo', async () => {
       await call('get', b.repositoryIds[0]!, viewer).expect(404);
