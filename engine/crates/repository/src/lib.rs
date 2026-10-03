@@ -27,6 +27,7 @@ pub mod read;
 pub mod remote_url;
 pub mod review_dir;
 pub mod sensitive;
+pub mod store;
 pub mod tooling;
 pub mod tsconfig;
 pub mod walk;

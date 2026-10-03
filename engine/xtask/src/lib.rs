@@ -18,7 +18,13 @@ pub const ALLOWED: &[(&str, &[&str])] = &[
     ("codegraph", &["review-core", "analysis-ir", "telemetry"]),
     (
         "graph-storage",
-        &["review-core", "analysis-ir", "codegraph", "telemetry"],
+        &[
+            "review-core",
+            "analysis-ir",
+            "codegraph",
+            "repository",
+            "telemetry",
+        ],
     ),
     (
         "incremental",

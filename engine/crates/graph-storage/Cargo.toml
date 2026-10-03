@@ -9,6 +9,21 @@ publish.workspace = true
 [lints]
 workspace = true
 
+[features]
+# Database-backed tests; need TEST_DATABASE_URL (or DATABASE_URL) pointing at a Postgres server
+# whose user may CREATE DATABASE. Plain `cargo test` never touches a database.
+integration = []
+
 [dependencies]
 review-core.workspace = true
+repository.workspace = true
 thiserror.workspace = true
+sqlx.workspace = true
+tokio.workspace = true
+tracing.workspace = true
+serde_json.workspace = true
+chrono.workspace = true
+uuid.workspace = true
+
+[dev-dependencies]
+repository = { workspace = true, features = ["test-support"] }

@@ -5,6 +5,7 @@
 
 use std::collections::BTreeMap;
 
+use review_core::ids::CommitSha;
 use review_core::language::Language;
 use review_core::location::RepoPath;
 use schemars::JsonSchema;
@@ -216,6 +217,59 @@ impl RepositoryFacts {
         if self.warnings.len() > MAX_WARNINGS {
             self.warnings_truncated = (self.warnings.len() - MAX_WARNINGS) as u64;
             self.warnings.truncate(MAX_WARNINGS);
+        }
+    }
+}
+
+impl RepositoryFacts {
+    /// Facts with every detector list empty, for a repository at `commit`. Used by stores'
+    /// conformance checks and by tests that need valid facts without running init.
+    pub fn skeleton(root_name: &str, commit: &CommitSha, detected_at: &str) -> Self {
+        use crate::git::{DefaultBranchSource, DirtyState, HeadState};
+        Self {
+            schema_version: REPOSITORY_FACTS_SCHEMA,
+            tool_version: env!("CARGO_PKG_VERSION").to_owned(),
+            detected_at: detected_at.to_owned(),
+            root_name: root_name.to_owned(),
+            git: Some(GitState {
+                head: HeadState::Commit {
+                    sha: commit.clone(),
+                    branch: Some("main".to_owned()),
+                },
+                remotes: Vec::new(),
+                default_branch: Some("main".to_owned()),
+                default_branch_source: DefaultBranchSource::WellKnownName,
+                dirty: DirtyState::default(),
+                is_shallow: false,
+                is_linked_worktree: false,
+                submodules: Vec::new(),
+                lfs_patterns: Vec::new(),
+            }),
+            inventory: InventorySummary::default(),
+            languages: Vec::new(),
+            primary_language: None,
+            package_managers: Vec::new(),
+            manifests: Vec::new(),
+            build_systems: Vec::new(),
+            workspaces: WorkspaceLayout::default(),
+            frameworks: Vec::new(),
+            auth: AuthFacts::default(),
+            layout: LayoutFacts::default(),
+            tsconfigs: Vec::new(),
+            tooling: ToolingFacts::default(),
+            generated: GeneratedSummary::default(),
+            entrypoints: Vec::new(),
+            migrations: Vec::new(),
+            schema_files: Vec::new(),
+            infra: Vec::new(),
+            env_files: Vec::new(),
+            sensitive_files: Vec::new(),
+            docs: DocsFacts::default(),
+            api_routes: DeferredToIndex::default(),
+            fingerprint: None,
+            facts_hash: String::new(),
+            warnings: Vec::new(),
+            warnings_truncated: 0,
         }
     }
 }

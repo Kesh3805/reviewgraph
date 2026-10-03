@@ -1264,7 +1264,9 @@ Status: â
 
 ### INIT-013 — Persist init facts to PostgreSQL via a RepositoryFactsStore port
 
-Status: ☐
+Status: â
+
+> **Implementation note:** repositories.default_branch already exists from DOM-009 (NOT NULL), so the migration adds only latest_init_facts_id, primary_language and initialized_at and updates default_branch with COALESCE; the new table is a tenant table with the same ENABLE/FORCE RLS + tenant_isolation policy as API-003 and a composite (repository_id, organization_id) foreign key. The migration is 20261003000001 so it sorts after the concurrently added users/sessions migration. Queries use bound sqlx::query() calls rather than sqlx::query! macros because the repo has no offline .sqlx data and plain cargo test must build without a database. The port uses native async-fn-in-trait with Send futures (no async_trait). The xtask ALLOWED table gained graph-storage -> repository, which the task spec requires and which cannot form a cycle (repository depends only on review-core and telemetry). The conformance suite is exported by repository under the test-support feature and runs against both adapters; PG tests are behind graph-storage feature integration (TEST_DATABASE_URL).
 
 - **Task ID:** INIT-013
 - **Title:** Persist init facts to PostgreSQL (repository_init_facts table / repositories columns) via a RepositoryFactsStore port

@@ -26,13 +26,20 @@ tempfile.workspace = true
 chrono.workspace = true
 blake3.workspace = true
 hex.workspace = true
+uuid.workspace = true
 ignore.workspace = true
 globset.workspace = true
 rayon.workspace = true
 gix = { workspace = true, features = ["max-performance-safe", "status", "revision", "excludes", "attributes", "sha1", "dirwalk"] }
 
+[features]
+# Exposes the store conformance suite to adapter crates.
+test-support = []
+
 [dev-dependencies]
 review-test-support.workspace = true
+repository = { path = ".", features = ["test-support"] }
+tokio.workspace = true
 insta.workspace = true
 proptest.workspace = true
 criterion.workspace = true
