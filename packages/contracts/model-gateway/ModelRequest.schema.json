@@ -65,12 +65,18 @@
           "format": "uint32",
           "minimum": 0.0,
           "type": "integer"
+        },
+        "remaining_fraction": {
+          "description": "Share of the run budget still unspent (1.0 = all); lets the router gate `deep_reasoner`.",
+          "format": "float",
+          "type": "number"
         }
       },
       "required": [
         "max_attempts",
         "max_input_tokens",
-        "max_output_tokens"
+        "max_output_tokens",
+        "remaining_fraction"
       ],
       "type": "object"
     },

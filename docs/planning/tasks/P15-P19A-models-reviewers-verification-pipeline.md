@@ -565,7 +565,8 @@ Status: ☑
 ---
 
 ### GW-006 — Router from routing.yaml
-Status: ☐
+Status: ☑
+> **Implementation note:** The default rows list all three privacy classes (`[standard, zero_retention_only, no_external]`), not just `[standard]`: row selection is by `privacy ∈ row.privacy`, so a `standard`-only row could never serve a zero-retention request. `no_external` still fails closed because no self-hosted provider is configured. Overrides are `RoutingFile` documents with an optional `privacy_floor` (the most restrictive layer wins, so a repository override cannot widen the organisation floor) and may not declare providers; an invalid override is ignored and returned in `MergeOutcome.rejected` (the `routing_override_invalid_total` metric is emitted by GW-010). `RouteSource::permits` is the second privacy assertion done in the gateway core before every send. `CallBudget` gained `remaining_fraction` (default 1.0) feeding `deep_reasoner` gating. Hot reload is `TableRouter::swap` (arc-swap). The routing JSON Schema is `schemas/routing.v1.schema.json`; the default table is `config/routing.default.yaml` (crate-local, embedded with `include_str!`). Router metrics and span attributes arrive in GW-010.
 
 **Task ID:** GW-006
 

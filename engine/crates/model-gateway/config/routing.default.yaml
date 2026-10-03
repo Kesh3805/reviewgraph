@@ -1,0 +1,50 @@
+# Default model routing (GW-006). Callers ask for a capability tier, never a model (ADR-010).
+# The provisional defaults below are ADR-010's table; EVAL-005 produces the evidence and a human
+# edits this file. Organisation and repository overrides use the same schema, replace whole
+# (tier, risk band, privacy) rows, and may only tighten `privacy_floor`.
+#
+# OpenAI candidates carry a `${ENV}` model placeholder: they are disabled until that variable is
+# set, and only routable when OPENAI_API_KEY is set too. To enable OpenAI, export
+# OPENAI_API_KEY and the OPENAI_*_MODEL variable for the tier (model ids are operator choices).
+#
+# `no_external` rows list no self-hosted provider, so that class fails closed with
+# NoEligibleProvider until an operator registers one.
+version: 1
+providers:
+  anthropic: { kind: anthropic, self_hosted: false, zero_retention: false }
+  openai: { kind: openai, self_hosted: false, zero_retention: false }
+routes:
+  - tier: classifier
+    risk_bands: [low, medium, high, critical]
+    privacy: [standard, zero_retention_only, no_external]
+    candidates:
+      - { provider: anthropic, model: claude-haiku-4-5, max_context: 200000 }
+      - { provider: openai, model: "${OPENAI_CLASSIFIER_MODEL}", max_context: 128000, enabled_if_set: true }
+  - tier: fast_reasoner
+    risk_bands: [low, medium, high, critical]
+    privacy: [standard, zero_retention_only, no_external]
+    candidates:
+      - { provider: anthropic, model: claude-haiku-4-5, max_context: 200000 }
+      - { provider: openai, model: "${OPENAI_FAST_MODEL}", max_context: 128000, enabled_if_set: true }
+  - tier: review_reasoner
+    risk_bands: [low, medium, high, critical]
+    privacy: [standard, zero_retention_only, no_external]
+    candidates:
+      - { provider: anthropic, model: claude-sonnet-5-5, max_context: 200000 }
+      - { provider: openai, model: "${OPENAI_REVIEW_MODEL}", max_context: 128000, enabled_if_set: true }
+  - tier: verifier
+    risk_bands: [low, medium, high, critical]
+    privacy: [standard, zero_retention_only, no_external]
+    candidates:
+      - { provider: anthropic, model: claude-sonnet-5-5, max_context: 200000 }
+      - { provider: openai, model: "${OPENAI_VERIFIER_MODEL}", max_context: 128000, enabled_if_set: true }
+  - tier: deep_reasoner
+    risk_bands: [critical]
+    privacy: [standard, zero_retention_only, no_external]
+    candidates:
+      - { provider: anthropic, model: claude-opus-5-5, max_context: 200000 }
+      - { provider: openai, model: "${OPENAI_DEEP_MODEL}", max_context: 128000, enabled_if_set: true }
+deep_reasoner:
+  min_risk_band: critical
+  min_remaining_budget_fraction: 0.4
+  downgrade_to: review_reasoner

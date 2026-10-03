@@ -14,8 +14,8 @@ use crate::error::{BudgetKind, Error, GatewayError, PermanentKind};
 use crate::request_hash::request_hash;
 use crate::retry::{retry, RetryPolicy};
 use crate::types::{
-    ModelRequest, ModelResponse, ModelTier, PrivacyClass, ProviderId, RiskBand, RouteCandidate,
-    RouteDecision,
+    AttemptedCandidate, ModelRequest, ModelResponse, ModelTier, PrivacyClass, ProviderId, RiskBand,
+    RouteCandidate, RouteDecision,
 };
 
 /// Upper bound for one provider HTTP attempt.
@@ -51,6 +51,12 @@ pub trait RouteSource: Send + Sync {
         registered: &HashSet<ProviderId>,
         query: &RouteQuery,
     ) -> Result<RouteDecision, GatewayError>;
+
+    /// Whether `provider` may receive a request of this privacy class. The gateway asserts it
+    /// again right before every send (defence in depth).
+    fn permits(&self, _provider: &ProviderId, _privacy: PrivacyClass) -> bool {
+        true
+    }
 }
 
 /// A fixed tier-to-candidates map. Used by tests and by deployments without a routing table.
@@ -209,59 +215,96 @@ impl ModelGateway for Gateway {
             privacy: req.privacy,
             est_input_tokens: estimate_input_tokens(&req),
             max_output_tokens: req.max_output_tokens,
-            remaining_budget_fraction: 1.0,
+            remaining_budget_fraction: req.budget.remaining_fraction,
             schema_strict_ok: strict_ok,
         };
         let route = self.router.route(&registered, &query)?;
+        let mut route = route;
 
-        let candidate = route
-            .candidates
-            .first()
-            .ok_or(GatewayError::NoEligibleProvider {
-                tier: req.tier,
-                privacy: req.privacy,
-                reason: "router returned no candidates".into(),
-            })?;
-        let adapter =
-            self.adapters
-                .get(&candidate.provider)
-                .ok_or_else(|| GatewayError::Permanent {
+        let started = Instant::now();
+        let mut attempts_total: u8 = 0;
+        let mut last_err: Option<GatewayError> = None;
+        let candidates = route.candidates.clone();
+        let count = candidates.len();
+        for (rank, candidate) in candidates.iter().enumerate() {
+            // Defence in depth: the privacy filter is asserted again right before any send.
+            if !self.router.permits(&candidate.provider, req.privacy) {
+                last_err = Some(GatewayError::NoEligibleProvider {
+                    tier: req.tier,
+                    privacy: req.privacy,
+                    reason: format!(
+                        "provider {} is not permitted for this privacy class",
+                        candidate.provider
+                    ),
+                });
+                continue;
+            }
+            let Some(adapter) = self.adapters.get(&candidate.provider) else {
+                last_err = Some(GatewayError::Permanent {
                     kind: PermanentKind::Unknown,
                     provider: Some(candidate.provider.clone()),
                     detail: "provider not registered".into(),
-                })?;
-
-        let started = Instant::now();
-        let req_ref = &req;
-        let hash_ref = &hash;
-        let outcome = retry(&self.retry, &req.budget, &cancel, |_attempt| async move {
-            let remaining = req_ref
-                .budget
-                .deadline
-                .saturating_duration_since(Instant::now());
-            let provider_req = ProviderRequest {
-                request: req_ref,
-                candidate,
-                request_hash: hash_ref,
-                timeout: remaining.min(MAX_ATTEMPT_TIMEOUT),
+                });
+                continue;
             };
-            adapter.send(&provider_req).await
-        })
-        .await;
-        let attempts = outcome.attempts;
-        let resp = outcome.result?;
-        Ok(ModelResponse {
-            output: resp.output,
-            usage: resp.usage,
-            latency_ms: u32::try_from(started.elapsed().as_millis()).unwrap_or(u32::MAX),
-            provider: candidate.provider.clone(),
-            model: resp.model,
-            cost_usd_micros: None,
-            finish_reason: resp.finish_reason,
-            request_hash: hash,
-            route: route.clone(),
-            attempts,
-            served_from: resp.served_from,
-        })
+            let req_ref = &req;
+            let hash_ref = &hash;
+            let outcome = retry(&self.retry, &req.budget, &cancel, |_attempt| async move {
+                let remaining = req_ref
+                    .budget
+                    .deadline
+                    .saturating_duration_since(Instant::now());
+                let provider_req = ProviderRequest {
+                    request: req_ref,
+                    candidate,
+                    request_hash: hash_ref,
+                    timeout: remaining.min(MAX_ATTEMPT_TIMEOUT),
+                };
+                adapter.send(&provider_req).await
+            })
+            .await;
+            attempts_total = attempts_total.saturating_add(outcome.attempts);
+            match outcome.result {
+                Ok(resp) => {
+                    return Ok(ModelResponse {
+                        output: resp.output,
+                        usage: resp.usage,
+                        latency_ms: u32::try_from(started.elapsed().as_millis())
+                            .unwrap_or(u32::MAX),
+                        provider: candidate.provider.clone(),
+                        model: resp.model,
+                        cost_usd_micros: None,
+                        finish_reason: resp.finish_reason,
+                        request_hash: hash,
+                        route,
+                        attempts: attempts_total,
+                        served_from: resp.served_from,
+                    });
+                }
+                Err(e) => {
+                    let more = rank + 1 < count;
+                    if e.fallback_eligible() && more {
+                        tracing::warn!(
+                            from = %candidate.provider,
+                            reason = e.class(),
+                            "falling back to next candidate"
+                        );
+                        route.attempted.push(AttemptedCandidate {
+                            provider: candidate.provider.clone(),
+                            model: candidate.model.clone(),
+                            error_class: e.class().to_owned(),
+                        });
+                        last_err = Some(e);
+                        continue;
+                    }
+                    return Err(e);
+                }
+            }
+        }
+        Err(last_err.unwrap_or(GatewayError::NoEligibleProvider {
+            tier: req.tier,
+            privacy: req.privacy,
+            reason: "router returned no candidates".into(),
+        }))
     }
 }

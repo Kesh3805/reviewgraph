@@ -1906,8 +1906,15 @@ dependencies = [
 name = "graph-storage"
 version = "0.1.0"
 dependencies = [
+ "chrono",
+ "repository",
  "review-core",
+ "serde_json",
+ "sqlx",
  "thiserror",
+ "tokio",
+ "tracing",
+ "uuid",
 ]
 
 [[package]]
@@ -2637,6 +2644,7 @@ dependencies = [
 name = "model-gateway"
 version = "0.1.0"
 dependencies = [
+ "arc-swap",
  "async-trait",
  "blake3",
  "chrono",
@@ -2654,6 +2662,7 @@ dependencies = [
  "serde",
  "serde_jcs",
  "serde_json",
+ "serde_yaml",
  "telemetry",
  "tempfile",
  "thiserror",
@@ -3398,6 +3407,7 @@ dependencies = [
  "quick-xml",
  "rayon",
  "regex",
+ "repository",
  "review-core",
  "review-test-support",
  "schemars",
@@ -3407,8 +3417,10 @@ dependencies = [
  "serde_yaml",
  "tempfile",
  "thiserror",
+ "tokio",
  "toml",
  "tracing",
+ "uuid",
 ]
 
 [[package]]

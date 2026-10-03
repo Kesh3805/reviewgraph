@@ -110,7 +110,9 @@ pub enum CachePolicy {
     PromptAndResponse { ttl: Duration },
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize, JsonSchema)]
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize, JsonSchema,
+)]
 #[serde(rename_all = "snake_case")]
 pub enum PrivacyClass {
     Standard,
@@ -139,6 +141,8 @@ pub struct CallBudget {
     #[serde(skip)]
     #[schemars(skip)]
     pub deadline: Instant,
+    /// Share of the run budget still unspent (1.0 = all); lets the router gate `deep_reasoner`.
+    pub remaining_fraction: f32,
     pub max_attempts: u8,
 }
 
@@ -150,6 +154,7 @@ impl CallBudget {
             max_output_tokens: 16_000,
             max_cost_usd_micros: None,
             deadline: Instant::now() + timeout,
+            remaining_fraction: 1.0,
             max_attempts: 3,
         }
     }

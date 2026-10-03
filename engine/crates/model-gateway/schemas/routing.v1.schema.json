@@ -1,0 +1,194 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "CandidateSpec": {
+      "properties": {
+        "enabled_if_set": {
+          "default": false,
+          "type": "boolean"
+        },
+        "max_context": {
+          "format": "uint32",
+          "minimum": 0.0,
+          "type": "integer"
+        },
+        "model": {
+          "description": "Model id, or a `${ENV_VAR}` placeholder resolved at load time.",
+          "type": "string"
+        },
+        "provider": {
+          "type": "string"
+        },
+        "supports_reasoning": {
+          "default": false,
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "max_context",
+        "model",
+        "provider"
+      ],
+      "type": "object"
+    },
+    "DeepReasonerPolicy": {
+      "properties": {
+        "downgrade_to": {
+          "$ref": "#/definitions/ModelTier"
+        },
+        "min_remaining_budget_fraction": {
+          "format": "float",
+          "type": "number"
+        },
+        "min_risk_band": {
+          "$ref": "#/definitions/RiskBand"
+        }
+      },
+      "required": [
+        "downgrade_to",
+        "min_remaining_budget_fraction",
+        "min_risk_band"
+      ],
+      "type": "object"
+    },
+    "ModelTier": {
+      "description": "Capability tier a caller asks for. Callers never name a model (ADR-010).",
+      "enum": [
+        "classifier",
+        "fast_reasoner",
+        "review_reasoner",
+        "verifier",
+        "deep_reasoner"
+      ],
+      "type": "string"
+    },
+    "PrivacyClass": {
+      "enum": [
+        "standard",
+        "zero_retention_only",
+        "no_external"
+      ],
+      "type": "string"
+    },
+    "ProviderEntry": {
+      "properties": {
+        "kind": {
+          "$ref": "#/definitions/ProviderKind"
+        },
+        "self_hosted": {
+          "default": false,
+          "description": "Runs inside the operator's own boundary; the only kind `no_external` may use.",
+          "type": "boolean"
+        },
+        "zero_retention": {
+          "default": false,
+          "description": "Operator attestation of a zero-retention agreement. Defaults to false.",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "kind"
+      ],
+      "type": "object"
+    },
+    "ProviderKind": {
+      "enum": [
+        "anthropic",
+        "openai"
+      ],
+      "type": "string"
+    },
+    "RiskBand": {
+      "description": "Risk band of the change under review (RISK-001 will own the canonical type).",
+      "enum": [
+        "low",
+        "medium",
+        "high",
+        "critical"
+      ],
+      "type": "string"
+    },
+    "RouteRow": {
+      "properties": {
+        "candidates": {
+          "items": {
+            "$ref": "#/definitions/CandidateSpec"
+          },
+          "type": "array"
+        },
+        "privacy": {
+          "items": {
+            "$ref": "#/definitions/PrivacyClass"
+          },
+          "type": "array"
+        },
+        "risk_bands": {
+          "items": {
+            "$ref": "#/definitions/RiskBand"
+          },
+          "type": "array"
+        },
+        "tier": {
+          "$ref": "#/definitions/ModelTier"
+        }
+      },
+      "required": [
+        "candidates",
+        "privacy",
+        "risk_bands",
+        "tier"
+      ],
+      "type": "object"
+    }
+  },
+  "description": "The `routing.yaml` document. Overrides use the same schema (providers must stay empty).",
+  "properties": {
+    "deep_reasoner": {
+      "anyOf": [
+        {
+          "$ref": "#/definitions/DeepReasonerPolicy"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "privacy_floor": {
+      "anyOf": [
+        {
+          "$ref": "#/definitions/PrivacyClass"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Minimum privacy class applied to every request routed with this table."
+    },
+    "providers": {
+      "additionalProperties": {
+        "$ref": "#/definitions/ProviderEntry"
+      },
+      "default": {},
+      "type": "object"
+    },
+    "routes": {
+      "default": [],
+      "items": {
+        "$ref": "#/definitions/RouteRow"
+      },
+      "type": "array"
+    },
+    "version": {
+      "format": "uint32",
+      "minimum": 0.0,
+      "type": "integer"
+    }
+  },
+  "required": [
+    "version"
+  ],
+  "title": "RoutingFile",
+  "type": "object"
+}

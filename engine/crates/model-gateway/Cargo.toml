@@ -25,6 +25,8 @@ tokio.workspace = true
 tokio-util.workspace = true
 async-trait = "0.1"
 serde_jcs = "0.2"
+arc-swap = "1"
+serde_yaml.workspace = true
 jsonschema = { version = "0.58", default-features = false }
 dashmap = "6"
 uuid.workspace = true
@@ -49,4 +51,8 @@ harness = false
 
 [[bench]]
 name = "replay_lookup"
+harness = false
+
+[[bench]]
+name = "router_route"
 harness = false
