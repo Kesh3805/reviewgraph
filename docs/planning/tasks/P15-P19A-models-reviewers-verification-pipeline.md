@@ -384,7 +384,8 @@ Status: ☑
 ---
 
 ### GW-004 — OpenAI adapter
-Status: ☐
+Status: ☑
+> **Implementation note:** The adapter itself refuses a non-strict schema before any I/O (`Permanent(UnsupportedParameter)`, fallback-eligible), and the gateway core excludes `openai` from `RouteQuery.schema_strict_ok` for such schemas so the GW-006 router can skip it. The workspace test `reviewer_and_verifier_schemas_are_strict_compatible` and the `routing.yaml` OpenAI documentation cannot exist yet (no reviewer/verifier schemas, no routing file); they are covered by REV-001/VER-008 and GW-006 respectively. A refusal or truncated response without a message item is returned as `Ok` with the matching `FinishReason`.
 
 **Task ID:** GW-004
 

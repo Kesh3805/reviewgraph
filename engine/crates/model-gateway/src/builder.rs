@@ -197,6 +197,12 @@ impl ModelGateway for Gateway {
         }
         let hash = request_hash(&req);
         let registered: HashSet<ProviderId> = self.adapters.keys().cloned().collect();
+        let mut strict_ok = registered.clone();
+        if let Some(schema) = &req.output_schema {
+            if crate::schema_strict::check_strict_compatible(&schema.schema).is_err() {
+                strict_ok.remove(&ProviderId::new(ProviderId::OPENAI));
+            }
+        }
         let query = RouteQuery {
             tier: req.tier,
             risk_band: req.risk_band,
@@ -204,7 +210,7 @@ impl ModelGateway for Gateway {
             est_input_tokens: estimate_input_tokens(&req),
             max_output_tokens: req.max_output_tokens,
             remaining_budget_fraction: 1.0,
-            schema_strict_ok: registered.clone(),
+            schema_strict_ok: strict_ok,
         };
         let route = self.router.route(&registered, &query)?;
 
