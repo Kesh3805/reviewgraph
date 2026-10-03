@@ -5,12 +5,14 @@
 
 pub mod build_systems;
 pub mod codeowners;
+pub mod config_hash;
 pub mod dirs;
 pub mod docs_meta;
 pub mod entrypoints;
 pub mod env_files;
 pub mod error;
 pub mod facts;
+pub mod fingerprint;
 pub mod frameworks;
 pub mod generated;
 pub mod git;

@@ -32,6 +32,8 @@ fingerprint = blake3(repository_id ‖ commit_sha ‖ analyzer_versions ‖ grap
 ```
 This is the cache-validity key of a snapshot.
 
+**Exact encoding (INIT-012, `repository::fingerprint`).** The hash starts with the domain `rg.fp.v1\0`. Each field is then written as `tag: u8`, `len: u64 little-endian`, `bytes`, so different inputs can never concatenate to the same byte stream. Tags, in this order: `1` repository id (`hosted:<uuid>` or `local:<32 hex>`), `2` commit (`clean:<sha>`, `dirty:<sha>:<worktree hash hex>` or `nogit:<tree hash hex>`), `3` analyzer versions (`<language id>=<semver>\n` lines sorted by language id), `4` graph schema version (u32 LE), `5` config hash (32 bytes), `6` parser versions (`<name>=<version>\n` lines sorted by name), `7` profile version (u32 LE). The textual form is `fp1:` plus 64 lowercase hex characters. The worktree hash of a dirty tree covers every staged, unstaged and untracked path with `blake3(content)`, `deleted`, or, for sensitive files, only the size, so the fingerprint is never an oracle for secret values. `config_hash` covers the canonical JSON of `.review/config.yaml`, the effective (post-`extends`) options of every tsconfig, every `.reviewignore` and the workspace definition sources. A golden test vector pins the encoding.
+
 ### Snapshot kinds
 - `full`: written on the initial index and when compacting the default branch.
 - `delta`: written for PR heads and for default-branch updates.

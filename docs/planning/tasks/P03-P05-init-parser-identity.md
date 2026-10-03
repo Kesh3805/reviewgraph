@@ -1191,7 +1191,9 @@ Status: â
 
 ### INIT-012 — Repository fingerprint (ADR-015)
 
-Status: ☐
+Status: â
+
+> **Implementation note:** RepositoryId in review-core is a UUID without a Local variant, so the fingerprint uses repository::fingerprint::RepoIdentity { Hosted(RepositoryId), Local(hex) }. The fingerprint is filled by init through the optional InitOptions.fingerprint (FingerprintParams) rather than by a separate caller step; it is excluded from facts_hash. DirtyState gained a runtime-only all_paths list (never serialized) for the worktree hash. The PARSER_VERSIONS constant and its Cargo.lock consistency test belong to lang-typescript and are added with TSA-002, when the crate first depends on tree-sitter. ADR-015 now documents the exact encoding.
 
 - **Task ID:** INIT-012
 - **Title:** Repository fingerprint (ADR-015)

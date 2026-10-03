@@ -1,19 +1,24 @@
 //! `review init` orchestration (INIT-011): runs detectors INIT-001..010 in order, assembles
 //! `RepositoryFacts`, and writes `.review/repository.json` atomically.
 
-use std::collections::BTreeSet;
+use std::collections::{BTreeMap, BTreeSet};
 use std::path::PathBuf;
 
 use review_core::language::Language;
 use review_core::location::RepoPath;
+use review_core::version::AnalyzerVersion;
 
 use crate::build_systems::detect_build_systems;
+use crate::config_hash::compute_config_hash;
 use crate::docs_meta::detect_docs;
 use crate::entrypoints::detect_entrypoints;
 use crate::env_files::detect_env_files;
 use crate::error::{InitError, InitWarning};
 use crate::facts::{
     DeferredToIndex, GeneratedSummary, InventorySummary, RepositoryFacts, REPOSITORY_FACTS_SCHEMA,
+};
+use crate::fingerprint::{
+    commit_component, compute_fingerprint, local_repository_id, FingerprintInputs, RepoIdentity,
 };
 use crate::frameworks::{auth_facts, detect_frameworks};
 use crate::generated::{classify_generated, GitAttributesView};
@@ -41,6 +46,19 @@ pub struct InitOptions {
     pub analyzable_languages: Vec<Language>,
     /// False in worker mode: facts are computed but nothing is written.
     pub write_review_dir: bool,
+    /// When set, the fingerprint (INIT-012) is computed and stored in the facts.
+    pub fingerprint: Option<FingerprintParams>,
+}
+
+/// Inputs of the fingerprint that init itself cannot know.
+#[derive(Debug, Clone)]
+pub struct FingerprintParams {
+    pub analyzer_versions: BTreeMap<Language, AnalyzerVersion>,
+    pub graph_schema_version: u32,
+    pub parser_versions: Vec<(String, String)>,
+    pub profile_version: u32,
+    /// Hosted repository identity; `None` derives a local id from the origin remote.
+    pub repository_id: Option<RepoIdentity>,
 }
 
 impl InitOptions {
@@ -53,6 +71,7 @@ impl InitOptions {
             walk: WalkOptions::default(),
             analyzable_languages: vec![Language::Typescript, Language::Javascript],
             write_review_dir: true,
+            fingerprint: None,
         }
     }
 }
@@ -279,6 +298,34 @@ pub fn run(opts: &InitOptions) -> Result<InitOutcome, InitError> {
         warnings,
         warnings_truncated: 0,
     };
+    if let Some(params) = &opts.fingerprint {
+        let (config_hash, w) =
+            compute_config_hash(&root, &inventory, &reader, &tsconfigs, &manifest_facts);
+        facts.warnings.extend(w);
+        let (commit, w) = commit_component(discovered.git.as_ref(), &root, &inventory, &reader);
+        facts.warnings.extend(w);
+        let (identity, w) = match params.repository_id.clone() {
+            Some(id) => (id, None),
+            None => local_repository_id(discovered.git.as_ref(), &root),
+        };
+        facts.warnings.extend(w);
+        let parsers: Vec<(&str, &str)> = params
+            .parser_versions
+            .iter()
+            .map(|(n, v)| (n.as_str(), v.as_str()))
+            .collect();
+        let fingerprint = compute_fingerprint(&FingerprintInputs {
+            repository_id: &identity,
+            commit: &commit,
+            analyzer_versions: &params.analyzer_versions,
+            graph_schema_version: params.graph_schema_version,
+            config_hash,
+            parser_versions: &parsers,
+            profile_version: params.profile_version,
+        });
+        tracing::debug!(fingerprint = %fingerprint, commit_kind = commit.kind(), "init.fingerprint");
+        facts.fingerprint = Some(fingerprint.to_string());
+    }
     facts.apply_caps();
     facts.facts_hash = facts.compute_hash()?;
     span.record("init.warnings", facts.warnings.len());
