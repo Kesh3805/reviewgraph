@@ -32,6 +32,7 @@ fn entry<T: schemars::JsonSchema>(name: &'static str) -> ContractType {
 
 /// All contract types, in registration order. Domain tasks register their own types here.
 pub fn registry() -> Vec<ContractType> {
+    use repository::facts::RepositoryFacts;
     use review_core::contracts::SchemaInfo;
     use review_core::finding::{
         CandidateFinding, FindingCategory, FindingState, PublishedFinding, ReviewerType, Severity,
@@ -55,6 +56,7 @@ pub fn registry() -> Vec<ContractType> {
         entry::<CandidateFinding>("CandidateFinding"),
         entry::<VerifiedFinding>("VerifiedFinding"),
         entry::<PublishedFinding>("PublishedFinding"),
+        entry::<RepositoryFacts>("RepositoryFacts"),
     ]
 }
 

@@ -1,0 +1,847 @@
+---
+source: crates/repository/tests/init_end_to_end.rs
+expression: redacted(outcome.facts())
+---
+{
+  "api_routes": {
+    "status": "deferred_to_index"
+  },
+  "auth": {
+    "libraries": []
+  },
+  "build_systems": [
+    {
+      "config": "apps/api/nest-cli.json",
+      "kind": "nest_cli",
+      "scope_dir": "apps/api"
+    },
+    {
+      "config": "apps/api/tsconfig.build.json",
+      "kind": "tsc",
+      "scope_dir": "apps/api"
+    },
+    {
+      "config": "turbo.json",
+      "kind": "turbo",
+      "scope_dir": ""
+    }
+  ],
+  "detected_at": "[redacted]",
+  "docs": {
+    "adrs": [],
+    "agent_instructions": [],
+    "architecture": [],
+    "codeowners": null,
+    "contributing": [],
+    "knowledge_vaults": [],
+    "pr_templates": [],
+    "rule_docs": [],
+    "security_policy": []
+  },
+  "entrypoints": [
+    {
+      "call": "NestFactory.create",
+      "confidence": 0.8999999761581421,
+      "kind": "http_server",
+      "package": "@acme/api",
+      "path": "apps/api/src/main.ts",
+      "source": "bootstrap"
+    },
+    {
+      "confidence": 0.5,
+      "kind": "library",
+      "package": "@acme/db",
+      "path": "packages/db/src/index.ts",
+      "source": "conventional"
+    },
+    {
+      "confidence": 0.800000011920929,
+      "kind": "library",
+      "package": "@acme/shared",
+      "path": "packages/shared/src/index.ts",
+      "source": "package_main"
+    }
+  ],
+  "env_files": [],
+  "facts_hash": "[redacted]",
+  "fingerprint": null,
+  "frameworks": [
+    {
+      "category": "test",
+      "confidence": 0.8999999761581421,
+      "evidence": [
+        {
+          "detail": "jest@^29.7.0",
+          "path": "apps/api/package.json",
+          "source": {
+            "dep_kind": "dev",
+            "kind": "dependency"
+          }
+        }
+      ],
+      "id": "jest",
+      "major": 29,
+      "scope": "apps/api",
+      "version_range": "^29.7.0",
+      "via": null
+    },
+    {
+      "category": "web",
+      "confidence": 1.0,
+      "evidence": [
+        {
+          "detail": "config file",
+          "path": "apps/api/nest-cli.json",
+          "source": {
+            "kind": "config_file"
+          }
+        },
+        {
+          "detail": "@nestjs/common@^10.3.0",
+          "path": "apps/api/package.json",
+          "source": {
+            "dep_kind": "prod",
+            "kind": "dependency"
+          }
+        },
+        {
+          "detail": "@nestjs/core@^10.3.0",
+          "path": "apps/api/package.json",
+          "source": {
+            "dep_kind": "prod",
+            "kind": "dependency"
+          }
+        }
+      ],
+      "id": "nestjs",
+      "major": 10,
+      "scope": "apps/api",
+      "version_range": "^10.3.0",
+      "via": null
+    },
+    {
+      "category": "web",
+      "confidence": 1.0,
+      "evidence": [
+        {
+          "detail": "config file",
+          "path": "apps/web/next.config.js",
+          "source": {
+            "kind": "config_file"
+          }
+        },
+        {
+          "detail": "next@^14.2.0",
+          "path": "apps/web/package.json",
+          "source": {
+            "dep_kind": "prod",
+            "kind": "dependency"
+          }
+        }
+      ],
+      "id": "nextjs",
+      "major": 14,
+      "scope": "apps/web",
+      "version_range": "^14.2.0",
+      "via": null
+    },
+    {
+      "category": "ui",
+      "confidence": 0.8999999761581421,
+      "evidence": [
+        {
+          "detail": "react@^18.3.0",
+          "path": "apps/web/package.json",
+          "source": {
+            "dep_kind": "prod",
+            "kind": "dependency"
+          }
+        }
+      ],
+      "id": "react",
+      "major": 18,
+      "scope": "apps/web",
+      "version_range": "^18.3.0",
+      "via": null
+    },
+    {
+      "category": "orm",
+      "confidence": 0.8999999761581421,
+      "evidence": [
+        {
+          "detail": "typeorm@^0.3.20",
+          "path": "packages/db/package.json",
+          "source": {
+            "dep_kind": "prod",
+            "kind": "dependency"
+          }
+        }
+      ],
+      "id": "typeorm",
+      "major": 0,
+      "scope": "packages/db",
+      "version_range": "^0.3.20",
+      "via": null
+    }
+  ],
+  "generated": {
+    "by_kind": {
+      "lockfile": 1
+    },
+    "by_reason": {
+      "pattern": 1
+    },
+    "config_globs": [],
+    "dirs": [],
+    "files": 1
+  },
+  "git": {
+    "default_branch": "main",
+    "default_branch_source": "well_known_name",
+    "dirty": {
+      "is_dirty": false,
+      "sample_paths": [],
+      "staged": 0,
+      "truncated": false,
+      "unstaged": 0,
+      "untracked": 0
+    },
+    "head": {
+      "branch": "main",
+      "kind": "commit",
+      "sha": "[redacted]"
+    },
+    "is_linked_worktree": false,
+    "is_shallow": false,
+    "lfs_patterns": [],
+    "remotes": [],
+    "submodules": []
+  },
+  "infra": [],
+  "inventory": {
+    "by_class": {
+      "source": 18
+    },
+    "ignored": {
+      "builtindir": 1
+    },
+    "total_dirs": 11,
+    "total_files": 18
+  },
+  "languages": [
+    {
+      "analyzable": false,
+      "bytes": 1874,
+      "files": 11,
+      "generated_files": 0,
+      "language": "json",
+      "lines": 73
+    },
+    {
+      "analyzable": true,
+      "bytes": 430,
+      "files": 4,
+      "generated_files": 0,
+      "language": "typescript",
+      "lines": 16
+    },
+    {
+      "analyzable": false,
+      "bytes": 99,
+      "files": 2,
+      "generated_files": 1,
+      "language": "yaml",
+      "lines": 7
+    },
+    {
+      "analyzable": true,
+      "bytes": 21,
+      "files": 1,
+      "generated_files": 0,
+      "language": "javascript",
+      "lines": 1
+    }
+  ],
+  "layout": {
+    "source_roots": [
+      {
+        "confidence": 0.949999988079071,
+        "path": "apps/api/src",
+        "source": "nest_cli_source_root"
+      },
+      {
+        "confidence": 0.800000011920929,
+        "path": "apps/web/src",
+        "source": "workspace_src"
+      },
+      {
+        "confidence": 0.800000011920929,
+        "path": "packages/db/src",
+        "source": "workspace_src"
+      },
+      {
+        "confidence": 0.800000011920929,
+        "path": "packages/shared/src",
+        "source": "workspace_src"
+      }
+    ],
+    "test_globs": [
+      "**/*.{spec,test}.{ts,tsx,js,jsx,mts,cts,mjs,cjs}",
+      "**/*.e2e-spec.ts",
+      "**/__tests__/**/*.{ts,tsx,js,jsx}"
+    ],
+    "test_regexes": [],
+    "test_roots": []
+  },
+  "manifests": [
+    {
+      "dependencies": {
+        "@acme/db": {
+          "kind": "prod",
+          "range": "workspace:^",
+          "workspace_protocol": true
+        },
+        "@acme/shared": {
+          "kind": "prod",
+          "range": "workspace:*",
+          "workspace_protocol": true
+        },
+        "@nestjs/common": {
+          "kind": "prod",
+          "range": "^10.3.0",
+          "workspace_protocol": false
+        },
+        "@nestjs/core": {
+          "kind": "prod",
+          "range": "^10.3.0",
+          "workspace_protocol": false
+        },
+        "jest": {
+          "kind": "dev",
+          "range": "^29.7.0",
+          "workspace_protocol": false
+        }
+      },
+      "ecosystem": "npm",
+      "members": [],
+      "meta": {},
+      "name": "@acme/api",
+      "npm": {
+        "bin": {},
+        "engines": {},
+        "exports": null,
+        "has_jest_key": false,
+        "main": null,
+        "module": null,
+        "module_type": null,
+        "package_manager": null,
+        "script_entry_hints": {
+          "start": [
+            "dist/main.js"
+          ],
+          "start:prod": [
+            "dist/main"
+          ]
+        },
+        "script_names": [
+          "build",
+          "start",
+          "start:prod"
+        ],
+        "types": null,
+        "workspaces": null
+      },
+      "parse_status": {
+        "status": "ok"
+      },
+      "path": "apps/api/package.json",
+      "private": true,
+      "version": "1.0.0"
+    },
+    {
+      "dependencies": {
+        "@acme/shared": {
+          "kind": "prod",
+          "range": "workspace:*",
+          "workspace_protocol": true
+        },
+        "next": {
+          "kind": "prod",
+          "range": "^14.2.0",
+          "workspace_protocol": false
+        },
+        "react": {
+          "kind": "prod",
+          "range": "^18.3.0",
+          "workspace_protocol": false
+        }
+      },
+      "ecosystem": "npm",
+      "members": [],
+      "meta": {},
+      "name": "@acme/web",
+      "npm": {
+        "bin": {},
+        "engines": {},
+        "exports": null,
+        "has_jest_key": false,
+        "main": null,
+        "module": null,
+        "module_type": null,
+        "package_manager": null,
+        "script_entry_hints": {},
+        "script_names": [],
+        "types": null,
+        "workspaces": null
+      },
+      "parse_status": {
+        "status": "ok"
+      },
+      "path": "apps/web/package.json",
+      "private": true,
+      "version": "1.0.0"
+    },
+    {
+      "dependencies": {
+        "turbo": {
+          "kind": "dev",
+          "range": "^2.0.0",
+          "workspace_protocol": false
+        },
+        "typescript": {
+          "kind": "dev",
+          "range": "^5.4.0",
+          "workspace_protocol": false
+        }
+      },
+      "ecosystem": "npm",
+      "members": [],
+      "meta": {},
+      "name": "acme-monorepo",
+      "npm": {
+        "bin": {},
+        "engines": {},
+        "exports": null,
+        "has_jest_key": false,
+        "main": null,
+        "module": null,
+        "module_type": null,
+        "package_manager": "pnpm@10.4.1",
+        "script_entry_hints": {},
+        "script_names": [],
+        "types": null,
+        "workspaces": null
+      },
+      "parse_status": {
+        "status": "ok"
+      },
+      "path": "package.json",
+      "private": true,
+      "version": null
+    },
+    {
+      "dependencies": {
+        "pg": {
+          "kind": "prod",
+          "range": "^8.11.0",
+          "workspace_protocol": false
+        },
+        "typeorm": {
+          "kind": "prod",
+          "range": "^0.3.20",
+          "workspace_protocol": false
+        }
+      },
+      "ecosystem": "npm",
+      "members": [],
+      "meta": {},
+      "name": "@acme/db",
+      "npm": {
+        "bin": {},
+        "engines": {},
+        "exports": null,
+        "has_jest_key": false,
+        "main": null,
+        "module": null,
+        "module_type": null,
+        "package_manager": null,
+        "script_entry_hints": {},
+        "script_names": [],
+        "types": null,
+        "workspaces": null
+      },
+      "parse_status": {
+        "status": "ok"
+      },
+      "path": "packages/db/package.json",
+      "private": false,
+      "version": "1.0.0"
+    },
+    {
+      "dependencies": {},
+      "ecosystem": "npm",
+      "members": [],
+      "meta": {},
+      "name": "@acme/shared",
+      "npm": {
+        "bin": {},
+        "engines": {},
+        "exports": null,
+        "has_jest_key": false,
+        "main": "dist/index.js",
+        "module": null,
+        "module_type": null,
+        "package_manager": null,
+        "script_entry_hints": {},
+        "script_names": [],
+        "types": "dist/index.d.ts",
+        "workspaces": null
+      },
+      "parse_status": {
+        "status": "ok"
+      },
+      "path": "packages/shared/package.json",
+      "private": false,
+      "version": "1.0.0"
+    }
+  ],
+  "migrations": [],
+  "package_managers": [
+    {
+      "declared": "pnpm@10.4.1",
+      "kind": "pnpm",
+      "lockfile": "pnpm-lock.yaml",
+      "lockfile_version": "9.0",
+      "primary": true,
+      "scope_dir": ""
+    }
+  ],
+  "primary_language": "typescript",
+  "root_name": "[redacted]",
+  "schema_files": [],
+  "schema_version": 1,
+  "sensitive_files": [],
+  "tool_version": "[redacted]",
+  "tooling": {
+    "ci": [],
+    "compiler": [
+      {
+        "detail": null,
+        "path": "apps/api/nest-cli.json",
+        "tool": "nest-cli"
+      },
+      {
+        "detail": null,
+        "path": "apps/api/tsconfig.build.json",
+        "tool": "tsconfig"
+      },
+      {
+        "detail": null,
+        "path": "apps/api/tsconfig.json",
+        "tool": "tsconfig"
+      },
+      {
+        "detail": null,
+        "path": "apps/web/tsconfig.json",
+        "tool": "tsconfig"
+      },
+      {
+        "detail": null,
+        "path": "tsconfig.base.json",
+        "tool": "tsconfig"
+      }
+    ],
+    "hooks": [],
+    "lint": []
+  },
+  "tsconfigs": [
+    {
+      "effective": {
+        "allow_js": null,
+        "base_url": "",
+        "config_dir": "apps/api",
+        "emit_decorator_metadata": true,
+        "exclude": [
+          "**/*.spec.ts"
+        ],
+        "experimental_decorators": true,
+        "files": [],
+        "include": [
+          "src/**/*"
+        ],
+        "include_base": "apps/api",
+        "jsx": null,
+        "module": "commonjs",
+        "module_resolution": null,
+        "out_dir": "apps/api/dist",
+        "paths": [
+          {
+            "pattern": "@acme/db",
+            "targets": [
+              "packages/db/src/index.ts"
+            ]
+          },
+          {
+            "pattern": "@acme/shared",
+            "targets": [
+              "packages/shared/src/index.ts"
+            ]
+          },
+          {
+            "pattern": "@acme/shared/*",
+            "targets": [
+              "packages/shared/src/*"
+            ]
+          }
+        ],
+        "paths_base": "",
+        "references": [],
+        "root_dir": "apps/api/src",
+        "root_dirs": [],
+        "strict": true,
+        "target": "ES2022"
+      },
+      "extends_chain": [
+        {
+          "kind": "local",
+          "path": "apps/api/tsconfig.json"
+        },
+        {
+          "kind": "local",
+          "path": "tsconfig.base.json"
+        }
+      ],
+      "parse_status": {
+        "status": "ok"
+      },
+      "path": "apps/api/tsconfig.build.json"
+    },
+    {
+      "effective": {
+        "allow_js": null,
+        "base_url": "",
+        "config_dir": "apps/api",
+        "emit_decorator_metadata": true,
+        "exclude": [],
+        "experimental_decorators": true,
+        "files": [],
+        "include": [
+          "src/**/*"
+        ],
+        "include_base": "apps/api",
+        "jsx": null,
+        "module": "commonjs",
+        "module_resolution": null,
+        "out_dir": "apps/api/dist",
+        "paths": [
+          {
+            "pattern": "@acme/db",
+            "targets": [
+              "packages/db/src/index.ts"
+            ]
+          },
+          {
+            "pattern": "@acme/shared",
+            "targets": [
+              "packages/shared/src/index.ts"
+            ]
+          },
+          {
+            "pattern": "@acme/shared/*",
+            "targets": [
+              "packages/shared/src/*"
+            ]
+          }
+        ],
+        "paths_base": "",
+        "references": [],
+        "root_dir": "apps/api/src",
+        "root_dirs": [],
+        "strict": true,
+        "target": "ES2022"
+      },
+      "extends_chain": [
+        {
+          "kind": "local",
+          "path": "tsconfig.base.json"
+        }
+      ],
+      "parse_status": {
+        "status": "ok"
+      },
+      "path": "apps/api/tsconfig.json"
+    },
+    {
+      "effective": {
+        "allow_js": null,
+        "base_url": "apps/web",
+        "config_dir": "apps/web",
+        "emit_decorator_metadata": true,
+        "exclude": [],
+        "experimental_decorators": true,
+        "files": [],
+        "include": [
+          "src"
+        ],
+        "include_base": "apps/web",
+        "jsx": "preserve",
+        "module": "commonjs",
+        "module_resolution": null,
+        "out_dir": null,
+        "paths": [
+          {
+            "pattern": "@/*",
+            "targets": [
+              "./src/*"
+            ]
+          }
+        ],
+        "paths_base": "apps/web",
+        "references": [],
+        "root_dir": null,
+        "root_dirs": [],
+        "strict": true,
+        "target": "ES2022"
+      },
+      "extends_chain": [
+        {
+          "kind": "local",
+          "path": "tsconfig.base.json"
+        }
+      ],
+      "parse_status": {
+        "status": "ok"
+      },
+      "path": "apps/web/tsconfig.json"
+    },
+    {
+      "effective": {
+        "allow_js": null,
+        "base_url": "",
+        "config_dir": "",
+        "emit_decorator_metadata": true,
+        "exclude": [],
+        "experimental_decorators": true,
+        "files": [],
+        "include": [
+          "**/*"
+        ],
+        "include_base": "",
+        "jsx": null,
+        "module": "commonjs",
+        "module_resolution": null,
+        "out_dir": null,
+        "paths": [
+          {
+            "pattern": "@acme/db",
+            "targets": [
+              "packages/db/src/index.ts"
+            ]
+          },
+          {
+            "pattern": "@acme/shared",
+            "targets": [
+              "packages/shared/src/index.ts"
+            ]
+          },
+          {
+            "pattern": "@acme/shared/*",
+            "targets": [
+              "packages/shared/src/*"
+            ]
+          }
+        ],
+        "paths_base": "",
+        "references": [],
+        "root_dir": null,
+        "root_dirs": [],
+        "strict": true,
+        "target": "ES2022"
+      },
+      "extends_chain": [],
+      "parse_status": {
+        "status": "ok"
+      },
+      "path": "tsconfig.base.json"
+    }
+  ],
+  "warnings": [],
+  "warnings_truncated": 0,
+  "workspaces": {
+    "cycles": [],
+    "internal_edges": [
+      [
+        "@acme/api",
+        "@acme/db"
+      ],
+      [
+        "@acme/api",
+        "@acme/shared"
+      ],
+      [
+        "@acme/web",
+        "@acme/shared"
+      ]
+    ],
+    "is_monorepo": true,
+    "nx_apps_dir": null,
+    "nx_libs_dir": null,
+    "packages": [
+      {
+        "dir": "apps/api",
+        "ecosystem": "npm",
+        "internal_deps": [
+          "@acme/db",
+          "@acme/shared"
+        ],
+        "manifest": "apps/api/package.json",
+        "name": "@acme/api",
+        "private": true,
+        "source": "pnpm",
+        "version": "1.0.0"
+      },
+      {
+        "dir": "apps/web",
+        "ecosystem": "npm",
+        "internal_deps": [
+          "@acme/shared"
+        ],
+        "manifest": "apps/web/package.json",
+        "name": "@acme/web",
+        "private": true,
+        "source": "pnpm",
+        "version": "1.0.0"
+      },
+      {
+        "dir": "packages/db",
+        "ecosystem": "npm",
+        "internal_deps": [],
+        "manifest": "packages/db/package.json",
+        "name": "@acme/db",
+        "private": false,
+        "source": "pnpm",
+        "version": "1.0.0"
+      },
+      {
+        "dir": "packages/shared",
+        "ecosystem": "npm",
+        "internal_deps": [],
+        "manifest": "packages/shared/package.json",
+        "name": "@acme/shared",
+        "private": false,
+        "source": "pnpm",
+        "version": "1.0.0"
+      }
+    ],
+    "root_package": "package.json",
+    "tools": [
+      "pnpm",
+      "turbo"
+    ],
+    "turbo_tasks": [
+      "build",
+      "lint",
+      "test"
+    ]
+  }
+}

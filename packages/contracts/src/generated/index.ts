@@ -5,6 +5,7 @@ export type { ErrorClass } from './ErrorClass.js';
 export type { FindingCategory } from './FindingCategory.js';
 export type { FindingState } from './FindingState.js';
 export type { PublishedFinding } from './PublishedFinding.js';
+export type { RepositoryFacts } from './RepositoryFacts.js';
 export type { ReviewEvent } from './ReviewEvent.js';
 export type { ReviewState } from './ReviewState.js';
 export type { ReviewTrigger } from './ReviewTrigger.js';

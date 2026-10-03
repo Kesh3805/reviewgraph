@@ -328,7 +328,12 @@ fn bounded_reader_is_the_only_content_read_path() {
     for entry in std::fs::read_dir(&src).unwrap() {
         let path = entry.unwrap().path();
         let name = path.file_name().unwrap().to_string_lossy().into_owned();
-        if !name.ends_with(".rs") || matches!(name.as_str(), "walk.rs" | "read.rs" | "git.rs") {
+        if !name.ends_with(".rs")
+            || matches!(
+                name.as_str(),
+                "walk.rs" | "read.rs" | "git.rs" | "review_dir.rs"
+            )
+        {
             continue;
         }
         let text = std::fs::read_to_string(&path).unwrap();

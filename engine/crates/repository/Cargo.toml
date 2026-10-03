@@ -21,6 +21,11 @@ quick-xml.workspace = true
 regex.workspace = true
 schemars.workspace = true
 semver.workspace = true
+fs2.workspace = true
+tempfile.workspace = true
+chrono.workspace = true
+blake3.workspace = true
+hex.workspace = true
 ignore.workspace = true
 globset.workspace = true
 rayon.workspace = true
@@ -28,7 +33,6 @@ gix = { workspace = true, features = ["max-performance-safe", "status", "revisio
 
 [dev-dependencies]
 review-test-support.workspace = true
-tempfile.workspace = true
 insta.workspace = true
 proptest.workspace = true
 criterion.workspace = true

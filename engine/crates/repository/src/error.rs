@@ -55,6 +55,12 @@ pub enum InitError {
     /// valid `RepoPath`).
     #[error(transparent)]
     Core(#[from] CoreError),
+    /// Another init holds the `.review/.lock`.
+    #[error("another init is running for this repository")]
+    Busy,
+    /// `.review/` could not be created or written.
+    #[error("the .review directory is not writable: {0}")]
+    ReviewDirNotWritable(String),
     /// A persistence adapter failed (INIT-013).
     #[error("repository facts store: {0}")]
     Store(String),
@@ -86,6 +92,8 @@ impl Classify for InitError {
                 ErrorClass::InvalidInput
             }
             Self::Core(e) => e.class(),
+            Self::Busy => ErrorClass::Conflict,
+            Self::ReviewDirNotWritable(_) => ErrorClass::Permanent,
             Self::Io { .. } | Self::Git { .. } | Self::Store(_) | Self::Serde(_) => {
                 ErrorClass::Internal
             }

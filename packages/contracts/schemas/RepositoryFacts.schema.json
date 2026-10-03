@@ -1,0 +1,2236 @@
+{
+  "$id": "urn:reviewgraph:contracts:RepositoryFacts",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "AdrFact": {
+      "properties": {
+        "number": {
+          "format": "uint32",
+          "minimum": 0.0,
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "path": {
+          "type": "string"
+        },
+        "status": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "title": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "path"
+      ],
+      "type": "object"
+    },
+    "AuthFacts": {
+      "description": "Auth libraries discovered at init. Route-level boundaries come from NEST-004 at index time.",
+      "properties": {
+        "libraries": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "libraries"
+      ],
+      "type": "object"
+    },
+    "BuildSystemFact": {
+      "properties": {
+        "config": {
+          "type": "string"
+        },
+        "kind": {
+          "$ref": "#/definitions/BuildSystemKind"
+        },
+        "scope_dir": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "config",
+        "kind",
+        "scope_dir"
+      ],
+      "type": "object"
+    },
+    "BuildSystemKind": {
+      "enum": [
+        "nest_cli",
+        "tsc",
+        "webpack",
+        "vite",
+        "rollup",
+        "esbuild",
+        "tsup",
+        "swc",
+        "turbo",
+        "nx",
+        "make",
+        "bazel",
+        "maven",
+        "gradle",
+        "cargo",
+        "go_build",
+        "just",
+        "taskfile"
+      ],
+      "type": "string"
+    },
+    "CiFact": {
+      "properties": {
+        "path": {
+          "type": "string"
+        },
+        "provider": {
+          "$ref": "#/definitions/CiProvider"
+        },
+        "workflow": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/CiWorkflow"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "path",
+        "provider"
+      ],
+      "type": "object"
+    },
+    "CiProvider": {
+      "enum": [
+        "github_actions",
+        "gitlab",
+        "circle_ci",
+        "jenkins",
+        "azure_pipelines",
+        "bitbucket",
+        "buildkite",
+        "cloud_build"
+      ],
+      "type": "string"
+    },
+    "CiWorkflow": {
+      "properties": {
+        "actions": {
+          "description": "`uses:` action references such as `actions/checkout@v4`.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "jobs": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "run_tools": {
+          "description": "First tokens of `run:` commands only (`npm`, `docker`, ...).",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "triggers": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "actions",
+        "jobs",
+        "run_tools",
+        "triggers"
+      ],
+      "type": "object"
+    },
+    "CodeownersFact": {
+      "properties": {
+        "invalid_lines": {
+          "description": "1-based line numbers that are neither comments nor `pattern owner+` lines.",
+          "items": {
+            "format": "uint32",
+            "minimum": 0.0,
+            "type": "integer"
+          },
+          "type": "array"
+        },
+        "path": {
+          "type": "string"
+        },
+        "rules": {
+          "items": {
+            "$ref": "#/definitions/CodeownersRule"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "invalid_lines",
+        "path",
+        "rules"
+      ],
+      "type": "object"
+    },
+    "CodeownersRule": {
+      "properties": {
+        "owners": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "pattern": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "owners",
+        "pattern"
+      ],
+      "type": "object"
+    },
+    "CommitSha": {
+      "pattern": "^([0-9a-f]{40}|[0-9a-f]{64})$",
+      "title": "CommitSha",
+      "type": "string"
+    },
+    "DefaultBranchSource": {
+      "enum": [
+        "origin_head",
+        "provider",
+        "well_known_name",
+        "current_branch",
+        "unknown"
+      ],
+      "type": "string"
+    },
+    "DeferredToIndex": {
+      "description": "API routes need parsing, so they are produced at index time (NEST-002 / IDX).",
+      "properties": {
+        "status": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "status"
+      ],
+      "type": "object"
+    },
+    "DepKind": {
+      "enum": [
+        "prod",
+        "dev",
+        "peer",
+        "optional"
+      ],
+      "type": "string"
+    },
+    "DepSpec": {
+      "properties": {
+        "kind": {
+          "$ref": "#/definitions/DepKind"
+        },
+        "range": {
+          "type": "string"
+        },
+        "workspace_protocol": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "kind",
+        "range",
+        "workspace_protocol"
+      ],
+      "type": "object"
+    },
+    "DirtyState": {
+      "properties": {
+        "is_dirty": {
+          "type": "boolean"
+        },
+        "sample_paths": {
+          "description": "At most 20 paths, sorted.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "staged": {
+          "format": "uint32",
+          "minimum": 0.0,
+          "type": "integer"
+        },
+        "truncated": {
+          "description": "The scan stopped at the entry limit; the counts are lower bounds.",
+          "type": "boolean"
+        },
+        "unstaged": {
+          "format": "uint32",
+          "minimum": 0.0,
+          "type": "integer"
+        },
+        "untracked": {
+          "format": "uint32",
+          "minimum": 0.0,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "is_dirty",
+        "sample_paths",
+        "staged",
+        "truncated",
+        "unstaged",
+        "untracked"
+      ],
+      "type": "object"
+    },
+    "DocsFacts": {
+      "properties": {
+        "adrs": {
+          "items": {
+            "$ref": "#/definitions/AdrFact"
+          },
+          "type": "array"
+        },
+        "agent_instructions": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "architecture": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "codeowners": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/CodeownersFact"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "contributing": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "knowledge_vaults": {
+          "items": {
+            "$ref": "#/definitions/KnowledgeVault"
+          },
+          "type": "array"
+        },
+        "pr_templates": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "rule_docs": {
+          "items": {
+            "$ref": "#/definitions/RuleDocCandidate"
+          },
+          "type": "array"
+        },
+        "security_policy": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "adrs",
+        "agent_instructions",
+        "architecture",
+        "contributing",
+        "knowledge_vaults",
+        "pr_templates",
+        "rule_docs",
+        "security_policy"
+      ],
+      "type": "object"
+    },
+    "Ecosystem": {
+      "enum": [
+        "npm",
+        "pypi",
+        "go",
+        "cargo",
+        "maven",
+        "gradle",
+        "rubygems",
+        "composer",
+        "nuget"
+      ],
+      "type": "string"
+    },
+    "EntrypointFact": {
+      "oneOf": [
+        {
+          "properties": {
+            "source": {
+              "enum": [
+                "package_main"
+              ],
+              "type": "string"
+            }
+          },
+          "required": [
+            "source"
+          ],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "source": {
+              "enum": [
+                "package_bin"
+              ],
+              "type": "string"
+            }
+          },
+          "required": [
+            "name",
+            "source"
+          ],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "source": {
+              "enum": [
+                "script"
+              ],
+              "type": "string"
+            }
+          },
+          "required": [
+            "name",
+            "source"
+          ],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "source": {
+              "enum": [
+                "nest_cli"
+              ],
+              "type": "string"
+            }
+          },
+          "required": [
+            "source"
+          ],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "call": {
+              "type": "string"
+            },
+            "source": {
+              "enum": [
+                "bootstrap"
+              ],
+              "type": "string"
+            }
+          },
+          "required": [
+            "call",
+            "source"
+          ],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "source": {
+              "enum": [
+                "conventional"
+              ],
+              "type": "string"
+            }
+          },
+          "required": [
+            "source"
+          ],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "source": {
+              "enum": [
+                "dockerfile"
+              ],
+              "type": "string"
+            }
+          },
+          "required": [
+            "source"
+          ],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "source": {
+              "enum": [
+                "procfile"
+              ],
+              "type": "string"
+            }
+          },
+          "required": [
+            "source"
+          ],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "source": {
+              "enum": [
+                "serverless"
+              ],
+              "type": "string"
+            }
+          },
+          "required": [
+            "source"
+          ],
+          "type": "object"
+        }
+      ],
+      "properties": {
+        "confidence": {
+          "format": "float",
+          "type": "number"
+        },
+        "kind": {
+          "$ref": "#/definitions/EntrypointKind"
+        },
+        "package": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "path": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "confidence",
+        "kind",
+        "path"
+      ],
+      "type": "object"
+    },
+    "EntrypointKind": {
+      "enum": [
+        "http_server",
+        "worker",
+        "microservice",
+        "cli",
+        "script",
+        "library",
+        "serverless"
+      ],
+      "type": "string"
+    },
+    "EnvFileFact": {
+      "properties": {
+        "kind": {
+          "$ref": "#/definitions/EnvFileKind"
+        },
+        "path": {
+          "type": "string"
+        },
+        "tracked_in_git": {
+          "type": "boolean"
+        },
+        "variable_names": {
+          "description": "Template files only; always empty for `Real`.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "kind",
+        "path",
+        "tracked_in_git",
+        "variable_names"
+      ],
+      "type": "object"
+    },
+    "EnvFileKind": {
+      "enum": [
+        "template",
+        "real"
+      ],
+      "type": "string"
+    },
+    "EvidenceSource": {
+      "oneOf": [
+        {
+          "properties": {
+            "dep_kind": {
+              "$ref": "#/definitions/DepKind"
+            },
+            "kind": {
+              "enum": [
+                "dependency"
+              ],
+              "type": "string"
+            }
+          },
+          "required": [
+            "dep_kind",
+            "kind"
+          ],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "kind": {
+              "enum": [
+                "config_file"
+              ],
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind"
+          ],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "kind": {
+              "enum": [
+                "schema_file"
+              ],
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind"
+          ],
+          "type": "object"
+        }
+      ]
+    },
+    "FrameworkCategory": {
+      "enum": [
+        "web",
+        "ui",
+        "orm",
+        "queue",
+        "test",
+        "auth",
+        "validation",
+        "config",
+        "docs"
+      ],
+      "type": "string"
+    },
+    "FrameworkEvidence": {
+      "properties": {
+        "detail": {
+          "type": "string"
+        },
+        "path": {
+          "type": "string"
+        },
+        "source": {
+          "$ref": "#/definitions/EvidenceSource"
+        }
+      },
+      "required": [
+        "detail",
+        "path",
+        "source"
+      ],
+      "type": "object"
+    },
+    "FrameworkFact": {
+      "properties": {
+        "category": {
+          "$ref": "#/definitions/FrameworkCategory"
+        },
+        "confidence": {
+          "format": "float",
+          "type": "number"
+        },
+        "evidence": {
+          "items": {
+            "$ref": "#/definitions/FrameworkEvidence"
+          },
+          "type": "array"
+        },
+        "id": {
+          "type": "string"
+        },
+        "major": {
+          "format": "uint64",
+          "minimum": 0.0,
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "scope": {
+          "description": "Package directory (the repository root is the empty string).",
+          "type": "string"
+        },
+        "version_range": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "via": {
+          "description": "The host framework when only a wrapper package was found.",
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "category",
+        "confidence",
+        "evidence",
+        "id",
+        "scope"
+      ],
+      "type": "object"
+    },
+    "GeneratedKind": {
+      "enum": [
+        "generated",
+        "vendored",
+        "lockfile",
+        "minified"
+      ],
+      "type": "string"
+    },
+    "GeneratedSummary": {
+      "description": "Generated-code summary. The per-file map is kept out of `repository.json`.",
+      "properties": {
+        "by_kind": {
+          "additionalProperties": {
+            "format": "uint64",
+            "minimum": 0.0,
+            "type": "integer"
+          },
+          "type": "object"
+        },
+        "by_reason": {
+          "additionalProperties": {
+            "format": "uint64",
+            "minimum": 0.0,
+            "type": "integer"
+          },
+          "type": "object"
+        },
+        "config_globs": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "dirs": {
+          "items": {
+            "items": [
+              {
+                "type": "string"
+              },
+              {
+                "$ref": "#/definitions/GeneratedKind"
+              },
+              {
+                "format": "uint64",
+                "minimum": 0.0,
+                "type": "integer"
+              }
+            ],
+            "maxItems": 3,
+            "minItems": 3,
+            "type": "array"
+          },
+          "type": "array"
+        },
+        "files": {
+          "format": "uint64",
+          "minimum": 0.0,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "by_kind",
+        "by_reason",
+        "config_globs",
+        "dirs",
+        "files"
+      ],
+      "type": "object"
+    },
+    "GitState": {
+      "properties": {
+        "default_branch": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "default_branch_source": {
+          "$ref": "#/definitions/DefaultBranchSource"
+        },
+        "dirty": {
+          "$ref": "#/definitions/DirtyState"
+        },
+        "head": {
+          "$ref": "#/definitions/HeadState"
+        },
+        "is_linked_worktree": {
+          "type": "boolean"
+        },
+        "is_shallow": {
+          "type": "boolean"
+        },
+        "lfs_patterns": {
+          "description": "`.gitattributes` patterns that carry `filter=lfs`, in file order.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "remotes": {
+          "description": "Sorted by name.",
+          "items": {
+            "$ref": "#/definitions/RemoteFact"
+          },
+          "type": "array"
+        },
+        "submodules": {
+          "description": "Paths from `.gitmodules`, sorted. Never recursed into.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "default_branch_source",
+        "dirty",
+        "head",
+        "is_linked_worktree",
+        "is_shallow",
+        "lfs_patterns",
+        "remotes",
+        "submodules"
+      ],
+      "type": "object"
+    },
+    "HeadState": {
+      "oneOf": [
+        {
+          "properties": {
+            "branch": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "kind": {
+              "enum": [
+                "commit"
+              ],
+              "type": "string"
+            },
+            "sha": {
+              "$ref": "#/definitions/CommitSha"
+            }
+          },
+          "required": [
+            "kind",
+            "sha"
+          ],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "kind": {
+              "enum": [
+                "detached"
+              ],
+              "type": "string"
+            },
+            "sha": {
+              "$ref": "#/definitions/CommitSha"
+            }
+          },
+          "required": [
+            "kind",
+            "sha"
+          ],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "branch": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "kind": {
+              "enum": [
+                "unborn"
+              ],
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind"
+          ],
+          "type": "object"
+        }
+      ]
+    },
+    "InfraFact": {
+      "properties": {
+        "kind": {
+          "$ref": "#/definitions/InfraKind"
+        },
+        "path": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "path"
+      ],
+      "type": "object"
+    },
+    "InfraKind": {
+      "enum": [
+        "dockerfile",
+        "compose",
+        "terraform",
+        "helm",
+        "kubernetes",
+        "serverless",
+        "cloud_build",
+        "app_engine",
+        "fly",
+        "vercel",
+        "netlify",
+        "docker_ignore"
+      ],
+      "type": "string"
+    },
+    "InitWarning": {
+      "description": "A non-fatal observation made while initializing a repository.",
+      "properties": {
+        "code": {
+          "description": "Stable snake_case code, for example `non_utf8_path` or `symlink_escapes_root`.",
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "path": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "severity": {
+          "allOf": [
+            {
+              "$ref": "#/definitions/WarningSeverity"
+            }
+          ],
+          "default": "warning"
+        }
+      },
+      "required": [
+        "code",
+        "message"
+      ],
+      "type": "object"
+    },
+    "InventorySummary": {
+      "description": "Totals over the walked inventory (not the per-file list).",
+      "properties": {
+        "by_class": {
+          "additionalProperties": {
+            "format": "uint64",
+            "minimum": 0.0,
+            "type": "integer"
+          },
+          "type": "object"
+        },
+        "ignored": {
+          "additionalProperties": {
+            "format": "uint64",
+            "minimum": 0.0,
+            "type": "integer"
+          },
+          "type": "object"
+        },
+        "total_dirs": {
+          "format": "uint64",
+          "minimum": 0.0,
+          "type": "integer"
+        },
+        "total_files": {
+          "format": "uint64",
+          "minimum": 0.0,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "by_class",
+        "ignored",
+        "total_dirs",
+        "total_files"
+      ],
+      "type": "object"
+    },
+    "KnowledgeVault": {
+      "properties": {
+        "kind": {
+          "$ref": "#/definitions/VaultKind"
+        },
+        "markdown_files": {
+          "format": "uint64",
+          "minimum": 0.0,
+          "type": "integer"
+        },
+        "root": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "markdown_files",
+        "root"
+      ],
+      "type": "object"
+    },
+    "Language": {
+      "description": "A language or file format. Wire form is the lowercase name. New variants are additive.",
+      "enum": [
+        "typescript",
+        "javascript",
+        "python",
+        "java",
+        "go",
+        "rust",
+        "kotlin",
+        "csharp",
+        "ruby",
+        "php",
+        "shell",
+        "sql",
+        "yaml",
+        "json",
+        "toml",
+        "markdown",
+        "html",
+        "css",
+        "dockerfile",
+        "terraform",
+        "protobuf",
+        "graphql",
+        "prisma",
+        "other"
+      ],
+      "type": "string"
+    },
+    "LanguageStat": {
+      "properties": {
+        "analyzable": {
+          "description": "A registered analyzer exists for this language.",
+          "type": "boolean"
+        },
+        "bytes": {
+          "format": "uint64",
+          "minimum": 0.0,
+          "type": "integer"
+        },
+        "files": {
+          "format": "uint64",
+          "minimum": 0.0,
+          "type": "integer"
+        },
+        "generated_files": {
+          "description": "Filled by INIT-008 once generated code is classified.",
+          "format": "uint64",
+          "minimum": 0.0,
+          "type": "integer"
+        },
+        "language": {
+          "$ref": "#/definitions/Language"
+        },
+        "lines": {
+          "format": "uint64",
+          "minimum": 0.0,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "analyzable",
+        "bytes",
+        "files",
+        "generated_files",
+        "language",
+        "lines"
+      ],
+      "type": "object"
+    },
+    "LayoutFacts": {
+      "properties": {
+        "source_roots": {
+          "items": {
+            "$ref": "#/definitions/RootFact"
+          },
+          "type": "array"
+        },
+        "test_globs": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "test_regexes": {
+          "description": "`testRegex` values from Jest configuration, verbatim.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "test_roots": {
+          "items": {
+            "$ref": "#/definitions/RootFact"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "source_roots",
+        "test_globs",
+        "test_regexes",
+        "test_roots"
+      ],
+      "type": "object"
+    },
+    "ManifestFact": {
+      "properties": {
+        "dependencies": {
+          "additionalProperties": {
+            "$ref": "#/definitions/DepSpec"
+          },
+          "type": "object"
+        },
+        "ecosystem": {
+          "$ref": "#/definitions/Ecosystem"
+        },
+        "members": {
+          "description": "Maven `modules`, Gradle `include`s and similar child declarations.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "meta": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "Small ecosystem-specific facts (go version, python tool, ...), never free text from the repository beyond identifiers.",
+          "type": "object"
+        },
+        "name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "npm": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/NpmManifestExtras"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "parse_status": {
+          "$ref": "#/definitions/ParseStatusLite"
+        },
+        "path": {
+          "type": "string"
+        },
+        "private": {
+          "type": "boolean"
+        },
+        "version": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "dependencies",
+        "ecosystem",
+        "members",
+        "meta",
+        "parse_status",
+        "path",
+        "private"
+      ],
+      "type": "object"
+    },
+    "MigrationDirFact": {
+      "properties": {
+        "dir": {
+          "type": "string"
+        },
+        "files": {
+          "format": "uint64",
+          "minimum": 0.0,
+          "type": "integer"
+        },
+        "naming": {
+          "$ref": "#/definitions/MigrationNaming"
+        },
+        "tool_hint": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/MigrationTool"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "dir",
+        "files",
+        "naming"
+      ],
+      "type": "object"
+    },
+    "MigrationNaming": {
+      "enum": [
+        "timestamp_prefix",
+        "version_prefix",
+        "other"
+      ],
+      "type": "string"
+    },
+    "MigrationTool": {
+      "enum": [
+        "type_orm",
+        "prisma",
+        "knex",
+        "flyway",
+        "liquibase",
+        "raw_sql",
+        "alembic",
+        "go_migrate"
+      ],
+      "type": "string"
+    },
+    "ModuleType": {
+      "enum": [
+        "module",
+        "commonjs"
+      ],
+      "type": "string"
+    },
+    "NpmManifestExtras": {
+      "properties": {
+        "bin": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "type": "object"
+        },
+        "engines": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "type": "object"
+        },
+        "exports": {
+          "description": "Kept verbatim, at most 64 KiB serialized."
+        },
+        "has_jest_key": {
+          "description": "True when package.json has a top-level `jest` key.",
+          "type": "boolean"
+        },
+        "main": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "module": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "module_type": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/ModuleType"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "package_manager": {
+          "description": "The `packageManager` field, e.g. `pnpm@10.4.1`.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "script_entry_hints": {
+          "additionalProperties": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "description": "Path-like tokens of script values only. Raw commands are dropped: they can embed secrets.",
+          "type": "object"
+        },
+        "script_names": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "types": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "workspaces": {
+          "items": {
+            "type": "string"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "bin",
+        "engines",
+        "has_jest_key",
+        "script_entry_hints",
+        "script_names"
+      ],
+      "type": "object"
+    },
+    "PackageManagerFact": {
+      "properties": {
+        "declared": {
+          "description": "The `packageManager` field, e.g. `pnpm@10.4.1`.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "kind": {
+          "$ref": "#/definitions/PackageManagerKind"
+        },
+        "lockfile": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "lockfile_version": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "primary": {
+          "description": "The manager that wins in its directory (declared, single lockfile, or priority).",
+          "type": "boolean"
+        },
+        "scope_dir": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "primary",
+        "scope_dir"
+      ],
+      "type": "object"
+    },
+    "PackageManagerKind": {
+      "enum": [
+        "npm",
+        "pnpm",
+        "yarn_classic",
+        "yarn_berry",
+        "bun",
+        "pip",
+        "poetry",
+        "uv",
+        "go_modules",
+        "cargo",
+        "maven",
+        "gradle",
+        "bundler",
+        "composer",
+        "nuget"
+      ],
+      "type": "string"
+    },
+    "ParseStatusLite": {
+      "oneOf": [
+        {
+          "properties": {
+            "status": {
+              "enum": [
+                "ok"
+              ],
+              "type": "string"
+            }
+          },
+          "required": [
+            "status"
+          ],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "status": {
+              "enum": [
+                "partial"
+              ],
+              "type": "string"
+            }
+          },
+          "required": [
+            "status"
+          ],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "reason": {
+              "type": "string"
+            },
+            "status": {
+              "enum": [
+                "failed"
+              ],
+              "type": "string"
+            }
+          },
+          "required": [
+            "reason",
+            "status"
+          ],
+          "type": "object"
+        }
+      ]
+    },
+    "ProviderHint": {
+      "description": "Hosting provider guessed from the remote host name.",
+      "enum": [
+        "github",
+        "gitlab",
+        "bitbucket",
+        "azure",
+        "other",
+        "local"
+      ],
+      "type": "string"
+    },
+    "RemoteFact": {
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "provider": {
+          "$ref": "#/definitions/ProviderHint"
+        },
+        "slug": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "url": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "provider",
+        "url"
+      ],
+      "type": "object"
+    },
+    "RootFact": {
+      "properties": {
+        "confidence": {
+          "format": "float",
+          "type": "number"
+        },
+        "path": {
+          "type": "string"
+        },
+        "source": {
+          "$ref": "#/definitions/RootSource"
+        }
+      },
+      "required": [
+        "confidence",
+        "path",
+        "source"
+      ],
+      "type": "object"
+    },
+    "RootSource": {
+      "enum": [
+        "ts_root_dir",
+        "nest_cli_source_root",
+        "workspace_src",
+        "conventional",
+        "conventional_test",
+        "jest_config"
+      ],
+      "type": "string"
+    },
+    "RuleDocCandidate": {
+      "properties": {
+        "path": {
+          "type": "string"
+        },
+        "score": {
+          "format": "float",
+          "type": "number"
+        },
+        "signals": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "path",
+        "score",
+        "signals"
+      ],
+      "type": "object"
+    },
+    "ToolFact": {
+      "properties": {
+        "detail": {
+          "description": "A short identifier-like detail (builder name, runtime version), never free text.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "path": {
+          "type": "string"
+        },
+        "tool": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "path",
+        "tool"
+      ],
+      "type": "object"
+    },
+    "ToolingFacts": {
+      "properties": {
+        "ci": {
+          "items": {
+            "$ref": "#/definitions/CiFact"
+          },
+          "type": "array"
+        },
+        "compiler": {
+          "items": {
+            "$ref": "#/definitions/ToolFact"
+          },
+          "type": "array"
+        },
+        "hooks": {
+          "items": {
+            "$ref": "#/definitions/ToolFact"
+          },
+          "type": "array"
+        },
+        "lint": {
+          "items": {
+            "$ref": "#/definitions/ToolFact"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "ci",
+        "compiler",
+        "hooks",
+        "lint"
+      ],
+      "type": "object"
+    },
+    "TsConfigFact": {
+      "properties": {
+        "effective": {
+          "$ref": "#/definitions/TsEffectiveOptions"
+        },
+        "extends_chain": {
+          "description": "Nearest first.",
+          "items": {
+            "$ref": "#/definitions/TsExtends"
+          },
+          "type": "array"
+        },
+        "parse_status": {
+          "$ref": "#/definitions/ParseStatusLite"
+        },
+        "path": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "effective",
+        "extends_chain",
+        "parse_status",
+        "path"
+      ],
+      "type": "object"
+    },
+    "TsEffectiveOptions": {
+      "properties": {
+        "allow_js": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "base_url": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "config_dir": {
+          "type": "string"
+        },
+        "emit_decorator_metadata": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "exclude": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "experimental_decorators": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "files": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "include": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "include_base": {
+          "description": "Directory the include/exclude/files patterns are relative to.",
+          "type": "string"
+        },
+        "jsx": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "module": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "module_resolution": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "out_dir": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "paths": {
+          "description": "In declaration order: the order is significant to TypeScript.",
+          "items": {
+            "$ref": "#/definitions/TsPathMapping"
+          },
+          "type": "array"
+        },
+        "paths_base": {
+          "description": "Directory of the config that defined `paths`; targets are relative to it unless a `baseUrl` is set.",
+          "type": "string"
+        },
+        "references": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "root_dir": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "root_dirs": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "strict": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "target": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "config_dir",
+        "exclude",
+        "files",
+        "include",
+        "include_base",
+        "paths",
+        "paths_base",
+        "references",
+        "root_dirs"
+      ],
+      "type": "object"
+    },
+    "TsExtends": {
+      "oneOf": [
+        {
+          "properties": {
+            "kind": {
+              "enum": [
+                "local"
+              ],
+              "type": "string"
+            },
+            "path": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind",
+            "path"
+          ],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "kind": {
+              "enum": [
+                "package"
+              ],
+              "type": "string"
+            },
+            "resolved": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "specifier": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind",
+            "specifier"
+          ],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "kind": {
+              "enum": [
+                "unresolved"
+              ],
+              "type": "string"
+            },
+            "specifier": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind",
+            "specifier"
+          ],
+          "type": "object"
+        }
+      ]
+    },
+    "TsPathMapping": {
+      "properties": {
+        "pattern": {
+          "type": "string"
+        },
+        "targets": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "pattern",
+        "targets"
+      ],
+      "type": "object"
+    },
+    "VaultKind": {
+      "enum": [
+        "agent_vault",
+        "obsidian",
+        "cursor_rules",
+        "claude_dir"
+      ],
+      "type": "string"
+    },
+    "WarningSeverity": {
+      "description": "How serious a warning is.",
+      "enum": [
+        "info",
+        "warning",
+        "high"
+      ],
+      "type": "string"
+    },
+    "WorkspaceLayout": {
+      "properties": {
+        "cycles": {
+          "items": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "type": "array"
+        },
+        "internal_edges": {
+          "description": "`(from, to)` package names, sorted.",
+          "items": {
+            "items": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "maxItems": 2,
+            "minItems": 2,
+            "type": "array"
+          },
+          "type": "array"
+        },
+        "is_monorepo": {
+          "type": "boolean"
+        },
+        "nx_apps_dir": {
+          "description": "nx.json `workspaceLayout.appsDir` / `libsDir`.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "nx_libs_dir": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "packages": {
+          "description": "Sorted by directory.",
+          "items": {
+            "$ref": "#/definitions/WorkspacePackage"
+          },
+          "type": "array"
+        },
+        "root_package": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "tools": {
+          "items": {
+            "$ref": "#/definitions/WorkspaceTool"
+          },
+          "type": "array"
+        },
+        "turbo_tasks": {
+          "description": "Task names declared in turbo.json.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "cycles",
+        "internal_edges",
+        "is_monorepo",
+        "packages",
+        "tools",
+        "turbo_tasks"
+      ],
+      "type": "object"
+    },
+    "WorkspacePackage": {
+      "properties": {
+        "dir": {
+          "type": "string"
+        },
+        "ecosystem": {
+          "$ref": "#/definitions/Ecosystem"
+        },
+        "internal_deps": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "manifest": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "name": {
+          "type": "string"
+        },
+        "private": {
+          "type": "boolean"
+        },
+        "source": {
+          "$ref": "#/definitions/WorkspaceTool"
+        },
+        "version": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "dir",
+        "ecosystem",
+        "internal_deps",
+        "name",
+        "private",
+        "source"
+      ],
+      "type": "object"
+    },
+    "WorkspaceTool": {
+      "enum": [
+        "pnpm",
+        "npm_workspaces",
+        "yarn",
+        "lerna",
+        "nx",
+        "turbo",
+        "rush",
+        "cargo",
+        "go_work"
+      ],
+      "type": "string"
+    }
+  },
+  "properties": {
+    "api_routes": {
+      "$ref": "#/definitions/DeferredToIndex"
+    },
+    "auth": {
+      "$ref": "#/definitions/AuthFacts"
+    },
+    "build_systems": {
+      "items": {
+        "$ref": "#/definitions/BuildSystemFact"
+      },
+      "type": "array"
+    },
+    "detected_at": {
+      "description": "RFC 3339 UTC. Excluded from `facts_hash`.",
+      "type": "string"
+    },
+    "docs": {
+      "$ref": "#/definitions/DocsFacts"
+    },
+    "entrypoints": {
+      "items": {
+        "$ref": "#/definitions/EntrypointFact"
+      },
+      "type": "array"
+    },
+    "env_files": {
+      "items": {
+        "$ref": "#/definitions/EnvFileFact"
+      },
+      "type": "array"
+    },
+    "facts_hash": {
+      "type": "string"
+    },
+    "fingerprint": {
+      "description": "Filled by the caller through INIT-012.",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "frameworks": {
+      "items": {
+        "$ref": "#/definitions/FrameworkFact"
+      },
+      "type": "array"
+    },
+    "generated": {
+      "$ref": "#/definitions/GeneratedSummary"
+    },
+    "git": {
+      "anyOf": [
+        {
+          "$ref": "#/definitions/GitState"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "infra": {
+      "items": {
+        "$ref": "#/definitions/InfraFact"
+      },
+      "type": "array"
+    },
+    "inventory": {
+      "$ref": "#/definitions/InventorySummary"
+    },
+    "languages": {
+      "items": {
+        "$ref": "#/definitions/LanguageStat"
+      },
+      "type": "array"
+    },
+    "layout": {
+      "$ref": "#/definitions/LayoutFacts"
+    },
+    "manifests": {
+      "items": {
+        "$ref": "#/definitions/ManifestFact"
+      },
+      "type": "array"
+    },
+    "migrations": {
+      "items": {
+        "$ref": "#/definitions/MigrationDirFact"
+      },
+      "type": "array"
+    },
+    "package_managers": {
+      "items": {
+        "$ref": "#/definitions/PackageManagerFact"
+      },
+      "type": "array"
+    },
+    "primary_language": {
+      "anyOf": [
+        {
+          "$ref": "#/definitions/Language"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "root_name": {
+      "description": "Directory name only: absolute host paths are never stored.",
+      "type": "string"
+    },
+    "schema_files": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "schema_version": {
+      "format": "uint32",
+      "minimum": 0.0,
+      "type": "integer"
+    },
+    "sensitive_files": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "tool_version": {
+      "type": "string"
+    },
+    "tooling": {
+      "$ref": "#/definitions/ToolingFacts"
+    },
+    "tsconfigs": {
+      "items": {
+        "$ref": "#/definitions/TsConfigFact"
+      },
+      "type": "array"
+    },
+    "warnings": {
+      "description": "Sorted by (code, path), at most [`MAX_WARNINGS`].",
+      "items": {
+        "$ref": "#/definitions/InitWarning"
+      },
+      "type": "array"
+    },
+    "warnings_truncated": {
+      "description": "Warnings dropped by the cap.",
+      "format": "uint64",
+      "minimum": 0.0,
+      "type": "integer"
+    },
+    "workspaces": {
+      "$ref": "#/definitions/WorkspaceLayout"
+    }
+  },
+  "required": [
+    "api_routes",
+    "auth",
+    "build_systems",
+    "detected_at",
+    "docs",
+    "entrypoints",
+    "env_files",
+    "facts_hash",
+    "frameworks",
+    "generated",
+    "infra",
+    "inventory",
+    "languages",
+    "layout",
+    "manifests",
+    "migrations",
+    "package_managers",
+    "root_name",
+    "schema_files",
+    "schema_version",
+    "sensitive_files",
+    "tool_version",
+    "tooling",
+    "tsconfigs",
+    "warnings",
+    "warnings_truncated",
+    "workspaces"
+  ],
+  "title": "RepositoryFacts",
+  "type": "object"
+}

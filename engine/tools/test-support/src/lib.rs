@@ -241,3 +241,17 @@ pub fn edge_case_tree() -> TempDir {
         tmp
     }
 }
+
+/// Like [`fixture_copy`], but the copy lives in `<tmp>/<name>` so the root directory name is
+/// stable (some facts include the repository directory name).
+pub fn fixture_copy_named(name: &str) -> (TempDir, PathBuf) {
+    #[allow(clippy::unwrap_used, clippy::expect_used)]
+    {
+        let src = fixture_repo(name);
+        let tmp = tempfile::tempdir().expect("tempdir");
+        let dst = tmp.path().join(name);
+        fs::create_dir_all(&dst).expect("mkdir");
+        copy_dir(&src, &dst).expect("copy fixture");
+        (tmp, dst)
+    }
+}

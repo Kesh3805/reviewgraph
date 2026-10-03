@@ -8,6 +8,7 @@ use std::path::{Path, PathBuf};
 
 use review_core::ids::CommitSha;
 use review_core::location::RepoPath;
+use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
 use crate::error::{InitError, InitWarning};
@@ -26,7 +27,7 @@ pub struct GitOpenOptions {
     pub provider_default_branch: Option<String>,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 pub struct DiscoveredRepo {
     /// Canonical worktree root.
     pub root: PathBuf,
@@ -34,7 +35,7 @@ pub struct DiscoveredRepo {
     pub warnings: Vec<InitWarning>,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(tag = "kind", rename_all = "snake_case")]
 pub enum HeadState {
     Commit {
@@ -73,7 +74,7 @@ impl HeadState {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum DefaultBranchSource {
     OriginHead,
@@ -83,7 +84,7 @@ pub enum DefaultBranchSource {
     Unknown,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 pub struct RemoteFact {
     pub name: String,
     pub url: RedactedUrl,
@@ -91,7 +92,7 @@ pub struct RemoteFact {
     pub slug: Option<String>,
 }
 
-#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 pub struct DirtyState {
     pub is_dirty: bool,
     pub staged: u32,
@@ -101,9 +102,13 @@ pub struct DirtyState {
     pub sample_paths: Vec<RepoPath>,
     /// The scan stopped at the entry limit; the counts are lower bounds.
     pub truncated: bool,
+    /// Every changed path (staged, unstaged, untracked), sorted. Runtime-only: used by the
+    /// fingerprint, never serialized.
+    #[serde(skip)]
+    pub all_paths: Vec<RepoPath>,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 pub struct GitState {
     pub head: HeadState,
     /// Sorted by name.
@@ -327,6 +332,7 @@ fn default_branch(
 struct DirtyCollector {
     state: DirtyState,
     samples: BTreeSet<RepoPath>,
+    all: BTreeSet<RepoPath>,
     entries: u64,
 }
 
@@ -342,6 +348,7 @@ impl DirtyCollector {
             return;
         };
         if let Ok(rp) = RepoPath::new(text) {
+            self.all.insert(rp.clone());
             self.samples.insert(rp);
             if self.samples.len() > SAMPLE_PATHS {
                 self.samples.pop_last();
@@ -354,6 +361,7 @@ fn dirty_state(repo: &gix::Repository, warnings: &mut Vec<InitWarning>) -> Dirty
     let mut collector = DirtyCollector {
         state: DirtyState::default(),
         samples: BTreeSet::new(),
+        all: BTreeSet::new(),
         entries: 0,
     };
     let platform = match repo.status(gix::progress::Discard) {
@@ -382,8 +390,11 @@ fn dirty_state(repo: &gix::Repository, warnings: &mut Vec<InitWarning>) -> Dirty
         let Ok(item) = item else { continue };
         match item {
             gix::status::Item::TreeIndex(change) => {
-                collector.state.staged += 1;
                 let (location, ..) = change.fields();
+                if is_review_state(location) {
+                    continue;
+                }
+                collector.state.staged += 1;
                 collector.note(location, warnings);
             }
             gix::status::Item::IndexWorktree(item) => match item {
@@ -395,12 +406,17 @@ fn dirty_state(repo: &gix::Repository, warnings: &mut Vec<InitWarning>) -> Dirty
                         status,
                         EntryStatus::Change(_) | EntryStatus::Conflict { .. }
                     ) {
+                        if is_review_state(rela_path.as_ref()) {
+                            continue;
+                        }
                         collector.state.unstaged += 1;
                         collector.note(rela_path.as_ref(), warnings);
                     }
                 }
                 gix::status::index_worktree::Item::DirectoryContents { entry, .. } => {
-                    if entry.status == gix::dir::entry::Status::Untracked {
+                    if entry.status == gix::dir::entry::Status::Untracked
+                        && !is_review_state(entry.rela_path.as_ref())
+                    {
                         collector.state.untracked += 1;
                         collector.note(entry.rela_path.as_ref(), warnings);
                     }
@@ -410,7 +426,7 @@ fn dirty_state(repo: &gix::Repository, warnings: &mut Vec<InitWarning>) -> Dirty
                     copy,
                     ..
                 } => {
-                    if !copy {
+                    if !copy && !is_review_state(dirwalk_entry.rela_path.as_ref()) {
                         collector.state.unstaged += 1;
                         collector.note(dirwalk_entry.rela_path.as_ref(), warnings);
                     }
@@ -424,6 +440,7 @@ fn dirty_state(repo: &gix::Repository, warnings: &mut Vec<InitWarning>) -> Dirty
     }
     let mut state = collector.state;
     state.sample_paths = collector.samples.into_iter().collect();
+    state.all_paths = collector.all.into_iter().collect();
     state.is_dirty = state.staged + state.unstaged + state.untracked > 0;
     state
 }
@@ -496,4 +513,10 @@ pub fn tracked_among(root: &Path, candidates: &[RepoPath]) -> BTreeSet<RepoPath>
         })
         .cloned()
         .collect()
+}
+
+/// `.review/` is ReviewGraph's own state directory: its (committable) config and ignore file
+/// must not make a worktree look dirty.
+fn is_review_state(path: &gix::bstr::BStr) -> bool {
+    path == ".review" || path.starts_with(b".review/")
 }

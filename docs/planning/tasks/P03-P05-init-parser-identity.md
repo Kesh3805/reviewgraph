@@ -1057,7 +1057,9 @@ Status: â
 
 ### INIT-011 — `.review/` layout + `repository.json` writer (RepositoryFacts)
 
-Status: ☐
+Status: â
+
+> **Implementation note:** The contract is exported through the existing review-cli registry as RepositoryFacts.schema.json (plus generated TypeScript) instead of a hand-named repository-facts.v1.schema.json; schema_matches_committed_contract compares it structurally. fd-lock was replaced by fs2 (advisory flock through a plain File) so no unsafe code is needed. InitWarning carries severity and the facts add warnings_truncated. .review/ changes never make the worktree dirty (git.rs ignores that directory) so a second init on a clean HEAD is UpToDate even though .review/config.yaml and .gitignore are untracked. nest-api does not exist yet, so the insta snapshot covers monorepo-pnpm and the pinned hash covers init-basic (copied to a stable directory name). The init_dump example and the review-cli dependency on repository are included. benches/init.rs was not added.
 
 - **Task ID:** INIT-011
 - **Title:** `.review/` layout + repository.json writer (RepositoryFacts) per PRD §14

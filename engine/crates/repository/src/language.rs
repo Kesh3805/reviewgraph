@@ -5,6 +5,7 @@ use std::collections::BTreeMap;
 use rayon::prelude::*;
 use review_core::language::Language;
 use review_core::location::RepoPath;
+use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
 use crate::error::InitWarning;
@@ -14,7 +15,9 @@ use crate::walk::{FileClass, FileEntry, FileInventory};
 /// Bytes read from an extensionless file to look for a shebang.
 const SHEBANG_BYTES: usize = 256;
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize)]
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize, JsonSchema,
+)]
 #[serde(rename_all = "snake_case")]
 pub enum Dialect {
     Ts,
@@ -26,7 +29,9 @@ pub enum Dialect {
     Cjs,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize)]
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize, JsonSchema,
+)]
 pub struct LanguageTag {
     pub language: Language,
     pub dialect: Option<Dialect>,
@@ -187,7 +192,7 @@ pub fn detect_language(path: &RepoPath, prefix: &[u8]) -> Option<LanguageTag> {
     shebang_language(prefix)
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 pub struct LanguageStat {
     pub language: Language,
     pub files: u64,
