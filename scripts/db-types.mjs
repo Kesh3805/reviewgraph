@@ -17,7 +17,8 @@ import { fileURLToPath } from 'node:url';
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const API = path.join(ROOT, 'apps', 'api');
 const OUT = path.join(API, 'src', 'db', 'generated.ts');
-const MIGRATIONS = path.join(ROOT, 'engine', 'migrations');
+// RG_MIGRATIONS_DIR lets a caller generate from a subset (e.g. only committed migrations).
+const MIGRATIONS = process.env.RG_MIGRATIONS_DIR ?? path.join(ROOT, 'engine', 'migrations');
 const IMAGE = process.env.RG_POSTGRES_IMAGE ?? 'postgres:16.15-alpine';
 const requireFromApi = createRequire(path.join(API, 'package.json'));
 

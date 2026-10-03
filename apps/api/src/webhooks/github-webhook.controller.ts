@@ -12,6 +12,7 @@ import {
   ServiceUnavailableException,
 } from '@nestjs/common';
 import { SpanStatusCode, trace } from '@opentelemetry/api';
+import { createHash } from 'node:crypto';
 import type { Request, Response } from 'express';
 import { Public } from '../auth/public.decorator';
 import { incCounter } from '../common/metrics';
@@ -25,7 +26,9 @@ import {
   EVENT_NORMALIZER,
   PROVIDER_EVENT_SINK,
   type CommandAcknowledger,
+  type DeliveryRecord,
   type DeliveryStore,
+  type DeliveryWorkResult,
   type EventNormalizer,
   type ProviderEventSink,
 } from './webhook.ports';
@@ -108,7 +111,10 @@ export class GithubWebhookController {
         { attributes: { event: eventName, action: action ?? '', delivery_id: deliveryId } },
         async (span) => {
           try {
-            return await this.process(eventName, deliveryId, action, installationId, payload);
+            return await this.process(
+              { deliveryId, eventName, action, installationId, payloadSha256: sha256(rawBody) },
+              payload,
+            );
           } catch (err) {
             span.setStatus({ code: SpanStatusCode.ERROR });
             throw err;
@@ -126,13 +132,8 @@ export class GithubWebhookController {
     res.status(HttpStatus.ACCEPTED).json(ack);
   }
 
-  private async process(
-    eventName: string,
-    deliveryId: string,
-    action: string | undefined,
-    installationId: string | undefined,
-    payload: unknown,
-  ): Promise<WebhookAck> {
+  private async process(delivery: DeliveryRecord, payload: unknown): Promise<WebhookAck> {
+    const { deliveryId, eventName } = delivery;
     if (eventName === 'ping') return { delivery_id: deliveryId, accepted: false, reason: 'ping' };
     // Unsupported events are acknowledged with 202 so GitHub does not retry them.
     if (!SUPPORTED_GITHUB_EVENTS.has(eventName)) {
@@ -141,35 +142,51 @@ export class GithubWebhookController {
 
     let outcome;
     try {
-      outcome = await this.deliveries.record({ deliveryId, eventName, action, installationId });
+      // Records the delivery and runs the handling in one transaction (GH-003): a duplicate is
+      // never handled twice, and a failure rolls the record back so GitHub's retry runs fresh.
+      outcome = await this.deliveries.process(delivery, () => this.handle(delivery, payload));
     } catch (err) {
-      // A failed store must make GitHub redeliver, never silently drop the event.
-      this.logger.error(`delivery store unavailable delivery=${deliveryId} (${errorName(err)})`);
+      // A failed store or handler must make GitHub redeliver, never silently drop the event.
+      this.logger.error(`delivery handling failed delivery=${deliveryId} (${errorName(err)})`);
       throw new ServiceUnavailableException();
     }
-    if (outcome === 'duplicate') {
+    if (outcome.duplicate) {
       return { delivery_id: deliveryId, accepted: false, reason: 'duplicate' };
     }
+    return outcome.ack;
+  }
 
+  private async handle(
+    delivery: DeliveryRecord,
+    payload: unknown,
+  ): Promise<DeliveryWorkResult<WebhookAck>> {
+    const { deliveryId, eventName } = delivery;
     const normalized = await this.normalizer.normalize(eventName, payload, deliveryId);
     if (isIgnored(normalized)) {
-      return { delivery_id: deliveryId, accepted: false, reason: normalized.reason };
+      return {
+        status: 'ignored',
+        ack: { delivery_id: deliveryId, accepted: false, reason: normalized.reason },
+      };
     }
-
-    // Detached on purpose: acknowledgement must not wait for orchestration.
-    void this.sink.dispatch(normalized).catch((err: unknown) => {
-      incCounter('webhook_dispatch_failures_total', { event: eventName });
-      this.logger.error(`event dispatch failed delivery=${deliveryId} (${errorName(err)})`);
-    });
-    if (normalized.type === 'review_command') {
-      // Best effort: a failed reaction must not affect the review.
-      void this.acknowledger.acknowledge(normalized).catch((err: unknown) => {
-        this.logger.warn(
-          `command acknowledgement failed delivery=${deliveryId} (${errorName(err)})`,
-        );
-      });
-    }
-    return { delivery_id: deliveryId, accepted: true };
+    return {
+      status: 'processed',
+      ack: { delivery_id: deliveryId, accepted: true },
+      afterCommit: () => {
+        // Detached on purpose: acknowledgement must not wait for orchestration.
+        void this.sink.dispatch(normalized).catch((err: unknown) => {
+          incCounter('webhook_dispatch_failures_total', { event: eventName });
+          this.logger.error(`event dispatch failed delivery=${deliveryId} (${errorName(err)})`);
+        });
+        if (normalized.type === 'review_command') {
+          // Best effort: a failed reaction must not affect the review.
+          void this.acknowledger.acknowledge(normalized).catch((err: unknown) => {
+            this.logger.warn(
+              `command acknowledgement failed delivery=${deliveryId} (${errorName(err)})`,
+            );
+          });
+        }
+      },
+    };
   }
 }
 
@@ -183,6 +200,10 @@ function installationIdOf(payload: unknown): string | undefined {
     (payload as Record<string, unknown> | null)?.installation as { id?: unknown } | undefined
   )?.id;
   return typeof id === 'number' || typeof id === 'string' ? String(id) : undefined;
+}
+
+function sha256(body: Buffer): string {
+  return createHash('sha256').update(body).digest('hex');
 }
 
 function errorName(err: unknown): string {

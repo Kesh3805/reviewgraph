@@ -919,7 +919,8 @@ Status: ☑
 ---
 
 ### GH-003 — Delivery idempotency (Redis SETNX + webhook_deliveries)
-Status: ☐
+Status: ☑
+> **Implementation note:** `webhook_deliveries` already exists (DOM-009, `20261002000005`) with `status` (received/processed/ignored/rejected/failed), `signature_valid`, `provider_installation_id` and a nullable `organization_id`, so no table is created: the new migration `20261003000010_webhook_delivery_functions.sql` adds three SECURITY DEFINER functions (`rg_record_webhook_delivery`, `rg_webhook_delivery_exists`, `rg_finish_webhook_delivery`, owned by `rg_ops`) because RLS hides NULL-organization rows from `rg_api`. The spec `outcome`/`review_run_id` columns are not added: the outcome is `status`, and the run link belongs to SUP-001. `DeliveryStore` changed from `record()` to `process(delivery, work)`: the insert, the handling (normalization) and the status update run in ONE transaction, so a handler failure rolls the row back (and clears the Redis key) and GitHub retry is processed fresh; `afterCommit` callbacks (dispatch to the orchestrator, the command reaction) run only once the transaction committed, and `work` receives `{trx}` for GH-013/SUP-001 to write in the same transaction. A Redis hit is only a hint: Postgres is asked (cheap read) and wins, and Redis being down degrades to Postgres alone. The in-memory store moved to `test/helpers/memory-delivery-store.ts`; SUP-004 `duplicate_webhook` is covered at the endpoint level (10 parallel replays, one accepted, one row) but the run/job half waits for SUP-001/API-007. The 30-day retention purge belongs to SEC-007.
 
 - **Task ID:** GH-003
 - **Title:** Delivery idempotency (Redis SETNX + webhook_deliveries)

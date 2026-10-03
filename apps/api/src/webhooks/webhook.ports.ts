@@ -1,3 +1,4 @@
+import type { Tx } from '../db/tx';
 import type { NormalizeResult, ProviderEvent, ReviewCommandEvent } from '../providers/ports';
 
 /** What the webhook endpoint knows about a verified delivery. */
@@ -6,16 +7,40 @@ export interface DeliveryRecord {
   eventName: string;
   action?: string;
   installationId?: string;
+  /** SHA-256 of the raw body; the payload itself is never stored. */
+  payloadSha256: string;
 }
 
-export type DeliveryOutcome = 'new' | 'duplicate';
+/** Handed to the work of a delivery: the transaction that holds its `webhook_deliveries` row. */
+export interface DeliveryContext {
+  trx: Tx;
+}
+
+export interface DeliveryWorkResult<A> {
+  /** Stored as `webhook_deliveries.status`. */
+  status: 'processed' | 'ignored';
+  /** The webhook acknowledgement body. */
+  ack: A;
+  /** Set once the tenant of the delivery is known. */
+  organizationId?: string;
+  /** Runs only after the transaction committed (dispatch to the orchestrator, reactions). */
+  afterCommit?: () => void;
+}
+
+export type DeliveryOutcome<A> = { duplicate: true } | { duplicate: false; ack: A };
 
 /**
- * Idempotency store (GH-003: Redis SETNX plus the `webhook_deliveries` table). A failure here
- * must surface as an error so the endpoint answers 503 and GitHub retries.
+ * Idempotency store (GH-003): a Redis `SET NX` fast path in front of the durable
+ * `webhook_deliveries` row. `process` records the delivery and runs `work` in ONE database
+ * transaction: a duplicate never runs `work`; if `work` (or the commit) fails, the row rolls back
+ * so GitHub's retry is processed fresh. A store failure must surface as an error so the endpoint
+ * answers 503 and GitHub retries.
  */
 export interface DeliveryStore {
-  record(delivery: DeliveryRecord): Promise<DeliveryOutcome>;
+  process<A>(
+    delivery: DeliveryRecord,
+    work: (ctx: DeliveryContext) => Promise<DeliveryWorkResult<A>>,
+  ): Promise<DeliveryOutcome<A>>;
 }
 export const DELIVERY_STORE = Symbol('DELIVERY_STORE');
 

@@ -22,6 +22,7 @@ import { GithubPermissionsMonitor } from '../../src/providers/github/permissions
 import { createTestApp } from '../helpers';
 import { fixture } from '../helpers/fixtures';
 import { generateAppKey } from '../helpers/fake-github';
+import { MemoryDeliveryStore } from '../helpers/memory-delivery-store';
 
 const SECRET = 'whsec_current_0123456789';
 const PREVIOUS = 'whsec_previous_0123456789';
@@ -85,7 +86,7 @@ describe('GitHub webhook endpoint (e2e)', () => {
             if (sinkDelayMs) await new Promise((r) => setTimeout(r, sinkDelayMs));
           },
         });
-        if (store) builder.overrideProvider(DELIVERY_STORE).useValue(store);
+        builder.overrideProvider(DELIVERY_STORE).useValue(store ?? new MemoryDeliveryStore());
         return builder;
       },
     });
@@ -223,7 +224,7 @@ describe('GitHub webhook endpoint (e2e)', () => {
   });
 
   it('db_down_503: GitHub retries when the delivery cannot be recorded', async () => {
-    store = { record: () => Promise.reject(new Error('connection refused')) };
+    store = { process: () => Promise.reject(new Error('connection refused')) };
     await start();
     const res = await post(PAYLOAD);
     expect(res.status).toBe(503);
