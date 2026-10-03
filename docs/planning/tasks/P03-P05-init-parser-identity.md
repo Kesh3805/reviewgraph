@@ -550,7 +550,9 @@ Status: â
 
 ### INIT-005 — Monorepo/workspace detection
 
-Status: ☐
+Status: â
+
+> **Implementation note:** Workspace patterns are interpreted only at the repository root (pnpm-workspace.yaml, package.json workspaces, lerna.json, rush.json, nx project.json, Cargo [workspace], go.work); nested pnpm-workspace.yaml files raise nested_workspace_root. package_for is a linear longest-prefix scan over the (small) package list rather than a precomputed binary search. Dir scopes use RepoDir (root = empty string).
 
 - **Task ID:** INIT-005
 - **Title:** Monorepo/workspace detection (pnpm-workspace.yaml, package.json workspaces, nx/turbo/lerna, cargo workspace)

@@ -14,6 +14,7 @@ pub mod read;
 pub mod remote_url;
 pub mod sensitive;
 pub mod walk;
+pub mod workspaces;
 
 pub use dirs::RepoDir;
 pub use error::{Error, InitError, InitWarning, Result};
