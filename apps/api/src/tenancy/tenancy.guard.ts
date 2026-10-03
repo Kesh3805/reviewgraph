@@ -23,12 +23,19 @@ export const TENANT_PARAMS: ReadonlyArray<readonly [string, ResourceKind]> = [
   ['organizationId', 'organization'],
 ];
 
+/** Request body fields that identify a tenant resource (for example `POST /repositories`). */
+export const TENANT_BODY_FIELDS: ReadonlyArray<readonly [string, ResourceKind]> = [
+  ['installation_id', 'installation'],
+  ['repository_id', 'repository'],
+  ['pull_request_id', 'pull_request'],
+];
+
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 /**
  * Tenancy guard (API-003). For a route with `@RequireRole`:
- *  1. resolves the organization from a resource route param (`:repoId`, `:reviewId`, ...),
- *     else from `organization_id` in the query/body, else from the only membership of the caller;
+ *  1. resolves the organization from a resource route param (`:repoId`, `:reviewId`, ...) or a
+ *     resource id in the body (`installation_id`, `repository_id`), else from `organization_id` in the query/body, else from the only membership of the caller;
  *  2. checks the membership and role of the caller;
  *  3. stores `{organizationId, role}` on the request for `@Tenant()` and `DbService.withTx`.
  * An unknown id and a foreign id are indistinguishable: both answer 404, never 403, so ids
@@ -66,6 +73,15 @@ export class TenancyGuard implements CanActivate {
   private async resolveOrganization(req: TenantRequest, userId: string): Promise<string> {
     for (const [param, kind] of TENANT_PARAMS) {
       const id = req.params[param];
+      if (typeof id !== 'string') continue;
+      if (!UUID.test(id)) throw this.notFound();
+      const org = await this.memberships.resolveOrg(kind, id);
+      if (!org) throw this.notFound();
+      return org;
+    }
+    const body = (req.body ?? {}) as Record<string, unknown>;
+    for (const [field, kind] of TENANT_BODY_FIELDS) {
+      const id = body[field];
       if (typeof id !== 'string') continue;
       if (!UUID.test(id)) throw this.notFound();
       const org = await this.memberships.resolveOrg(kind, id);

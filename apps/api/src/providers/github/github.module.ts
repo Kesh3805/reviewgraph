@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import type { Redis } from 'ioredis';
 import { REDIS } from '../../common/redis.module';
 import { APP_CONFIG, type AppConfig } from '../../config/config.module';
-import { RepositoriesModule } from '../../repositories/repository-settings.port';
+import { RepositoriesModule } from '../../repositories/repositories.module';
 import { GithubAppAuth, loadPrivateKey } from './app-auth.service';
 import { GithubCommandAcknowledger } from './command-reaction';
 import { GithubEventNormalizer } from './event-normalizer.service';

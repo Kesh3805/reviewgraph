@@ -1,9 +1,9 @@
-import { Injectable, Module } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import type { RepoRef } from '../providers/ports';
 
 /**
- * Per-repository review settings (`repository_settings`, API-008). The legacy guard options
- * from `github.rs:305-347` live here.
+ * Per-repository review settings (`repository_settings`, API-008; see `PgRepositorySettings`).
+ * The legacy guard options from `github.rs:305-347` live here.
  */
 export interface RepositorySettings {
   enabled: boolean;
@@ -25,16 +25,10 @@ export interface RepositorySettingsPort {
 }
 export const REPOSITORY_SETTINGS = Symbol('REPOSITORY_SETTINGS');
 
-/** Defaults for every repository until API-008 persists real settings. */
+/** Defaults for every repository (the fallback when no database-backed settings are wired). */
 @Injectable()
 export class DefaultRepositorySettings implements RepositorySettingsPort {
   getSettings(): Promise<RepositorySettings> {
     return Promise.resolve({ ...DEFAULT_REPOSITORY_SETTINGS });
   }
 }
-
-@Module({
-  providers: [{ provide: REPOSITORY_SETTINGS, useClass: DefaultRepositorySettings }],
-  exports: [REPOSITORY_SETTINGS],
-})
-export class RepositoriesModule {}

@@ -1,0 +1,979 @@
+{
+  "openapi": "3.0.0",
+  "paths": {
+    "/api/v1/auth/github/login": {
+      "get": {
+        "operationId": "AuthController_login",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/api/v1/auth/github/callback": {
+      "get": {
+        "operationId": "AuthController_callback",
+        "parameters": [
+          {
+            "name": "code",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "state",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "error",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/api/v1/auth/logout": {
+      "post": {
+        "operationId": "AuthController_logout",
+        "parameters": [],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/api/v1/auth/me": {
+      "get": {
+        "operationId": "AuthController_me",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/api/v1/repositories": {
+      "post": {
+        "operationId": "RepositoriesController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateRepositoryDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RepositoryDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "repositories"
+        ]
+      },
+      "get": {
+        "operationId": "RepositoriesController_list",
+        "parameters": [
+          {
+            "name": "organization_id",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "cursor",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "maxLength": 500,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RepositoryListDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "repositories"
+        ]
+      }
+    },
+    "/api/v1/repositories/{repoId}": {
+      "get": {
+        "operationId": "RepositoriesController_get",
+        "parameters": [
+          {
+            "name": "repoId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RepositoryDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "repositories"
+        ]
+      }
+    },
+    "/api/v1/repositories/{repoId}/initialize": {
+      "post": {
+        "operationId": "RepositoriesController_initialize",
+        "parameters": [
+          {
+            "name": "repoId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IndexRequestDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "repositories"
+        ]
+      }
+    },
+    "/api/v1/repositories/{repoId}/status": {
+      "get": {
+        "operationId": "RepositoriesController_status",
+        "parameters": [
+          {
+            "name": "repoId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RepositoryStatusDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "repositories"
+        ]
+      }
+    },
+    "/api/v1/repositories/{repoId}/profile": {
+      "get": {
+        "operationId": "RepositoriesController_profile",
+        "parameters": [
+          {
+            "name": "repoId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The repository profile (PROF-001)."
+          }
+        },
+        "tags": [
+          "repositories"
+        ]
+      }
+    },
+    "/api/v1/repositories/{repoId}/graph/rebuild": {
+      "post": {
+        "operationId": "RepositoriesController_rebuild",
+        "parameters": [
+          {
+            "name": "repoId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IndexRequestDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "repositories"
+        ]
+      }
+    },
+    "/api/v1/repositories/{repoId}/settings": {
+      "patch": {
+        "operationId": "RepositoriesController_updateSettings",
+        "parameters": [
+          {
+            "name": "repoId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateRepositorySettingsDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RepositorySettingsDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "repositories"
+        ]
+      }
+    },
+    "/api/v1/webhooks/github": {
+      "post": {
+        "operationId": "GithubWebhookController_receive",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "GithubWebhook"
+        ]
+      }
+    },
+    "/api/v1/health/live": {
+      "get": {
+        "operationId": "HealthController_live",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Health"
+        ]
+      }
+    },
+    "/api/v1/health/ready": {
+      "get": {
+        "operationId": "HealthController_ready",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Health"
+        ]
+      }
+    },
+    "/health": {
+      "get": {
+        "operationId": "HealthAliasController_alias",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "HealthAlias"
+        ]
+      }
+    }
+  },
+  "info": {
+    "title": "ReviewGraph API",
+    "description": "Control-plane API of ReviewGraph. Errors are RFC 9457 problem+json.",
+    "version": "1.0.0",
+    "contact": {}
+  },
+  "tags": [],
+  "servers": [],
+  "components": {
+    "securitySchemes": {
+      "cookie": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "rg_session"
+      }
+    },
+    "schemas": {
+      "CreateRepositoryDto": {
+        "type": "object",
+        "properties": {
+          "installation_id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "full_name": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 300,
+            "pattern": "^[^/\\s]+\\/[^/\\s]+$"
+          }
+        },
+        "required": [
+          "installation_id",
+          "full_name"
+        ],
+        "additionalProperties": false
+      },
+      "RepositoryDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "organization_id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "provider": {
+            "type": "string",
+            "enum": [
+              "github"
+            ]
+          },
+          "provider_repo_id": {
+            "type": "string"
+          },
+          "full_name": {
+            "type": "string"
+          },
+          "default_branch": {
+            "type": "string"
+          },
+          "visibility": {
+            "type": "string",
+            "enum": [
+              "public",
+              "private",
+              "internal"
+            ]
+          },
+          "archived": {
+            "type": "boolean"
+          },
+          "enabled": {
+            "type": "boolean"
+          },
+          "access_state": {
+            "type": "string",
+            "enum": [
+              "active",
+              "removed",
+              "access_lost",
+              "installation_deleted"
+            ]
+          },
+          "primary_language": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "initialized_at": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "settings": {
+            "type": "object",
+            "properties": {
+              "enabled": {
+                "type": "boolean"
+              },
+              "target_branches": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "skip_drafts": {
+                "type": "boolean"
+              },
+              "skip_bots": {
+                "type": "boolean"
+              },
+              "reviewer_overrides": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "boolean"
+                }
+              }
+            },
+            "required": [
+              "enabled",
+              "target_branches",
+              "skip_drafts",
+              "skip_bots",
+              "reviewer_overrides"
+            ]
+          },
+          "created_at": {
+            "type": "string"
+          },
+          "updated_at": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "organization_id",
+          "provider",
+          "provider_repo_id",
+          "full_name",
+          "default_branch",
+          "visibility",
+          "archived",
+          "enabled",
+          "access_state",
+          "primary_language",
+          "initialized_at",
+          "settings",
+          "created_at",
+          "updated_at"
+        ]
+      },
+      "RepositoryListDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "organization_id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "provider": {
+                  "type": "string",
+                  "enum": [
+                    "github"
+                  ]
+                },
+                "provider_repo_id": {
+                  "type": "string"
+                },
+                "full_name": {
+                  "type": "string"
+                },
+                "default_branch": {
+                  "type": "string"
+                },
+                "visibility": {
+                  "type": "string",
+                  "enum": [
+                    "public",
+                    "private",
+                    "internal"
+                  ]
+                },
+                "archived": {
+                  "type": "boolean"
+                },
+                "enabled": {
+                  "type": "boolean"
+                },
+                "access_state": {
+                  "type": "string",
+                  "enum": [
+                    "active",
+                    "removed",
+                    "access_lost",
+                    "installation_deleted"
+                  ]
+                },
+                "primary_language": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "initialized_at": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "settings": {
+                  "type": "object",
+                  "properties": {
+                    "enabled": {
+                      "type": "boolean"
+                    },
+                    "target_branches": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "skip_drafts": {
+                      "type": "boolean"
+                    },
+                    "skip_bots": {
+                      "type": "boolean"
+                    },
+                    "reviewer_overrides": {
+                      "type": "object",
+                      "additionalProperties": {
+                        "type": "boolean"
+                      }
+                    }
+                  },
+                  "required": [
+                    "enabled",
+                    "target_branches",
+                    "skip_drafts",
+                    "skip_bots",
+                    "reviewer_overrides"
+                  ]
+                },
+                "created_at": {
+                  "type": "string"
+                },
+                "updated_at": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "organization_id",
+                "provider",
+                "provider_repo_id",
+                "full_name",
+                "default_branch",
+                "visibility",
+                "archived",
+                "enabled",
+                "access_state",
+                "primary_language",
+                "initialized_at",
+                "settings",
+                "created_at",
+                "updated_at"
+              ]
+            }
+          },
+          "next_cursor": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "items",
+          "next_cursor"
+        ]
+      },
+      "IndexRequestDto": {
+        "type": "object",
+        "properties": {
+          "job_id": {
+            "type": "string"
+          },
+          "idempotency_key": {
+            "type": "string"
+          },
+          "head_sha": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "job_id",
+          "idempotency_key",
+          "head_sha"
+        ]
+      },
+      "RepositoryStatusDto": {
+        "type": "object",
+        "properties": {
+          "repository_id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "index_state": {
+            "type": "string",
+            "enum": [
+              "not_initialized",
+              "queued",
+              "indexing",
+              "ready"
+            ]
+          },
+          "init": {
+            "type": "object",
+            "properties": {
+              "commit_sha": {
+                "type": "string"
+              },
+              "fingerprint": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "facts_hash": {
+                "type": "string"
+              },
+              "facts_schema_version": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "tool_version": {
+                "type": "string"
+              },
+              "primary_language": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "is_monorepo": {
+                "type": "boolean"
+              },
+              "frameworks": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "warnings_count": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "detected_at": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "commit_sha",
+              "fingerprint",
+              "facts_hash",
+              "facts_schema_version",
+              "tool_version",
+              "primary_language",
+              "is_monorepo",
+              "frameworks",
+              "warnings_count",
+              "detected_at"
+            ],
+            "nullable": true
+          },
+          "last_snapshot": {
+            "type": "object",
+            "properties": {
+              "full": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "commit_sha": {
+                    "type": "string"
+                  },
+                  "created_at": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "id",
+                  "commit_sha",
+                  "created_at"
+                ],
+                "nullable": true
+              },
+              "delta": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "commit_sha": {
+                    "type": "string"
+                  },
+                  "created_at": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "id",
+                  "commit_sha",
+                  "created_at"
+                ],
+                "nullable": true
+              }
+            },
+            "required": [
+              "full",
+              "delta"
+            ],
+            "nullable": true
+          },
+          "active_job": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "queue": {
+                "type": "string"
+              },
+              "state": {
+                "type": "string",
+                "enum": [
+                  "queued",
+                  "running"
+                ]
+              }
+            },
+            "required": [
+              "id",
+              "queue",
+              "state"
+            ],
+            "nullable": true
+          },
+          "config": {
+            "type": "object",
+            "properties": {
+              "hash": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "validation_errors": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            "required": [
+              "hash",
+              "validation_errors"
+            ]
+          },
+          "profile_computed_at": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "repository_id",
+          "index_state",
+          "init",
+          "last_snapshot",
+          "active_job",
+          "config",
+          "profile_computed_at"
+        ]
+      },
+      "UpdateRepositorySettingsDto": {
+        "type": "object",
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          },
+          "target_branches": {
+            "maxItems": 50,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 255,
+              "pattern": "^[^\\s]+$"
+            }
+          },
+          "skip_drafts": {
+            "type": "boolean"
+          },
+          "skip_bots": {
+            "type": "boolean"
+          },
+          "reviewer_overrides": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "boolean"
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "RepositorySettingsDto": {
+        "type": "object",
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          },
+          "target_branches": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "skip_drafts": {
+            "type": "boolean"
+          },
+          "skip_bots": {
+            "type": "boolean"
+          },
+          "reviewer_overrides": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "boolean"
+            }
+          }
+        },
+        "required": [
+          "enabled",
+          "target_branches",
+          "skip_drafts",
+          "skip_bots",
+          "reviewer_overrides"
+        ]
+      }
+    }
+  }
+}

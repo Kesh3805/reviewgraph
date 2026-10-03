@@ -25,6 +25,24 @@ export type JsonValue = JsonArray | JsonObject | JsonPrimitive;
 
 export type Timestamp = ColumnType<Date, Date | string, Date | string>;
 
+export interface AuditLog {
+  action: string;
+  actor_id: string | null;
+  actor_type: string;
+  hash: Buffer | null;
+  id: Generated<string>;
+  metadata: Generated<Json>;
+  occurred_at: Generated<Timestamp>;
+  organization_id: string;
+  outcome: Generated<string>;
+  prev_hash: Buffer | null;
+  repository_id: string | null;
+  request_id: string | null;
+  target_id: string | null;
+  target_type: string;
+  trace_id: string | null;
+}
+
 export interface CandidateFindings {
   affected_symbols: Generated<string[]>;
   category: string;
@@ -69,6 +87,44 @@ export interface Memberships {
   role: string;
   updated_at: Generated<Timestamp>;
   user_id: string;
+}
+
+export interface ModelCache {
+  cache_key: string;
+  created_at: Generated<Timestamp>;
+  expires_at: Timestamp;
+  model: string;
+  organization_id: string;
+  output: Json;
+  prompt_version: string;
+  provider: string;
+  request_hash: string;
+  schema_hash: string | null;
+  usage: Json;
+}
+
+export interface ModelCalls {
+  attempt: number;
+  cache_read: number;
+  cache_write: number;
+  cost_usd_micros: Int8 | null;
+  created_at: Generated<Timestamp>;
+  id: string;
+  input_uncached: number;
+  latency_ms: number;
+  model: string;
+  organization_id: string;
+  outcome: string;
+  output_tokens: number;
+  prices_as_of: Timestamp | null;
+  provider: string;
+  repository_id: string;
+  request_hash: string;
+  review_run_id: string | null;
+  reviewer_run_id: string | null;
+  served_from: string;
+  task: string;
+  tier: string;
 }
 
 export interface Organizations {
@@ -167,6 +223,18 @@ export interface RepositoryInitFacts {
   repository_id: string;
   tool_version: string;
   warnings_count: Generated<number>;
+}
+
+export interface RepositorySettings {
+  created_at: Generated<Timestamp>;
+  enabled: Generated<boolean>;
+  organization_id: string;
+  repository_id: string;
+  reviewer_overrides: Generated<Json>;
+  skip_bots: Generated<boolean>;
+  skip_drafts: Generated<boolean>;
+  target_branches: Generated<string[]>;
+  updated_at: Generated<Timestamp>;
 }
 
 export interface ReviewerRuns {
@@ -271,15 +339,19 @@ export interface WebhookDeliveries {
 }
 
 export interface DB {
+  audit_log: AuditLog;
   candidate_findings: CandidateFindings;
   finding_feedback: FindingFeedback;
   memberships: Memberships;
+  model_cache: ModelCache;
+  model_calls: ModelCalls;
   organizations: Organizations;
   provider_installations: ProviderInstallations;
   published_findings: PublishedFindings;
   pull_requests: PullRequests;
   repositories: Repositories;
   repository_init_facts: RepositoryInitFacts;
+  repository_settings: RepositorySettings;
   review_runs: ReviewRuns;
   reviewer_runs: ReviewerRuns;
   sessions: Sessions;

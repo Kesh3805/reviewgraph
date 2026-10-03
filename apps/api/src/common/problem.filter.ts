@@ -10,6 +10,21 @@ import type { Response } from 'express';
 import { DB_RETRY_AFTER_SECONDS, isDbUnavailable } from '../db/errors';
 import type { RequestWithId } from './request-id.middleware';
 
+/**
+ * An HTTP error that carries RFC 9457 extension members (for example the id of the job that
+ * already exists, or `errors` for a validation failure) next to the standard fields.
+ */
+export class ProblemException extends HttpException {
+  constructor(
+    status: number,
+    readonly detail: string,
+    readonly extensions: Record<string, unknown> = {},
+    readonly headers: Record<string, string> = {},
+  ) {
+    super({ message: detail, ...extensions }, status);
+  }
+}
+
 export interface ProblemDetails {
   type: string;
   title: string;
@@ -17,6 +32,8 @@ export interface ProblemDetails {
   detail?: string;
   instance?: string;
   request_id?: string;
+  /** RFC 9457 extension members. */
+  [extension: string]: unknown;
 }
 
 /** Maps every exception to an RFC 9457 `application/problem+json` response. */
@@ -44,7 +61,12 @@ export class ProblemFilter implements ExceptionFilter {
       );
     }
 
+    const extensions = extensionsOf(exception);
+    if (exception instanceof ProblemException && !res.headersSent) {
+      for (const [name, value] of Object.entries(exception.headers)) res.setHeader(name, value);
+    }
     const problem: ProblemDetails = {
+      ...extensions,
       type: 'about:blank',
       title: titleFor(status),
       status,
@@ -62,6 +84,17 @@ export class ProblemFilter implements ExceptionFilter {
 function clientErrorStatus(exception: unknown): number | undefined {
   const status = (exception as { status?: unknown } | null)?.status;
   return typeof status === 'number' && status >= 400 && status < 500 ? status : undefined;
+}
+
+/** Extension members: everything an HttpException response carries besides `message`. */
+function extensionsOf(exception: unknown): Record<string, unknown> {
+  if (!(exception instanceof HttpException)) return {};
+  const body = exception.getResponse();
+  if (typeof body !== 'object' || body === null) return {};
+  if (exception instanceof ProblemException) return { ...exception.extensions };
+  // Validation failures (nestjs-zod) list their issues under `errors`.
+  const errors = (body as { errors?: unknown }).errors;
+  return Array.isArray(errors) ? { errors } : {};
 }
 
 function titleFor(status: number): string {

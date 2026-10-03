@@ -22,6 +22,10 @@ import { GithubPermissionsMonitor } from '../../src/providers/github/permissions
 import { createTestApp } from '../helpers';
 import { fixture } from '../helpers/fixtures';
 import { generateAppKey } from '../helpers/fake-github';
+import {
+  DefaultRepositorySettings,
+  REPOSITORY_SETTINGS,
+} from '../../src/repositories/repository-settings.port';
 import { MemoryDeliveryStore } from '../helpers/memory-delivery-store';
 
 const SECRET = 'whsec_current_0123456789';
@@ -87,6 +91,8 @@ describe('GitHub webhook endpoint (e2e)', () => {
           },
         });
         builder.overrideProvider(DELIVERY_STORE).useValue(store ?? new MemoryDeliveryStore());
+        // Guard settings come from Postgres in production; the endpoint tests need no database.
+        builder.overrideProvider(REPOSITORY_SETTINGS).useValue(new DefaultRepositorySettings());
         return builder;
       },
     });
