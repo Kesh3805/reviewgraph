@@ -145,6 +145,7 @@ impl ModelGateway for FakeGateway {
                 },
                 attempts: 1,
                 served_from: ServedFrom::Replay,
+                usage_original: None,
             }),
         }
     }

@@ -9,15 +9,20 @@ use async_trait::async_trait;
 use tokio::time::Instant;
 use tokio_util::sync::CancellationToken;
 
+use uuid::Uuid;
+
+use crate::accounting::{LedgerRecord, LedgerSink, NoLedger, PriceTable};
 use crate::adapter::{ProviderAdapter, ProviderRequest};
 use crate::budget::{precheck_cost, precheck_tokens, WorstCasePricer};
+use crate::cache::{cache_key, CacheEntry, ResponseCache};
 use crate::error::{BudgetKind, Error, GatewayError, PermanentKind};
 use crate::ratelimit::{LimitRequest, ModelLimits, NoLimit, RateLimiter};
 use crate::request_hash::request_hash;
 use crate::retry::{retry, RetryPolicy};
 use crate::types::{
-    AttemptedCandidate, ModelRequest, ModelResponse, ModelTier, PrivacyClass, ProviderId, RiskBand,
-    RouteCandidate, RouteDecision,
+    AttemptedCandidate, CachePolicy, FinishReason, ModelRequest, ModelResponse, ModelTier,
+    PrivacyClass, ProviderId, RequestHash, RiskBand, RouteCandidate, RouteDecision, ServedFrom,
+    Usage,
 };
 
 /// Upper bound for one provider HTTP attempt.
@@ -129,6 +134,9 @@ pub struct GatewayBuilder {
     retry: Option<RetryPolicy>,
     limiter: Option<Arc<dyn RateLimiter>>,
     pricer: Option<Arc<dyn WorstCasePricer>>,
+    prices: Option<Arc<PriceTable>>,
+    ledger: Option<Arc<dyn LedgerSink>>,
+    cache: Option<Arc<dyn ResponseCache>>,
 }
 
 impl std::fmt::Debug for GatewayBuilder {
@@ -159,8 +167,27 @@ impl GatewayBuilder {
         self
     }
 
+    /// Worst-case pricing for the cost pre-check. Defaults to the price table when one is set.
     pub fn pricer(mut self, pricer: Arc<dyn WorstCasePricer>) -> Self {
         self.pricer = Some(pricer);
+        self
+    }
+
+    /// Price table used for `cost_usd_micros` and the ledger.
+    pub fn prices(mut self, prices: Arc<PriceTable>) -> Self {
+        self.prices = Some(prices);
+        self
+    }
+
+    /// Per-attempt ledger sink (`model_calls`).
+    pub fn ledger(mut self, ledger: Arc<dyn LedgerSink>) -> Self {
+        self.ledger = Some(ledger);
+        self
+    }
+
+    /// Tenant-scoped response cache for cache-allowed tasks.
+    pub fn response_cache(mut self, cache: Arc<dyn ResponseCache>) -> Self {
+        self.cache = Some(cache);
         self
     }
 
@@ -181,12 +208,18 @@ impl GatewayBuilder {
         if adapters.is_empty() {
             return Err(Error::Config("at least one adapter is required".into()));
         }
+        let pricer = self
+            .pricer
+            .or_else(|| self.prices.clone().map(|p| p as Arc<dyn WorstCasePricer>));
         Ok(Gateway {
             adapters,
             router,
             retry: self.retry.unwrap_or_default(),
             limiter: self.limiter.unwrap_or_else(|| Arc::new(NoLimit)),
-            pricer: self.pricer,
+            pricer,
+            prices: self.prices,
+            ledger: self.ledger.unwrap_or_else(|| Arc::new(NoLedger)),
+            cache: self.cache,
         })
     }
 }
@@ -198,6 +231,9 @@ pub struct Gateway {
     retry: RetryPolicy,
     limiter: Arc<dyn RateLimiter>,
     pricer: Option<Arc<dyn WorstCasePricer>>,
+    prices: Option<Arc<PriceTable>>,
+    ledger: Arc<dyn LedgerSink>,
+    cache: Option<Arc<dyn ResponseCache>>,
 }
 
 impl std::fmt::Debug for Gateway {
@@ -206,6 +242,79 @@ impl std::fmt::Debug for Gateway {
             .field("providers", &self.adapters.keys().collect::<Vec<_>>())
             .finish()
     }
+}
+
+/// Facts about one attempt, turned into a ledger row.
+struct AttemptFacts<'a> {
+    req: &'a ModelRequest,
+    hash: &'a RequestHash,
+    candidate: &'a RouteCandidate,
+    attempt: u8,
+    served_from: ServedFrom,
+    outcome: String,
+    usage: Usage,
+    cost: Option<u64>,
+    latency_ms: u32,
+}
+
+impl Gateway {
+    fn cost_of(
+        &self,
+        candidate: &RouteCandidate,
+        reported_model: &str,
+        usage: &Usage,
+    ) -> Option<u64> {
+        let prices = self.prices.as_ref()?;
+        prices
+            .cost_micros(candidate.provider.as_str(), &candidate.model, usage)
+            .or_else(|| prices.cost_micros(candidate.provider.as_str(), reported_model, usage))
+    }
+
+    fn record(&self, f: AttemptFacts<'_>) {
+        let prices_as_of = self
+            .prices
+            .as_ref()
+            .and_then(|p| p.as_of(f.candidate.provider.as_str(), &f.candidate.model));
+        self.ledger.record(LedgerRecord {
+            id: Uuid::now_v7(),
+            organization_id: f.req.tenant.organization_id,
+            repository_id: f.req.tenant.repository_id,
+            review_run_id: f.req.trace.review_run_id,
+            reviewer_run_id: f.req.trace.reviewer_run_id,
+            task: f.req.task.as_str().to_owned(),
+            tier: f.req.tier.as_str().to_owned(),
+            provider: f.candidate.provider.0.clone(),
+            model: f.candidate.model.clone(),
+            attempt: i16::from(f.attempt),
+            request_hash: f.hash.0.clone(),
+            served_from: f.served_from,
+            outcome: f.outcome,
+            usage: f.usage,
+            cost_usd_micros: f.cost,
+            latency_ms: f.latency_ms,
+            prices_as_of,
+        });
+    }
+
+    /// Cache TTL when this request may use the response cache.
+    fn cache_ttl(&self, req: &ModelRequest) -> Option<Duration> {
+        match (&self.cache, req.cache) {
+            (Some(_), CachePolicy::PromptAndResponse { ttl }) if req.task.response_cacheable() => {
+                Some(ttl)
+            }
+            _ => None,
+        }
+    }
+}
+
+fn cache_key_for(req: &ModelRequest, hash: &RequestHash, c: &RouteCandidate) -> String {
+    cache_key(
+        req.tenant.organization_id,
+        hash.as_str(),
+        c.provider.as_str(),
+        &c.model,
+        req.output_schema.as_ref().map(|s| s.hash.as_str()),
+    )
 }
 
 #[async_trait]
@@ -243,8 +352,48 @@ impl ModelGateway for Gateway {
             remaining_budget_fraction: req.budget.remaining_fraction,
             schema_strict_ok: strict_ok,
         };
-        let route = self.router.route(&registered, &query)?;
-        let mut route = route;
+        let mut route = self.router.route(&registered, &query)?;
+
+        // Response cache: after routing (provider and model are known), before rate limiting.
+        let cache_ttl = self.cache_ttl(&req);
+        if let (Some(cache), Some(first), Some(_)) =
+            (&self.cache, route.candidates.first(), cache_ttl)
+        {
+            let key = cache_key_for(&req, &hash, first);
+            match cache.get(req.tenant.organization_id, &key).await {
+                Ok(Some(entry)) => {
+                    self.record(AttemptFacts {
+                        req: &req,
+                        hash: &hash,
+                        candidate: first,
+                        attempt: 1,
+                        served_from: ServedFrom::ResponseCache,
+                        outcome: "ok".into(),
+                        usage: Usage::default(),
+                        cost: Some(0),
+                        latency_ms: 0,
+                    });
+                    return Ok(ModelResponse {
+                        output: entry.output,
+                        usage: Usage::default(),
+                        latency_ms: 0,
+                        provider: first.provider.clone(),
+                        model: entry.model,
+                        cost_usd_micros: Some(0),
+                        finish_reason: FinishReason::Complete,
+                        request_hash: hash,
+                        route,
+                        attempts: 0,
+                        served_from: ServedFrom::ResponseCache,
+                        usage_original: Some(entry.usage),
+                    });
+                }
+                Ok(None) => {}
+                Err(e) => {
+                    tracing::warn!(error = %e, "response cache read failed; treating as a miss");
+                }
+            }
+        }
 
         let started = Instant::now();
         let mut attempts_total: u8 = 0;
@@ -290,14 +439,14 @@ impl ModelGateway for Gateway {
                     max_output: req.max_output_tokens,
                     deadline: req.budget.deadline,
                 });
+            let this = self;
             let req_ref = &req;
             let hash_ref = &hash;
-            let limiter = &self.limiter;
             let limit_ref = limit_req.as_ref();
             let cancel_ref = &cancel;
-            let outcome = retry(&self.retry, &req.budget, &cancel, |_attempt| async move {
+            let outcome = retry(&self.retry, &req.budget, &cancel, |attempt| async move {
                 let reservation = match limit_ref {
-                    Some(lr) => Some(limiter.acquire(lr, cancel_ref).await?),
+                    Some(lr) => Some(this.limiter.acquire(lr, cancel_ref).await?),
                     None => None,
                 };
                 let remaining = req_ref
@@ -310,19 +459,71 @@ impl ModelGateway for Gateway {
                     request_hash: hash_ref,
                     timeout: remaining.min(MAX_ATTEMPT_TIMEOUT),
                 };
-                let resp = adapter.send(&provider_req).await?;
-                if let Some(r) = &reservation {
-                    let u = resp.usage;
-                    limiter
-                        .reconcile(r, u.input_uncached + u.cache_write + u.cache_read, u.output)
-                        .await;
+                let attempt_started = Instant::now();
+                let result = adapter.send(&provider_req).await;
+                let latency_ms =
+                    u32::try_from(attempt_started.elapsed().as_millis()).unwrap_or(u32::MAX);
+                match result {
+                    Ok(resp) => {
+                        let u = resp.usage;
+                        if let Some(r) = &reservation {
+                            let input = u.input_uncached + u.cache_write + u.cache_read;
+                            this.limiter.reconcile(r, input, u.output).await;
+                        }
+                        this.record(AttemptFacts {
+                            req: req_ref,
+                            hash: hash_ref,
+                            candidate,
+                            attempt,
+                            served_from: resp.served_from,
+                            outcome: "ok".into(),
+                            usage: u,
+                            cost: this.cost_of(candidate, &resp.model, &u),
+                            latency_ms,
+                        });
+                        Ok(resp)
+                    }
+                    Err(e) => {
+                        this.record(AttemptFacts {
+                            req: req_ref,
+                            hash: hash_ref,
+                            candidate,
+                            attempt,
+                            served_from: ServedFrom::Live,
+                            outcome: e.class().to_owned(),
+                            usage: Usage::default(),
+                            cost: None,
+                            latency_ms,
+                        });
+                        Err(e)
+                    }
                 }
-                Ok(resp)
             })
             .await;
             attempts_total = attempts_total.saturating_add(outcome.attempts);
             match outcome.result {
                 Ok(resp) => {
+                    let cost = self.cost_of(candidate, &resp.model, &resp.usage);
+                    if let (Some(ttl), Some(cache)) = (cache_ttl, &self.cache) {
+                        if resp.finish_reason == FinishReason::Complete {
+                            let key = cache_key_for(&req, &hash, candidate);
+                            let entry = CacheEntry {
+                                request_hash: hash.0.clone(),
+                                provider: candidate.provider.0.clone(),
+                                model: candidate.model.clone(),
+                                prompt_version: req.input.system.prompt_version.clone(),
+                                schema_hash: req.output_schema.as_ref().map(|s| s.hash.clone()),
+                                output: resp.output.clone(),
+                                usage: resp.usage,
+                            };
+                            if let Err(e) = cache
+                                .put(req.tenant.organization_id, &key, entry, ttl)
+                                .await
+                            {
+                                tracing::warn!(error = %e, "response cache write failed");
+                            }
+                        }
+                    }
                     return Ok(ModelResponse {
                         output: resp.output,
                         usage: resp.usage,
@@ -330,12 +531,13 @@ impl ModelGateway for Gateway {
                             .unwrap_or(u32::MAX),
                         provider: candidate.provider.clone(),
                         model: resp.model,
-                        cost_usd_micros: None,
+                        cost_usd_micros: cost,
                         finish_reason: resp.finish_reason,
                         request_hash: hash,
                         route,
                         attempts: attempts_total,
                         served_from: resp.served_from,
+                        usage_original: None,
                     });
                 }
                 Err(e) => {

@@ -501,4 +501,7 @@ pub struct ModelResponse {
     pub route: RouteDecision,
     pub attempts: u8,
     pub served_from: ServedFrom,
+    /// On a response-cache hit: the usage of the call that produced the cached output (`usage`
+    /// is zero because nothing was billed).
+    pub usage_original: Option<Usage>,
 }

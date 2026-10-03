@@ -238,6 +238,17 @@
     },
     "usage": {
       "$ref": "#/definitions/Usage"
+    },
+    "usage_original": {
+      "anyOf": [
+        {
+          "$ref": "#/definitions/Usage"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "On a response-cache hit: the usage of the call that produced the cached output (`usage` is zero because nothing was billed)."
     }
   },
   "required": [

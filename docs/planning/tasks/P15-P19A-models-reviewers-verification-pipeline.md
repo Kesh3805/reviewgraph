@@ -779,7 +779,8 @@ else redis.call('HSET', KEYS[1], 'tokens', tokens, 'ts', now); redis.call('PEXPI
 ---
 
 ### GW-008 — Token and cost accounting; model response cache
-Status: ☐
+Status: ☑
+> **Implementation note:** `config/prices.yaml` holds the three Anthropic defaults, filled from https://platform.claude.com/docs/en/about-claude/pricing on 2026-10-03 (haiku-4-5 $1/$5, sonnet-5-5 $2/$10, opus-5-5 $4/$20 per MTok, 5-minute cache writes at 1.25x, cache reads $0.10/$0.20/$0.20); OpenAI models are operator-configured and deliberately unpriced until an operator adds entries. Prices are decimal strings and costs use `rust_decimal` (round half up). The staleness check is the test `prices_as_of_staleness_check` (120 days). Migration is `20261003000020_model_calls_and_cache.sql` (the repository uses timestamped names, not `1501`) and repeats the existing `app.organization_id` RLS block; the PostgreSQL cache and the ledger writer set that GUC per transaction/row. `ModelResponse` gained `usage_original` (zero `usage` and cost 0 on a hit). The cache lookup uses the first routed candidate and the write happens after a complete response; GW-009 moves the write after validation. The ledger is one row per provider attempt (error rows carry the error class, no usage) plus one row per cache hit; `ChannelLedger` drops and counts when full, and `pg::spawn_writer` batches 100 rows or 500 ms. The `pg`/`integration` features gate sqlx; `tests/cache_pg.rs` ran against the local Postgres. The review-worker `migrations_apply_on_empty_db`/`migrate_twice_is_noop` integration tests hardcode five migrations and were already failing before this task because of later migrations from other tasks. Cache and cost metrics are emitted by GW-010.
 
 **Task ID:** GW-008
 
