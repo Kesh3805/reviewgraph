@@ -22,6 +22,9 @@
     "format:check": "prettier --check .",
     "migrate": "node scripts/rg.mjs run sqlx migrate run --source migrations --database-url postgres://reviewgraph:reviewgraph-dev@host.docker.internal:25432/reviewgraph",
     "migrate:info": "node scripts/rg.mjs run sqlx migrate info --source migrations --database-url postgres://reviewgraph:reviewgraph-dev@host.docker.internal:25432/reviewgraph",
+    "db:types": "node scripts/db-types.mjs",
+    "db:types:check": "node scripts/db-types.mjs --check",
+    "test:integration:api": "pnpm -F @reviewgraph/api test:integration",
     "contracts:export": "node scripts/rg.mjs cargo run -q -p review-cli -- contracts export",
     "contracts:generate": "pnpm -F @reviewgraph/contracts generate",
     "contracts:check": "pnpm -F @reviewgraph/contracts check"

@@ -3,6 +3,7 @@ import { ConfigModule } from './config/config.module';
 import { ShutdownService } from './common/shutdown.service';
 import { requestIdMiddleware } from './common/request-id.middleware';
 import { RedisModule } from './common/redis.module';
+import { DbModule } from './db/db.module';
 import { InternalModule } from './internal/internal.module';
 import { HealthModule } from './health/health.module';
 import { GithubModule } from './providers/github/github.module';
@@ -15,6 +16,7 @@ import { TelemetryModule } from './telemetry/telemetry.module';
     ConfigModule,
     TelemetryModule,
     RedisModule,
+    DbModule,
     InternalModule,
     ProvidersModule,
     GithubModule,

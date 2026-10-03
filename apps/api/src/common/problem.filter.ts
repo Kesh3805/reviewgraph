@@ -7,6 +7,7 @@ import {
   Logger,
 } from '@nestjs/common';
 import type { Response } from 'express';
+import { DB_RETRY_AFTER_SECONDS, isDbUnavailable } from '../db/errors';
 import type { RequestWithId } from './request-id.middleware';
 
 export interface ProblemDetails {
@@ -28,10 +29,15 @@ export class ProblemFilter implements ExceptionFilter {
     const res = http.getResponse<Response>();
     const req = http.getRequest<RequestWithId>();
 
+    // Pool exhaustion, statement timeouts and connection failures are retryable (API-002).
+    const dbUnavailable = !(exception instanceof HttpException) && isDbUnavailable(exception);
     const status =
       exception instanceof HttpException
         ? exception.getStatus()
-        : (clientErrorStatus(exception) ?? HttpStatus.INTERNAL_SERVER_ERROR);
+        : dbUnavailable
+          ? HttpStatus.SERVICE_UNAVAILABLE
+          : (clientErrorStatus(exception) ?? HttpStatus.INTERNAL_SERVER_ERROR);
+    if (dbUnavailable && !res.headersSent) res.setHeader('Retry-After', DB_RETRY_AFTER_SECONDS);
     if (status >= 500) {
       this.logger.error(
         exception instanceof Error ? (exception.stack ?? exception.message) : String(exception),

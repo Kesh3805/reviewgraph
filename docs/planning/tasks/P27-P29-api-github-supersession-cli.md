@@ -138,7 +138,8 @@ Status: ☑
 ---
 
 ### API-002 — Kysely + pg with types generated from the migrated database
-Status: ☐
+Status: ☑
+> **Implementation note:** `pnpm db:types` is `scripts/db-types.mjs` (Node, not bash: the host is Windows). It starts a throwaway `postgres:16.15-alpine`, applies every `engine/migrations/*.sql` in order through `pg` (the same files `sqlx migrate run` applies; the engine image is not needed) and runs `kysely-codegen`; `pnpm db:types:check` regenerates to a temp file and fails on drift (CI-005 entry point). `DbService.withTx(orgId?, fn)` wraps `runInTx`; the optional `DB_APP_ROLE` env makes each transaction `SET LOCAL ROLE` (used by API-003 so RLS applies to the dev superuser login). The pool acquire timeout and statement timeout (`57014`) map to 503 + `Retry-After` in `ProblemFilter`. DB tests that need Postgres live in `apps/api/integration` (`pnpm test:integration`, separate jest project, dev services by default); the unit suite needs no services.
 
 - **Task ID:** API-002
 - **Title:** Kysely + pg + generated types from migrated DB

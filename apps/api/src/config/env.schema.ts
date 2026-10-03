@@ -47,6 +47,12 @@ const baseShape = {
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
   PORT: z.coerce.number().int().min(1).max(65535).default(8080),
   DATABASE_URL: url(['postgres:', 'postgresql:']),
+  /** Optional role assumed per transaction (`rg_api`) so RLS applies even to a superuser login. */
+  DB_APP_ROLE: z
+    .string()
+    .regex(/^[a-z_][a-z0-9_]*$/)
+    .optional(),
+  DB_POOL_MAX: z.coerce.number().int().min(1).max(200).optional(),
   REDIS_URL: url(['redis:', 'rediss:']),
   ENGINE_INTERNAL_URL: url(['http:', 'https:']),
   SERVICE_JWT_SECRET: secretMin32Bytes,

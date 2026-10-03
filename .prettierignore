@@ -8,3 +8,4 @@ packages/contracts/src/generated
 docs/
 *.md
 **/next-env.d.ts
+apps/api/src/db/generated.ts
