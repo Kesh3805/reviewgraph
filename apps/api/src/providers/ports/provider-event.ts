@@ -53,6 +53,42 @@ export interface ReviewCommandEvent extends ProviderEventBase {
 
 export type ProviderEvent = PullRequestHeadEvent | PullRequestClosedEvent | ReviewCommandEvent;
 
+export type InstallationEventKind =
+  | 'created'
+  | 'deleted'
+  | 'suspend'
+  | 'unsuspend'
+  | 'new_permissions_accepted'
+  | 'repositories_added'
+  | 'repositories_removed';
+
+/** A repository named by an installation event (the payload carries no more than this). */
+export interface InstallationRepository {
+  providerRepoId: string;
+  fullName: string;
+  isPrivate: boolean;
+}
+
+/**
+ * Installation lifecycle (GH-013): install, uninstall, suspend, permission change and repository
+ * access changes. Handled by the installation service inside the delivery transaction; it is
+ * never handed to the review orchestrator, hence not part of `ProviderEvent`.
+ */
+export interface InstallationEvent {
+  type: 'installation';
+  provider: ProviderKind;
+  deliveryId: string;
+  installationId: string;
+  kind: InstallationEventKind;
+  account: { login: string; kind: 'organization' | 'user' };
+  /** Permissions granted to the App on this installation, as reported by the provider. */
+  permissions: Record<string, string>;
+  /** Repositories gained (`created`, `repositories_added`). */
+  added: InstallationRepository[];
+  /** Repositories lost (`repositories_removed`). */
+  removed: InstallationRepository[];
+}
+
 export type IgnoreReason =
   | 'unsupported_event'
   | 'unsupported_action'
@@ -65,7 +101,8 @@ export type IgnoreReason =
   | 'not_a_command'
   | 'permission_denied'
   | 'permission_unknown'
-  | 'reviewer_not_app';
+  | 'reviewer_not_app'
+  | 'unknown_installation';
 
 /** The event is valid but needs no review work. Recorded as `webhook_deliveries.outcome`. */
 export interface Ignored {
@@ -73,7 +110,7 @@ export interface Ignored {
   reason: IgnoreReason;
 }
 
-export type NormalizeResult = ProviderEvent | Ignored;
+export type NormalizeResult = ProviderEvent | InstallationEvent | Ignored;
 
 export function isIgnored(result: NormalizeResult): result is Ignored {
   return 'ignored' in result;

@@ -3,12 +3,14 @@ import type { ProviderEvent } from '../providers/ports';
 import { GithubCommandAcknowledger } from '../providers/github/command-reaction';
 import { GithubEventNormalizer } from '../providers/github/event-normalizer.service';
 import { GithubModule } from '../providers/github/github.module';
+import { InstallationService } from '../providers/github/installation.service';
 import { PgDeliveryStore } from './delivery-store';
 import { GithubWebhookController } from './github-webhook.controller';
 import {
   DELIVERY_STORE,
   COMMAND_ACKNOWLEDGER,
   EVENT_NORMALIZER,
+  INSTALLATION_LIFECYCLE,
   PROVIDER_EVENT_SINK,
   type ProviderEventSink,
 } from './webhook.ports';
@@ -31,6 +33,7 @@ export class UnwiredEventSink implements ProviderEventSink {
     { provide: DELIVERY_STORE, useClass: PgDeliveryStore },
     { provide: EVENT_NORMALIZER, useExisting: GithubEventNormalizer },
     { provide: COMMAND_ACKNOWLEDGER, useExisting: GithubCommandAcknowledger },
+    { provide: INSTALLATION_LIFECYCLE, useExisting: InstallationService },
     { provide: PROVIDER_EVENT_SINK, useClass: UnwiredEventSink },
   ],
   exports: [DELIVERY_STORE, EVENT_NORMALIZER, PROVIDER_EVENT_SINK, COMMAND_ACKNOWLEDGER],

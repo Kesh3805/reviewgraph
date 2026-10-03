@@ -1,0 +1,27 @@
+{
+  "action": "added",
+  "installation": {
+    "id": 5150,
+    "account": { "login": "Acme-Corp", "id": 9001, "type": "Organization" },
+    "repository_selection": "selected",
+    "permissions": {
+      "contents": "read",
+      "metadata": "read",
+      "pull_requests": "write",
+      "checks": "write",
+      "issues": "read"
+    }
+  },
+  "repository_selection": "selected",
+  "repositories_added": [
+    {
+      "id": 700003,
+      "node_id": "R_3",
+      "name": "infra",
+      "full_name": "Acme-Corp/infra",
+      "private": true
+    }
+  ],
+  "repositories_removed": [],
+  "sender": { "login": "octocat", "type": "User" }
+}

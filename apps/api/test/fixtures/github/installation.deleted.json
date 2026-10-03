@@ -1,0 +1,25 @@
+{
+  "action": "deleted",
+  "installation": {
+    "id": 5150,
+    "account": { "login": "Acme-Corp", "id": 9001, "type": "Organization" },
+    "repository_selection": "selected",
+    "permissions": {
+      "contents": "read",
+      "metadata": "read",
+      "pull_requests": "write",
+      "checks": "write",
+      "issues": "read"
+    }
+  },
+  "repositories": [
+    {
+      "id": 700001,
+      "node_id": "R_1",
+      "name": "billing",
+      "full_name": "Acme-Corp/billing",
+      "private": true
+    }
+  ],
+  "sender": { "login": "octocat", "type": "User" }
+}

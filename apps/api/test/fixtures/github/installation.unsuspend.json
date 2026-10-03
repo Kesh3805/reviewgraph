@@ -1,0 +1,16 @@
+{
+  "action": "unsuspend",
+  "installation": {
+    "id": 5150,
+    "account": { "login": "Acme-Corp", "id": 9001, "type": "Organization" },
+    "permissions": {
+      "contents": "read",
+      "metadata": "read",
+      "pull_requests": "write",
+      "checks": "write",
+      "issues": "read"
+    },
+    "suspended_at": null
+  },
+  "sender": { "login": "octocat", "type": "User" }
+}

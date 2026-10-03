@@ -24,12 +24,15 @@ import {
   COMMAND_ACKNOWLEDGER,
   DELIVERY_STORE,
   EVENT_NORMALIZER,
+  INSTALLATION_LIFECYCLE,
   PROVIDER_EVENT_SINK,
   type CommandAcknowledger,
+  type DeliveryContext,
   type DeliveryRecord,
   type DeliveryStore,
   type DeliveryWorkResult,
   type EventNormalizer,
+  type InstallationLifecycle,
   type ProviderEventSink,
 } from './webhook.ports';
 
@@ -63,6 +66,7 @@ export class GithubWebhookController {
     @Inject(EVENT_NORMALIZER) private readonly normalizer: EventNormalizer,
     @Inject(PROVIDER_EVENT_SINK) private readonly sink: ProviderEventSink,
     @Inject(COMMAND_ACKNOWLEDGER) private readonly acknowledger: CommandAcknowledger,
+    @Inject(INSTALLATION_LIFECYCLE) private readonly installations: InstallationLifecycle,
   ) {}
 
   @Post('github')
@@ -144,7 +148,9 @@ export class GithubWebhookController {
     try {
       // Records the delivery and runs the handling in one transaction (GH-003): a duplicate is
       // never handled twice, and a failure rolls the record back so GitHub's retry runs fresh.
-      outcome = await this.deliveries.process(delivery, () => this.handle(delivery, payload));
+      outcome = await this.deliveries.process(delivery, (ctx) =>
+        this.handle(delivery, ctx, payload),
+      );
     } catch (err) {
       // A failed store or handler must make GitHub redeliver, never silently drop the event.
       this.logger.error(`delivery handling failed delivery=${deliveryId} (${errorName(err)})`);
@@ -158,6 +164,7 @@ export class GithubWebhookController {
 
   private async handle(
     delivery: DeliveryRecord,
+    ctx: DeliveryContext,
     payload: unknown,
   ): Promise<DeliveryWorkResult<WebhookAck>> {
     const { deliveryId, eventName } = delivery;
@@ -166,6 +173,23 @@ export class GithubWebhookController {
       return {
         status: 'ignored',
         ack: { delivery_id: deliveryId, accepted: false, reason: normalized.reason },
+      };
+    }
+    if (normalized.type === 'installation') {
+      // Lifecycle events change tenancy and access; they run in the delivery transaction and
+      // never reach the review orchestrator.
+      const outcome = await this.installations.apply(ctx, normalized);
+      if (!outcome.applied) {
+        return {
+          status: 'ignored',
+          ack: { delivery_id: deliveryId, accepted: false, reason: 'unknown_installation' },
+        };
+      }
+      return {
+        status: 'processed',
+        ack: { delivery_id: deliveryId, accepted: true },
+        organizationId: outcome.organizationId,
+        afterCommit: outcome.afterCommit,
       };
     }
     return {

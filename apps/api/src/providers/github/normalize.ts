@@ -2,6 +2,9 @@ import { z } from 'zod';
 import type {
   Ignored,
   IgnoreReason,
+  InstallationEvent,
+  InstallationEventKind,
+  InstallationRepository,
   PrRef,
   ProviderActor,
   ProviderEvent,
@@ -52,6 +55,40 @@ const issueCommentEvent = z.object({
   comment: z.object({ id: z.union([z.number().int(), z.string().min(1)]), body: z.string(), user }),
 });
 
+const idLike = z.union([z.number().int(), z.string().min(1)]);
+
+const installationDetail = z.object({
+  id: idLike,
+  account: z.object({ login: z.string().min(1), type: z.string().optional() }),
+  permissions: z.record(z.string(), z.string()).optional(),
+});
+const repositorySummary = z.object({
+  id: idLike,
+  full_name: z.string().min(1),
+  private: z.boolean().optional(),
+});
+
+const installationEvent = z.object({
+  action: z.string(),
+  installation: installationDetail,
+  repositories: z.array(repositorySummary).optional(),
+});
+
+const installationRepositoriesEvent = z.object({
+  action: z.string(),
+  installation: installationDetail,
+  repositories_added: z.array(repositorySummary).optional(),
+  repositories_removed: z.array(repositorySummary).optional(),
+});
+
+const INSTALLATION_ACTIONS: Record<string, InstallationEventKind> = {
+  created: 'created',
+  deleted: 'deleted',
+  suspend: 'suspend',
+  unsuspend: 'unsuspend',
+  new_permissions_accepted: 'new_permissions_accepted',
+};
+
 const HEAD_ACTIONS: readonly string[] = [
   'opened',
   'reopened',
@@ -76,7 +113,8 @@ export interface ReviewCommandCandidate {
   draft: boolean;
 }
 
-export type ParsedGithubEvent = ProviderEvent | ReviewCommandCandidate | Ignored;
+export type ParsedGithubEvent =
+  ProviderEvent | InstallationEvent | ReviewCommandCandidate | Ignored;
 
 export interface NormalizeContext {
   /** The App's bot login (`<slug>[bot]`); `review_requested` only counts for this reviewer. */
@@ -97,6 +135,10 @@ export function normalizeGithubEvent(
 ): ParsedGithubEvent {
   if (eventName === 'pull_request') return normalizePullRequest(payload, deliveryId, ctx);
   if (eventName === 'issue_comment') return normalizeIssueComment(payload, deliveryId);
+  if (eventName === 'installation') return normalizeInstallation(payload, deliveryId);
+  if (eventName === 'installation_repositories') {
+    return normalizeInstallationRepositories(payload, deliveryId);
+  }
   return ignored('unsupported_event');
 }
 
@@ -158,6 +200,80 @@ function normalizePullRequest(
     draft: pr.draft === true,
     requestedReviewer,
   };
+}
+
+function accountKind(type: string | undefined): 'organization' | 'user' {
+  return type === 'Organization' ? 'organization' : 'user';
+}
+
+function repositoriesOf(
+  list: { id: number | string; full_name: string; private?: boolean }[] | undefined,
+): InstallationRepository[] {
+  return (list ?? []).map((r) => ({
+    providerRepoId: String(r.id),
+    fullName: r.full_name,
+    isPrivate: r.private !== false,
+  }));
+}
+
+function installationEventOf(
+  kind: InstallationEventKind,
+  deliveryId: string,
+  inst: z.infer<typeof installationDetail>,
+  added: InstallationRepository[],
+  removed: InstallationRepository[],
+): InstallationEvent {
+  return {
+    type: 'installation',
+    provider: 'github',
+    deliveryId,
+    installationId: String(inst.id),
+    kind,
+    account: { login: inst.account.login, kind: accountKind(inst.account.type) },
+    permissions: inst.permissions ?? {},
+    added,
+    removed,
+  };
+}
+
+/** `installation.*` (GH-013). Repository lists are those carried by the payload. */
+function normalizeInstallation(payload: unknown, deliveryId: string): ParsedGithubEvent {
+  const action = (payload as { action?: unknown } | null)?.action;
+  if (typeof action !== 'string') return ignored('malformed');
+  const kind = INSTALLATION_ACTIONS[action];
+  if (!kind) return ignored('unsupported_action');
+  const parsed = installationEvent.safeParse(payload);
+  if (!parsed.success) return ignored('malformed');
+  const added = kind === 'created' ? repositoriesOf(parsed.data.repositories) : [];
+  return installationEventOf(kind, deliveryId, parsed.data.installation, added, []);
+}
+
+/** `installation_repositories.added|removed` (GH-013). */
+function normalizeInstallationRepositories(
+  payload: unknown,
+  deliveryId: string,
+): ParsedGithubEvent {
+  const action = (payload as { action?: unknown } | null)?.action;
+  if (typeof action !== 'string') return ignored('malformed');
+  if (action !== 'added' && action !== 'removed') return ignored('unsupported_action');
+  const parsed = installationRepositoriesEvent.safeParse(payload);
+  if (!parsed.success) return ignored('malformed');
+  const { installation: inst } = parsed.data;
+  return action === 'added'
+    ? installationEventOf(
+        'repositories_added',
+        deliveryId,
+        inst,
+        repositoriesOf(parsed.data.repositories_added),
+        [],
+      )
+    : installationEventOf(
+        'repositories_removed',
+        deliveryId,
+        inst,
+        [],
+        repositoriesOf(parsed.data.repositories_removed),
+      );
 }
 
 function normalizeIssueComment(payload: unknown, deliveryId: string): ParsedGithubEvent {

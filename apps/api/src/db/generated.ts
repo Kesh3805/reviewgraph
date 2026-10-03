@@ -83,11 +83,13 @@ export interface ProviderInstallations {
   account_login: string;
   account_type: string;
   created_at: Generated<Timestamp>;
+  deleted_at: Timestamp | null;
   id: Generated<string>;
   organization_id: string;
   permissions: Generated<Json>;
   provider: string;
   provider_installation_id: Int8;
+  state: Generated<string>;
   suspended_at: Timestamp | null;
   updated_at: Generated<Timestamp>;
 }
@@ -130,18 +132,41 @@ export interface PullRequests {
 }
 
 export interface Repositories {
+  access_state: Generated<string>;
   archived: Generated<boolean>;
   created_at: Generated<Timestamp>;
   default_branch: string;
+  enabled: Generated<boolean>;
   full_name: string;
   id: Generated<string>;
+  initialized_at: Timestamp | null;
   installation_id: string;
+  latest_init_facts_id: string | null;
   organization_id: string;
+  primary_language: string | null;
   provider: string;
   provider_repo_id: string;
   settings: Generated<Json>;
   updated_at: Generated<Timestamp>;
   visibility: string;
+}
+
+export interface RepositoryInitFacts {
+  commit_sha: string;
+  created_at: Generated<Timestamp>;
+  detected_at: Timestamp;
+  facts: Json;
+  facts_hash: string;
+  facts_schema_version: number;
+  fingerprint: string | null;
+  frameworks: Generated<string[]>;
+  id: Generated<string>;
+  is_monorepo: boolean;
+  organization_id: string;
+  primary_language: string | null;
+  repository_id: string;
+  tool_version: string;
+  warnings_count: Generated<number>;
 }
 
 export interface ReviewerRuns {
@@ -254,6 +279,7 @@ export interface DB {
   published_findings: PublishedFindings;
   pull_requests: PullRequests;
   repositories: Repositories;
+  repository_init_facts: RepositoryInitFacts;
   review_runs: ReviewRuns;
   reviewer_runs: ReviewerRuns;
   sessions: Sessions;

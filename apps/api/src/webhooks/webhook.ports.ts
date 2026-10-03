@@ -1,5 +1,10 @@
 import type { Tx } from '../db/tx';
-import type { NormalizeResult, ProviderEvent, ReviewCommandEvent } from '../providers/ports';
+import type {
+  InstallationEvent,
+  NormalizeResult,
+  ProviderEvent,
+  ReviewCommandEvent,
+} from '../providers/ports';
 
 /** What the webhook endpoint knows about a verified delivery. */
 export interface DeliveryRecord {
@@ -64,3 +69,19 @@ export interface CommandAcknowledger {
   acknowledge(event: ReviewCommandEvent): Promise<void>;
 }
 export const COMMAND_ACKNOWLEDGER = Symbol('COMMAND_ACKNOWLEDGER');
+
+export interface InstallationOutcome {
+  /** False when the installation is unknown (a no-op, reported as ignored). */
+  applied: boolean;
+  organizationId?: string;
+  afterCommit?: () => void;
+}
+
+/**
+ * Applies installation lifecycle events (GH-013) inside the delivery transaction, so a failure
+ * rolls the whole delivery back. Implemented by the provider module.
+ */
+export interface InstallationLifecycle {
+  apply(ctx: DeliveryContext, event: InstallationEvent): Promise<InstallationOutcome>;
+}
+export const INSTALLATION_LIFECYCLE = Symbol('INSTALLATION_LIFECYCLE');

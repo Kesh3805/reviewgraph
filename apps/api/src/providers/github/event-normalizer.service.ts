@@ -58,7 +58,7 @@ export class GithubEventNormalizer implements EventNormalizer {
     const kind =
       'ignored' in result
         ? eventName
-        : result.type === 'pull_request_head'
+        : result.type === 'pull_request_head' || result.type === 'installation'
           ? result.kind
           : result.type;
     incCounter('provider_events_total', {
