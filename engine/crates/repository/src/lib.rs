@@ -6,6 +6,7 @@
 pub mod build_systems;
 pub mod dirs;
 pub mod error;
+pub mod frameworks;
 pub mod git;
 pub mod jsonc;
 pub mod language;

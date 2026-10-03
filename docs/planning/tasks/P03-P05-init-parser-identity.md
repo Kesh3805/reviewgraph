@@ -619,7 +619,9 @@ Status: â
 
 ### INIT-006 — Framework detection from manifests
 
-Status: ☐
+Status: â
+
+> **Implementation note:** The nest-api fixture does not exist yet (NEST-001), so framework tests use inline temp trees plus the monorepo-pnpm fixture. FrameworkId is a plain String alias. The jwt libraries (@nestjs/jwt, jsonwebtoken, jose) share one id, jwt, and passport/@nestjs/passport share passport. Wrapper detection (express/fastify through @nestjs/platform-*) is a separate VIA_RULES table.
 
 - **Task ID:** INIT-006
 - **Title:** Framework detection from manifests (NestJS, Express, Next.js, React, TypeORM, Prisma, BullMQ, Jest/Vitest/Mocha)
