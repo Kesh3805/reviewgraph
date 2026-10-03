@@ -1190,7 +1190,8 @@ Status: ☑
 ---
 
 ### GH-008 — Summary rendering (PRD §61)
-Status: ☐
+Status: ☑
+> **Implementation note:** `renderSummary(SummaryInput)` in `apps/api/src/publisher/render/summary.ts` is pure and deterministic. The input is a local view model whose counts (findings by severity, verified/candidates, suppressed by reason) are supplied by the caller; the SQL aggregation over `candidate_findings`/`findings` and the RiskAssessment, completeness and POL-002 sources (API-009, RISK-004, DED-004, POL-002) do not exist yet and will populate it. `summary_counts_match_db` therefore asserts that the rendered numbers equal the supplied counts exactly; the end-to-end check against database rows belongs to E2E-001. Sections: header, optional degraded line, Changed, Risk areas (at most 5, "Risk areas: unavailable" when no assessment), Findings by severity or "No verified findings.", Verified X / Y, Suppressed by reason (the five PRD reasons), Findings outside the diff (relocated list with severity, title and `path:line`), Coverage (reviewers run and not run with reasons, unreviewed clusters, deterministic checks where a non-executed check renders `NOT EXECUTED — reason` and never PASS), optional policy notice, the no-merge footer and the hidden `<!-- reviewgraph:run=... head=... -->` marker. All free text is markdown-escaped and marker values are restricted to a safe alphabet. The posting step (GH-009) decides whether to post it from `publish.summary`.
 
 - **Task ID:** GH-008
 - **Title:** Summary rendering (PRD §61)
