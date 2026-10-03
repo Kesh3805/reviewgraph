@@ -983,7 +983,9 @@ Status: â
 
 ### INIT-010 — Rule-doc & architecture metadata discovery
 
-Status: ☐
+Status: â
+
+> **Implementation note:** KnowledgeVault.root is a RepoDir (a vault can be the repository root) and RuleDocCandidate.signals are Strings. The nest-api fixture does not exist yet, so tests build an inline tree that mirrors the spec fixture additions (docs/adr, .github/CODEOWNERS, .agent/acme with .obsidian, .claude settings canary).
 
 - **Task ID:** INIT-010
 - **Title:** Rule-doc & architecture metadata discovery (docs/adr, ARCHITECTURE.md, CONTRIBUTING, CODEOWNERS, knowledge vaults like .agent/*)

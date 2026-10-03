@@ -4,7 +4,9 @@
 //! executes repository code.
 
 pub mod build_systems;
+pub mod codeowners;
 pub mod dirs;
+pub mod docs_meta;
 pub mod entrypoints;
 pub mod env_files;
 pub mod error;
