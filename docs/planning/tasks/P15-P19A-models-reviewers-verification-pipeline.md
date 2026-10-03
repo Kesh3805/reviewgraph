@@ -286,7 +286,8 @@ impl GatewayError { pub fn is_retryable(&self) -> bool; pub fn fallback_eligible
 ---
 
 ### GW-003 — Anthropic adapter
-Status: ☐
+Status: ☑
+> **Implementation note:** `ANTHROPIC_API_KEY` is held in `telemetry::Secret` (redacted `Debug`) rather than `secrecy::SecretString`. Cache breakpoints: the system block takes one and the first three `cache_breakpoint` sections the rest (4 total). A text-only reply to a schema call is `SchemaViolation`; `refusal`/`max_tokens` without a tool call return `Ok` with that `FinishReason` and text output. The `review-cli model smoke` live command is not implemented (no keys, CLI deferred); `docs/operations/local-development.md` documents the variables. Repair-turn rendering is added in GW-009.
 
 **Task ID:** GW-003
 

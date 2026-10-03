@@ -4,6 +4,7 @@
 //! accounting. See docs/architecture/target-architecture.md §4.4.
 
 pub mod adapter;
+pub mod adapters;
 pub mod builder;
 pub mod classify;
 pub mod error;

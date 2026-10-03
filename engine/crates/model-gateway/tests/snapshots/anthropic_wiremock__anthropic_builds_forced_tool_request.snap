@@ -1,0 +1,57 @@
+---
+source: crates/model-gateway/tests/anthropic_wiremock.rs
+expression: body
+---
+{
+  "max_tokens": 16000,
+  "messages": [
+    {
+      "content": [
+        {
+          "cache_control": {
+            "type": "ephemeral"
+          },
+          "text": "<section name=\"rules\">{\"a\":1}</section>",
+          "type": "text"
+        },
+        {
+          "text": "<section name=\"diff\">{\"files\":[\"a.ts\",\"b.ts\"]}</section>",
+          "type": "text"
+        }
+      ],
+      "role": "user"
+    }
+  ],
+  "model": "claude-sonnet-5-5",
+  "system": [
+    {
+      "cache_control": {
+        "type": "ephemeral"
+      },
+      "text": "You are a reviewer.",
+      "type": "text"
+    }
+  ],
+  "tool_choice": {
+    "name": "emit_result",
+    "type": "tool"
+  },
+  "tools": [
+    {
+      "description": "Return the result. Call exactly once.",
+      "input_schema": {
+        "additionalProperties": false,
+        "properties": {
+          "ok": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "ok"
+        ],
+        "type": "object"
+      },
+      "name": "emit_result"
+    }
+  ]
+}
