@@ -7,6 +7,7 @@ import { GithubAppAuth, loadPrivateKey } from './app-auth.service';
 import { GithubCommandAcknowledger } from './command-reaction';
 import { GithubEventNormalizer } from './event-normalizer.service';
 import { GITHUB_APP_AUTH } from './github.tokens';
+import { GITHUB_PERMISSIONS_STATUS, GithubPermissionsMonitor } from './permissions-monitor';
 import { ACTOR_PERMISSION_LOOKUP, GithubActorPermissions } from './permissions';
 import { InstallationTokenCache } from './token-cache';
 
@@ -35,7 +36,15 @@ export function createGithubAppAuth(config: AppConfig, redis: Redis): GithubAppA
     { provide: ACTOR_PERMISSION_LOOKUP, useExisting: GithubActorPermissions },
     GithubEventNormalizer,
     GithubCommandAcknowledger,
+    GithubPermissionsMonitor,
+    { provide: GITHUB_PERMISSIONS_STATUS, useExisting: GithubPermissionsMonitor },
   ],
-  exports: [GITHUB_APP_AUTH, GithubEventNormalizer, GithubCommandAcknowledger],
+  exports: [
+    GITHUB_APP_AUTH,
+    GithubEventNormalizer,
+    GithubCommandAcknowledger,
+    GithubPermissionsMonitor,
+    GITHUB_PERMISSIONS_STATUS,
+  ],
 })
 export class GithubModule {}

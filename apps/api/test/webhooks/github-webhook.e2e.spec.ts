@@ -18,6 +18,7 @@ import {
   PROVIDER_EVENT_SINK,
   type DeliveryStore,
 } from '../../src/webhooks/webhook.ports';
+import { GithubPermissionsMonitor } from '../../src/providers/github/permissions-monitor';
 import { createTestApp } from '../helpers';
 import { fixture } from '../helpers/fixtures';
 import { generateAppKey } from '../helpers/fake-github';
@@ -74,6 +75,10 @@ describe('GitHub webhook endpoint (e2e)', () => {
             .overrideProvider(EVENT_NORMALIZER)
             .useValue({ normalize: () => Promise.resolve(normalized) });
         }
+        // The boot-time GET /app check must never reach the real GitHub from tests.
+        builder
+          .overrideProvider(GithubPermissionsMonitor)
+          .useValue({ enabled: false, status: () => 'unknown' });
         builder.overrideProvider(PROVIDER_EVENT_SINK).useValue({
           dispatch: async (event: ProviderEvent) => {
             dispatched.push(event);

@@ -1,11 +1,22 @@
-import { Inject, Injectable, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
+import { Inject, Injectable, OnModuleDestroy, OnModuleInit, Optional } from '@nestjs/common';
+import {
+  GITHUB_PERMISSIONS_STATUS,
+  type GithubPermissionsStatus,
+  type PermissionsStatus,
+} from '../providers/github/permissions-monitor';
 import { HEALTH_PROBES, type HealthProbes } from './health.probes';
 
 export type CheckStatus = 'up' | 'down';
 
 export interface ReadyReport {
   status: 'ok' | 'unavailable';
-  checks: { pg: CheckStatus; redis: CheckStatus; engine: CheckStatus };
+  checks: {
+    pg: CheckStatus;
+    redis: CheckStatus;
+    engine: CheckStatus;
+    /** Present only when GitHub is enabled; `invalid` makes readiness fail (GH-010). */
+    github_permissions?: PermissionsStatus;
+  };
 }
 
 export const READY_CACHE_MS = 2000;
@@ -20,7 +31,12 @@ export class HealthService implements OnModuleInit, OnModuleDestroy {
   private lastTick = Date.now();
   private timer?: NodeJS.Timeout;
 
-  constructor(@Inject(HEALTH_PROBES) private readonly probes: HealthProbes) {}
+  constructor(
+    @Inject(HEALTH_PROBES) private readonly probes: HealthProbes,
+    @Optional()
+    @Inject(GITHUB_PERMISSIONS_STATUS)
+    private readonly githubPermissions?: GithubPermissionsStatus & { enabled?: boolean },
+  ) {}
 
   onModuleInit(): void {
     this.lastTick = Date.now();
@@ -61,8 +77,11 @@ export class HealthService implements OnModuleInit, OnModuleDestroy {
       settle(this.probes.redis()),
       settle(this.probes.engine()),
     ]);
-    const checks = { pg, redis, engine };
-    const ok = Object.values(checks).every((c) => c === 'up');
+    const checks: ReadyReport['checks'] = { pg, redis, engine };
+    if (this.githubPermissions?.enabled)
+      checks.github_permissions = this.githubPermissions.status();
+    const ok =
+      [pg, redis, engine].every((c) => c === 'up') && checks.github_permissions !== 'invalid';
     return { status: ok ? 'ok' : 'unavailable', checks };
   }
 }

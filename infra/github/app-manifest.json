@@ -1,0 +1,19 @@
+{
+  "name": "ReviewGraph",
+  "description": "Evidence-backed pull request review. Leaves COMMENT reviews only; it cannot approve or merge.",
+  "url": "https://example.invalid/reviewgraph",
+  "hook_attributes": {
+    "url": "https://example.invalid/api/v1/webhooks/github",
+    "active": true
+  },
+  "redirect_url": "https://example.invalid/api/v1/auth/github/callback",
+  "public": false,
+  "default_permissions": {
+    "contents": "read",
+    "pull_requests": "write",
+    "checks": "write",
+    "metadata": "read",
+    "issues": "read"
+  },
+  "default_events": ["pull_request", "issue_comment", "installation", "installation_repositories"]
+}

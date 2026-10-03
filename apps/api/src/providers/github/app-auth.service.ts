@@ -103,6 +103,17 @@ export class GithubAppAuth {
     return this.jwt.token;
   }
 
+  /** The permissions GitHub reports for this App (`GET /app`), used by the boot check (GH-010). */
+  async getAppPermissions(): Promise<Record<string, string>> {
+    try {
+      const octokit = await this.appOctokit();
+      const res = await octokit.request('GET /app');
+      return { ...((res.data as { permissions?: Record<string, string> }).permissions ?? {}) };
+    } catch (err) {
+      throw toProviderError(err, 'app permission lookup');
+    }
+  }
+
   /** An Octokit authenticated as the App itself (for `/app/**` endpoints). */
   async appOctokit(): Promise<GithubOctokit> {
     return createOctokit({
