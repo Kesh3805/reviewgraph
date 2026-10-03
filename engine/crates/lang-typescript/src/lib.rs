@@ -8,6 +8,8 @@ pub mod analyzer;
 pub mod diagnostics;
 pub mod error;
 pub mod kinds;
+pub mod naming;
+pub mod ordinals;
 pub mod parser_pool;
 pub mod text;
 pub mod visit;

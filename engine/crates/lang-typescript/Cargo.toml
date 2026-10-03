@@ -17,6 +17,7 @@ tree-sitter.workspace = true
 tree-sitter-typescript.workspace = true
 tracing.workspace = true
 blake3.workspace = true
+unicode-normalization.workspace = true
 
 [dev-dependencies]
 proptest.workspace = true

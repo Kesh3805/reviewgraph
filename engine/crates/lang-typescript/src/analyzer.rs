@@ -220,6 +220,7 @@ impl LanguageAnalyzer for TypeScriptAnalyzer {
             source,
             module_name: module_name(input),
             error_ranges: &scan.ranges,
+            cfg,
         };
         let collected = visit::run(root, &ctx, &mut sink);
 

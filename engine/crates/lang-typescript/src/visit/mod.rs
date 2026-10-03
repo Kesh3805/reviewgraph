@@ -1,15 +1,19 @@
-//! The syntax-tree visitor. TSA-002 provides the module symbol; later tasks add declarations,
-//! imports/exports, references and syntax facts, all walking the tree iteratively with a depth
-//! cap so no input can overflow the stack.
+//! The syntax-tree visitor: declarations (TSA-003), imports/exports (TSA-004), references
+//! (TSA-005), syntax facts (TSA-006) and hashes (TSA-007), all walking the tree with bounded
+//! depth so no input can overflow the stack.
+
+pub mod declarations;
+pub mod expr;
 
 use analysis_ir::{
-    DiagCode, DiagSeverity, IrExport, IrFrameworkFact, IrImport, IrReference, IrSymbol, LocalId,
-    SymbolFacts,
+    AnalyzerConfig, DiagCode, DiagSeverity, IrExport, IrFrameworkFact, IrImport, IrReference,
+    IrSymbol, LocalId, SymbolFacts,
 };
 use review_core::location::SourceRange;
 use review_core::symbol::SymbolKind;
 
 use crate::diagnostics::DiagnosticSink;
+use crate::ordinals::assign_ordinals;
 use crate::text::Source;
 
 /// Deepest nesting the visitors descend into.
@@ -33,6 +37,7 @@ pub struct VisitCtx<'a> {
     pub module_name: String,
     /// Ranges of ERROR/MISSING nodes; symbols overlapping one get `has_errors`.
     pub error_ranges: &'a [SourceRange],
+    pub cfg: &'a AnalyzerConfig,
 }
 
 /// Runs every visitor over `root`.
@@ -41,14 +46,30 @@ pub fn run(
     ctx: &VisitCtx<'_>,
     sink: &mut DiagnosticSink,
 ) -> Collected {
-    let _ = (root, sink);
-    let mut out = Collected::default();
-    out.symbols.push(module_symbol(
-        &ctx.source,
-        &ctx.module_name,
-        !ctx.error_ranges.is_empty(),
-    ));
-    out
+    let module = module_symbol(&ctx.source, &ctx.module_name, !ctx.error_ranges.is_empty());
+    let mut table = declarations::collect(root, &ctx.source, ctx.cfg, sink, module);
+    declarations::mark_errors(&mut table.symbols, ctx.error_ranges);
+    let report = assign_ordinals(&mut table.symbols);
+    if report.dropped > 0 {
+        sink.note(
+            DiagSeverity::Error,
+            DiagCode::DuplicateSymbol,
+            "too many duplicate symbols; some were dropped",
+            None,
+        );
+    }
+    for _ in &report.duplicate_groups {
+        sink.note(
+            DiagSeverity::Info,
+            DiagCode::DuplicateSymbol,
+            "duplicate symbol name in one scope",
+            None,
+        );
+    }
+    Collected {
+        symbols: table.symbols,
+        ..Collected::default()
+    }
 }
 
 /// `symbols[0]`: the module symbol covering the whole file.
