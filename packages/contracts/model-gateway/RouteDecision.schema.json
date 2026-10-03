@@ -1,0 +1,101 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "AttemptedCandidate": {
+      "description": "A fallback that was attempted and why it did not serve the call.",
+      "properties": {
+        "error_class": {
+          "type": "string"
+        },
+        "model": {
+          "type": "string"
+        },
+        "provider": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "error_class",
+        "model",
+        "provider"
+      ],
+      "type": "object"
+    },
+    "ModelTier": {
+      "description": "Capability tier a caller asks for. Callers never name a model (ADR-010).",
+      "enum": [
+        "classifier",
+        "fast_reasoner",
+        "review_reasoner",
+        "verifier",
+        "deep_reasoner"
+      ],
+      "type": "string"
+    },
+    "RouteCandidate": {
+      "description": "One routable (provider, model) pair.",
+      "properties": {
+        "max_context": {
+          "format": "uint32",
+          "minimum": 0.0,
+          "type": "integer"
+        },
+        "model": {
+          "type": "string"
+        },
+        "provider": {
+          "type": "string"
+        },
+        "supports_reasoning": {
+          "default": false,
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "max_context",
+        "model",
+        "provider"
+      ],
+      "type": "object"
+    }
+  },
+  "description": "How a call was routed. Persisted by consumers (`reviewer_runs.route`).",
+  "properties": {
+    "attempted": {
+      "default": [],
+      "items": {
+        "$ref": "#/definitions/AttemptedCandidate"
+      },
+      "type": "array"
+    },
+    "candidates": {
+      "items": {
+        "$ref": "#/definitions/RouteCandidate"
+      },
+      "type": "array"
+    },
+    "downgraded": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "effective_tier": {
+      "$ref": "#/definitions/ModelTier"
+    },
+    "requested_tier": {
+      "$ref": "#/definitions/ModelTier"
+    },
+    "table_hash": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "candidates",
+    "effective_tier",
+    "requested_tier",
+    "table_hash"
+  ],
+  "title": "RouteDecision",
+  "type": "object"
+}

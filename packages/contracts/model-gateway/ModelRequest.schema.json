@@ -1,0 +1,414 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "CachePolicy": {
+      "oneOf": [
+        {
+          "description": "No provider prompt-cache markers and no response cache.",
+          "enum": [
+            "disabled"
+          ],
+          "type": "string"
+        },
+        {
+          "description": "Provider prompt caching only.",
+          "enum": [
+            "prompt_only"
+          ],
+          "type": "string"
+        },
+        {
+          "additionalProperties": false,
+          "description": "Prompt caching plus the tenant-scoped response cache for cacheable tasks.",
+          "properties": {
+            "prompt_and_response": {
+              "properties": {
+                "ttl": {
+                  "$ref": "#/definitions/Duration"
+                }
+              },
+              "required": [
+                "ttl"
+              ],
+              "type": "object"
+            }
+          },
+          "required": [
+            "prompt_and_response"
+          ],
+          "type": "object"
+        }
+      ]
+    },
+    "CallBudget": {
+      "description": "Per-call limits. The run-level ledger (PIPE-006) derives one for every call.",
+      "properties": {
+        "max_attempts": {
+          "format": "uint8",
+          "minimum": 0.0,
+          "type": "integer"
+        },
+        "max_cost_usd_micros": {
+          "format": "uint64",
+          "minimum": 0.0,
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "max_input_tokens": {
+          "format": "uint32",
+          "minimum": 0.0,
+          "type": "integer"
+        },
+        "max_output_tokens": {
+          "format": "uint32",
+          "minimum": 0.0,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "max_attempts",
+        "max_input_tokens",
+        "max_output_tokens"
+      ],
+      "type": "object"
+    },
+    "Duration": {
+      "properties": {
+        "nanos": {
+          "format": "uint32",
+          "minimum": 0.0,
+          "type": "integer"
+        },
+        "secs": {
+          "format": "uint64",
+          "minimum": 0.0,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "nanos",
+        "secs"
+      ],
+      "type": "object"
+    },
+    "InputSection": {
+      "description": "One named, ordered part of the user input. Most stable sections go first so provider prompt caches hit.",
+      "properties": {
+        "cache_breakpoint": {
+          "type": "boolean"
+        },
+        "content": true,
+        "name": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "cache_breakpoint",
+        "content",
+        "name"
+      ],
+      "type": "object"
+    },
+    "ModelTier": {
+      "description": "Capability tier a caller asks for. Callers never name a model (ADR-010).",
+      "enum": [
+        "classifier",
+        "fast_reasoner",
+        "review_reasoner",
+        "verifier",
+        "deep_reasoner"
+      ],
+      "type": "string"
+    },
+    "OutputSchema": {
+      "description": "JSON Schema the output must satisfy.",
+      "properties": {
+        "hash": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "schema": true,
+        "version": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "hash",
+        "name",
+        "schema",
+        "version"
+      ],
+      "type": "object"
+    },
+    "PrivacyClass": {
+      "enum": [
+        "standard",
+        "zero_retention_only",
+        "no_external"
+      ],
+      "type": "string"
+    },
+    "ReasoningLevel": {
+      "enum": [
+        "off",
+        "low",
+        "medium",
+        "high"
+      ],
+      "type": "string"
+    },
+    "RepairTurn": {
+      "description": "A repair turn appended by the gateway after an invalid structured output (GW-009).",
+      "properties": {
+        "errors": {
+          "items": {
+            "$ref": "#/definitions/SchemaErrorSummary"
+          },
+          "type": "array"
+        },
+        "previous_output": true
+      },
+      "required": [
+        "errors",
+        "previous_output"
+      ],
+      "type": "object"
+    },
+    "ReviewerType": {
+      "description": "A reviewer specialisation. Wire form is snake_case. `Ord` gives a stable order for sorted, deduplicated collections such as a run's degraded reviewers.",
+      "enum": [
+        "correctness",
+        "security",
+        "test",
+        "architecture",
+        "performance",
+        "maintainability"
+      ],
+      "type": "string"
+    },
+    "RiskBand": {
+      "description": "Risk band of the change under review (RISK-001 will own the canonical type).",
+      "enum": [
+        "low",
+        "medium",
+        "high",
+        "critical"
+      ],
+      "type": "string"
+    },
+    "SchemaErrorSummary": {
+      "properties": {
+        "instance_path": {
+          "type": "string"
+        },
+        "keyword": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "instance_path",
+        "keyword",
+        "message"
+      ],
+      "type": "object"
+    },
+    "StructuredInput": {
+      "description": "The input of a call. `Debug` prints only section names and byte lengths.",
+      "properties": {
+        "repair": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/RepairTurn"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "sections": {
+          "items": {
+            "$ref": "#/definitions/InputSection"
+          },
+          "type": "array"
+        },
+        "system": {
+          "$ref": "#/definitions/SystemPrompt"
+        }
+      },
+      "required": [
+        "sections",
+        "system"
+      ],
+      "type": "object"
+    },
+    "SystemPrompt": {
+      "description": "Identifies the system prompt that produced a request.",
+      "properties": {
+        "prompt_id": {
+          "type": "string"
+        },
+        "prompt_sha": {
+          "type": "string"
+        },
+        "prompt_version": {
+          "type": "string"
+        },
+        "text": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "prompt_id",
+        "prompt_sha",
+        "prompt_version",
+        "text"
+      ],
+      "type": "object"
+    },
+    "TaskType": {
+      "description": "What the call is for. Drives response-cache eligibility and metric labels.",
+      "enum": [
+        "intent_classification",
+        "symbol_summary",
+        "correctness_review",
+        "security_review",
+        "test_review",
+        "architecture_review",
+        "performance_review",
+        "maintainability_review",
+        "contradiction_adjudication",
+        "eval_probe"
+      ],
+      "type": "string"
+    },
+    "TenantScope": {
+      "description": "Tenant a call is made for. Mandatory: no `Default`, and `ModelRequest` has no constructor that omits it.\n\n```compile_fail let _ = model_gateway::TenantScope::default(); ```",
+      "properties": {
+        "organization_id": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "repository_id": {
+          "format": "uuid",
+          "type": "string"
+        }
+      },
+      "required": [
+        "organization_id",
+        "repository_id"
+      ],
+      "type": "object"
+    },
+    "TraceContext": {
+      "description": "Correlation data for telemetry. Never hashed.",
+      "properties": {
+        "request_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "review_run_id": {
+          "format": "uuid",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "reviewer_run_id": {
+          "format": "uuid",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "reviewer_type": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/ReviewerType"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "type": "object"
+    }
+  },
+  "properties": {
+    "budget": {
+      "$ref": "#/definitions/CallBudget"
+    },
+    "cache": {
+      "$ref": "#/definitions/CachePolicy"
+    },
+    "idempotency_hint": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "input": {
+      "$ref": "#/definitions/StructuredInput"
+    },
+    "max_output_tokens": {
+      "format": "uint32",
+      "minimum": 0.0,
+      "type": "integer"
+    },
+    "output_schema": {
+      "anyOf": [
+        {
+          "$ref": "#/definitions/OutputSchema"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "privacy": {
+      "$ref": "#/definitions/PrivacyClass"
+    },
+    "reasoning": {
+      "$ref": "#/definitions/ReasoningLevel"
+    },
+    "risk_band": {
+      "$ref": "#/definitions/RiskBand"
+    },
+    "task": {
+      "$ref": "#/definitions/TaskType"
+    },
+    "tenant": {
+      "$ref": "#/definitions/TenantScope"
+    },
+    "tier": {
+      "$ref": "#/definitions/ModelTier"
+    },
+    "trace": {
+      "$ref": "#/definitions/TraceContext"
+    }
+  },
+  "required": [
+    "budget",
+    "cache",
+    "input",
+    "max_output_tokens",
+    "privacy",
+    "reasoning",
+    "risk_band",
+    "task",
+    "tenant",
+    "tier",
+    "trace"
+  ],
+  "title": "ModelRequest",
+  "type": "object"
+}

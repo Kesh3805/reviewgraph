@@ -1,0 +1,40 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "description": "Token usage with provider semantics normalised: `input_uncached` excludes cache reads and writes, and `output` includes reasoning tokens.",
+  "properties": {
+    "cache_read": {
+      "format": "uint32",
+      "minimum": 0.0,
+      "type": "integer"
+    },
+    "cache_write": {
+      "format": "uint32",
+      "minimum": 0.0,
+      "type": "integer"
+    },
+    "input_uncached": {
+      "format": "uint32",
+      "minimum": 0.0,
+      "type": "integer"
+    },
+    "output": {
+      "format": "uint32",
+      "minimum": 0.0,
+      "type": "integer"
+    },
+    "reasoning": {
+      "format": "uint32",
+      "minimum": 0.0,
+      "type": "integer"
+    }
+  },
+  "required": [
+    "cache_read",
+    "cache_write",
+    "input_uncached",
+    "output",
+    "reasoning"
+  ],
+  "title": "Usage",
+  "type": "object"
+}

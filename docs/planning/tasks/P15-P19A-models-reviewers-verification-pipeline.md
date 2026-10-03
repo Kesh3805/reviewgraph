@@ -61,7 +61,8 @@ Status markers: ☐ todo · ◐ in progress · ☑ done (acceptance criteria exe
 ---
 
 ### GW-001 — ModelGateway trait and request/response contract
-Status: ☐
+Status: ☑
+> **Implementation note:** `RiskBand` and `TraceContext` are defined in `model-gateway` (RISK-001 will own `RiskBand` in `review-core`); `ProviderId`/`RequestHash` are string newtypes; `InputSection.name` is a `String`; `ProviderAdapter` is `pub` so integration tests can implement it. `GatewayError` is fully defined here (needed by the trait) with its methods, classification and retry arriving in GW-002; it exposes `class() -> &'static str` (no `Classify` impl, to avoid clashing with `ErrorClass`). External deps are declared in the crate manifest rather than the workspace table. `ModelRequest::new(task, tier, input, tenant, budget)` is the only constructor (tenant mandatory); `deadline` is `serde(skip)`, so the exported JSON schemas omit it. Schemas are in `packages/contracts/model-gateway/` (checked by `tests/schemas.rs`, `UPDATE_SCHEMAS=1` rewrites). The `deny.toml` ban of `reqwest` in `reviewers`/`verification` is already enforced by `xtask` (`BANNED`), so `deny.toml` is unchanged. The compile-fail check for `TenantScope` is a doctest. `StaticRouter` is the interim `RouteSource` until GW-006.
 
 **Task ID:** GW-001
 
