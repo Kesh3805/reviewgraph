@@ -67,6 +67,28 @@ impl ParseDiagnostic {
         })
     }
 
+    /// `"<prefix> <kind>"` where `kind` is a grammar node kind (a `'static` string owned by the
+    /// parser tables, never source text).
+    pub fn with_kind(
+        severity: DiagSeverity,
+        code: DiagCode,
+        prefix: &'static str,
+        kind: &'static str,
+        range: Option<SourceRange>,
+    ) -> Result<Self, DiagnosticTooLong> {
+        let message = format!("{prefix} {kind}");
+        let len = message.chars().count();
+        if len > MAX_DIAGNOSTIC_CHARS {
+            return Err(DiagnosticTooLong { len });
+        }
+        Ok(Self {
+            severity,
+            code,
+            message,
+            range,
+        })
+    }
+
     /// `"<prefix> <n>"`, for counts such as `"more diagnostics: 12"`.
     pub fn with_count(
         severity: DiagSeverity,

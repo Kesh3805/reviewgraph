@@ -1523,7 +1523,9 @@ Status: â
 
 ### TSA-002 — tree-sitter TS/TSX/JS integration in `lang-typescript`
 
-Status: ☐
+Status: â
+
+> **Implementation note:** ParseOptions::progress_callback in tree-sitter 0.25.10 returns true to cancel (not ControlFlow); the parser is reset after a cancelled parse. jsx_* kinds exist only in the TSX grammar, so node_kinds treats them as TSX-only. Huge, BOM/CRLF, latin1 and 5,000-level inputs are generated inside the tests rather than committed (the fixture builder forbids generated content and git may normalize line endings); the ts-edge fixture holds the small static cases and a 500-level nesting file. TSA-002 adds the module symbol only; declarations arrive in TSA-003, so the syntax_error test asserts Partial status and diagnostics (symbols before/after the error are asserted in TSA-003). Metrics instruments (parse_files_total etc.) are not emitted yet, only the parse_failed debug event, because the telemetry crate has no metric handles for analyzers; the 20 MB/s benchmark baseline file under benchmarks/perf is not recorded (the criterion bench exists). analysis-ir gained ParseDiagnostic::with_kind for grammar node kinds and UnitStats.lines is newlines plus one.
 
 - **Task ID:** TSA-002
 - **Title:** tree-sitter TS/TSX/JS integration in lang-typescript: grammar selection by extension, parser reuse per thread, error-node tolerance

@@ -49,7 +49,8 @@ pub enum ParseStatus {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize, JsonSchema)]
 pub struct UnitStats {
     pub bytes: u64,
-    /// Number of lines (a file without a trailing newline still counts its last line).
+    /// Number of newline characters plus one: the line count as tree-sitter sees it, so the end
+    /// line of a range never exceeds it.
     pub lines: u32,
     pub parse_micros: u64,
 }
