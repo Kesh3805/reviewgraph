@@ -693,7 +693,9 @@ Status: â
 
 ### INIT-007 — Source roots, test roots, tsconfig discovery, lint/compiler/CI config
 
-Status: ☐
+Status: â
+
+> **Implementation note:** tsconfig facts add include_base (TypeScript resolves include/exclude/files relative to the config that defined them, which differs from config_dir when inherited) and a TsOwner result carrying owned_by_fallback from tsconfig_for. Extracted Jest config values keep <rootDir> semantics (rootDir joined with each root). Config scripts are scanned with a regex and never executed; the nest-api fixture does not exist yet so tests use inline trees plus monorepo-pnpm.
 
 - **Task ID:** INIT-007
 - **Title:** Source roots, test roots, tsconfig discovery (extends chain, paths/baseUrl), lint/compiler/CI config detection

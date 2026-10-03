@@ -10,10 +10,13 @@ pub mod frameworks;
 pub mod git;
 pub mod jsonc;
 pub mod language;
+pub mod layout;
 pub mod manifests;
 pub mod read;
 pub mod remote_url;
 pub mod sensitive;
+pub mod tooling;
+pub mod tsconfig;
 pub mod walk;
 pub mod workspaces;
 
