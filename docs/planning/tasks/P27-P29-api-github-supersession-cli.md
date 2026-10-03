@@ -1115,7 +1115,8 @@ Status: ☐
 ---
 
 ### GH-007 — Inline comment rendering and anchoring
-Status: ☐
+Status: ☑
+> **Implementation note:** Pure renderers in `apps/api/src/publisher/render/` (`inline-comment.ts`, `anchor.ts`, `diff-index.ts`, `severity.ts`, plus `escape.ts`, `plan.ts` and `types.ts`). The input is a local `RenderableFinding` view model (and a local `Severity` union mirroring the contract wire form) rather than the generated contract types, because `apps/api` does not depend on `@reviewgraph/contracts` yet and API-010 (finding detail) will map verified findings onto it. Hunks come from the provider `patch` text per changed file (`DiffIndex.build`) or stored hunks (`DiffIndex.fromHunks`, for `review_diff_hunks` once DIFF-* persists them). Anchoring: a range wholly inside one hunk becomes a multi-line comment; a range spanning hunks or only partly overlapping falls back to a single line (the first changed visible line, else the first visible line); `base`-side findings anchor LEFT with old-file numbers; no location, file absent from the diff or file without a patch relocates with `outside_diff`. `planPublication` applies the cap (default 25) and relocates overflow (`inline_cap`), out-of-diff and unrenderable (`render_error`) findings, counting `findings_relocated_to_summary_total{reason}`; nothing is dropped. Untrusted text is markdown-escaped (`<>&@` become entities, so markers cannot be closed and users cannot be pinged) and marker values are restricted to a safe alphabet. The hedging-phrase assertion throws when `NODE_ENV` is not `production`. The latent note text is adapted from `github.rs:288-297`.
 
 - **Task ID:** GH-007
 - **Title:** Inline comment rendering (PRD §58/59 format, evidence path) + anchoring (multi-line, LEFT side for deletions, out-of-diff → summary)
