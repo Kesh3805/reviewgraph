@@ -14,20 +14,7 @@ use crate::walk::{FileClass, FileEntry, FileInventory};
 
 /// Bytes read from an extensionless file to look for a shebang.
 const SHEBANG_BYTES: usize = 256;
-
-#[derive(
-    Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize, JsonSchema,
-)]
-#[serde(rename_all = "snake_case")]
-pub enum Dialect {
-    Ts,
-    Tsx,
-    Dts,
-    Js,
-    Jsx,
-    Mjs,
-    Cjs,
-}
+pub use review_core::language::Dialect;
 
 #[derive(
     Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize, JsonSchema,

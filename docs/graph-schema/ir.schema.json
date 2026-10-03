@@ -1,0 +1,1706 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "ParsedUnit",
+  "type": "object",
+  "required": [
+    "analyzer",
+    "content_hash",
+    "diagnostics",
+    "exports",
+    "facts",
+    "file",
+    "framework",
+    "imports",
+    "ir_schema",
+    "language",
+    "module_path",
+    "references",
+    "stats",
+    "status",
+    "symbols"
+  ],
+  "properties": {
+    "analyzer": {
+      "$ref": "#/definitions/AnalyzerId"
+    },
+    "content_hash": {
+      "$ref": "#/definitions/ContentHash"
+    },
+    "diagnostics": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/ParseDiagnostic"
+      }
+    },
+    "dialect": {
+      "anyOf": [
+        {
+          "$ref": "#/definitions/Dialect"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "exports": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/IrExport"
+      }
+    },
+    "facts": {
+      "description": "Sorted by symbol.",
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/SymbolFacts"
+      }
+    },
+    "file": {
+      "type": "string"
+    },
+    "framework": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/IrFrameworkFact"
+      }
+    },
+    "imports": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/IrImport"
+      }
+    },
+    "ir_schema": {
+      "type": "integer",
+      "format": "uint16",
+      "minimum": 0.0
+    },
+    "language": {
+      "$ref": "#/definitions/Language"
+    },
+    "module_path": {
+      "type": "string"
+    },
+    "references": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/IrReference"
+      }
+    },
+    "stats": {
+      "$ref": "#/definitions/UnitStats"
+    },
+    "status": {
+      "$ref": "#/definitions/ParseStatus"
+    },
+    "symbols": {
+      "description": "Index equals `LocalId`; `symbols[0]` is always the module symbol.",
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/IrSymbol"
+      }
+    }
+  },
+  "definitions": {
+    "AnalyzerId": {
+      "type": "object",
+      "required": [
+        "name",
+        "version"
+      ],
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "version": {
+          "$ref": "#/definitions/AnalyzerVersion"
+        }
+      }
+    },
+    "AnalyzerVersion": {
+      "title": "AnalyzerVersion",
+      "type": "string",
+      "pattern": "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(-[0-9A-Za-z.-]+)?(\\+[0-9A-Za-z.-]+)?$"
+    },
+    "AttrValue": {
+      "description": "Free-form, deterministic attribute values.",
+      "oneOf": [
+        {
+          "type": "object",
+          "required": [
+            "Str"
+          ],
+          "properties": {
+            "Str": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "Int"
+          ],
+          "properties": {
+            "Int": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "Float"
+          ],
+          "properties": {
+            "Float": {
+              "$ref": "#/definitions/FloatBits"
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "Bool"
+          ],
+          "properties": {
+            "Bool": {
+              "type": "boolean"
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "List"
+          ],
+          "properties": {
+            "List": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/AttrValue"
+              }
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "Map"
+          ],
+          "properties": {
+            "Map": {
+              "type": "object",
+              "additionalProperties": {
+                "$ref": "#/definitions/AttrValue"
+              }
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "Expr"
+          ],
+          "properties": {
+            "Expr": {
+              "$ref": "#/definitions/IrExpr"
+            }
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "BindingRef": {
+      "description": "`(import index, binding index)` into `ParsedUnit::imports`.",
+      "type": "object",
+      "required": [
+        "binding",
+        "import"
+      ],
+      "properties": {
+        "binding": {
+          "type": "integer",
+          "format": "uint32",
+          "minimum": 0.0
+        },
+        "import": {
+          "type": "integer",
+          "format": "uint32",
+          "minimum": 0.0
+        }
+      }
+    },
+    "ConstValue": {
+      "description": "Literal value of a constant or enum member.",
+      "oneOf": [
+        {
+          "type": "object",
+          "required": [
+            "Str"
+          ],
+          "properties": {
+            "Str": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "Num"
+          ],
+          "properties": {
+            "Num": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "Bool"
+          ],
+          "properties": {
+            "Bool": {
+              "type": "boolean"
+            }
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "ContentHash": {
+      "title": "ContentHash",
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "DiagCode": {
+      "type": "string",
+      "enum": [
+        "SyntaxError",
+        "MissingNode",
+        "FileTooLarge",
+        "ParseTimeout",
+        "ComputedMemberName",
+        "UnsupportedConstruct",
+        "DynamicImportNonLiteral",
+        "DuplicateSymbol",
+        "DepthLimit",
+        "ExprTruncated"
+      ]
+    },
+    "DiagSeverity": {
+      "type": "string",
+      "enum": [
+        "Error",
+        "Warning",
+        "Info"
+      ]
+    },
+    "Dialect": {
+      "description": "File dialect within a language: the grammar and module-kind hint for a path.",
+      "type": "string",
+      "enum": [
+        "ts",
+        "tsx",
+        "dts",
+        "js",
+        "jsx",
+        "mjs",
+        "cjs"
+      ]
+    },
+    "FactKind": {
+      "type": "string",
+      "enum": [
+        "Call",
+        "New",
+        "Condition",
+        "Loop",
+        "Throw",
+        "TryCatch",
+        "Await",
+        "Return",
+        "DbWriteLike",
+        "DbReadLike",
+        "TransactionWrapper",
+        "GuardDecorator",
+        "ConfigRead",
+        "Assignment"
+      ]
+    },
+    "FailReason": {
+      "type": "string",
+      "enum": [
+        "TooLarge",
+        "Timeout",
+        "Binary",
+        "NotUtf8Decodable",
+        "Internal"
+      ]
+    },
+    "FloatBits": {
+      "description": "An `f64` stored as its IEEE bits so attribute maps stay `Eq`.",
+      "type": "integer",
+      "format": "uint64",
+      "minimum": 0.0
+    },
+    "FrameworkFactKind": {
+      "oneOf": [
+        {
+          "type": "string",
+          "enum": [
+            "ModuleDeclaration",
+            "Controller",
+            "HttpRoute",
+            "HttpGlobalConfig",
+            "DiInjection",
+            "Middleware",
+            "MiddlewareBinding",
+            "GlobalProvider",
+            "RouteMetadata",
+            "MetadataDecoratorDefinition",
+            "OrmEntity",
+            "OrmColumn",
+            "OrmRelation",
+            "OrmAccess",
+            "QueueConsumer",
+            "QueueJobHandler",
+            "QueueProducer",
+            "QueueRegistration",
+            "TestSuite",
+            "TestCase",
+            "TestMock",
+            "ConfigRead"
+          ]
+        },
+        {
+          "type": "object",
+          "required": [
+            "Custom"
+          ],
+          "properties": {
+            "Custom": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "Hash128": {
+      "title": "Hash128",
+      "type": "string",
+      "pattern": "^[0-9a-f]{32}$"
+    },
+    "Heritage": {
+      "type": "object",
+      "required": [
+        "extends",
+        "implements"
+      ],
+      "properties": {
+        "extends": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "implements": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "ImportBinding": {
+      "type": "object",
+      "required": [
+        "imported",
+        "local",
+        "type_only"
+      ],
+      "properties": {
+        "imported": {
+          "$ref": "#/definitions/Imported"
+        },
+        "local": {
+          "type": "string"
+        },
+        "type_only": {
+          "type": "boolean"
+        }
+      }
+    },
+    "ImportKind": {
+      "type": "string",
+      "enum": [
+        "Esm",
+        "SideEffect",
+        "CjsRequire",
+        "Dynamic",
+        "ImportEquals"
+      ]
+    },
+    "Imported": {
+      "oneOf": [
+        {
+          "type": "string",
+          "enum": [
+            "Default",
+            "Namespace",
+            "CjsModule"
+          ]
+        },
+        {
+          "type": "object",
+          "required": [
+            "Named"
+          ],
+          "properties": {
+            "Named": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "IrDecorator": {
+      "description": "A decorator application (`@Get(\":id\")`).",
+      "type": "object",
+      "required": [
+        "args",
+        "name",
+        "range"
+      ],
+      "properties": {
+        "args": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/IrExpr"
+          }
+        },
+        "name": {
+          "description": "Callee text such as `Get` or `Nest.Get`.",
+          "type": "string"
+        },
+        "range": {
+          "$ref": "#/definitions/SourceRange"
+        }
+      }
+    },
+    "IrExport": {
+      "oneOf": [
+        {
+          "type": "object",
+          "required": [
+            "Local"
+          ],
+          "properties": {
+            "Local": {
+              "type": "object",
+              "required": [
+                "exported_as",
+                "symbol",
+                "type_only"
+              ],
+              "properties": {
+                "exported_as": {
+                  "type": "string"
+                },
+                "symbol": {
+                  "$ref": "#/definitions/LocalId"
+                },
+                "type_only": {
+                  "type": "boolean"
+                }
+              }
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "Reexport"
+          ],
+          "properties": {
+            "Reexport": {
+              "type": "object",
+              "required": [
+                "exported_as",
+                "imported",
+                "specifier",
+                "type_only"
+              ],
+              "properties": {
+                "exported_as": {
+                  "type": "string"
+                },
+                "imported": {
+                  "$ref": "#/definitions/Imported"
+                },
+                "specifier": {
+                  "type": "string"
+                },
+                "type_only": {
+                  "type": "boolean"
+                }
+              }
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "StarReexport"
+          ],
+          "properties": {
+            "StarReexport": {
+              "type": "object",
+              "required": [
+                "specifier",
+                "type_only"
+              ],
+              "properties": {
+                "as_namespace": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "specifier": {
+                  "type": "string"
+                },
+                "type_only": {
+                  "type": "boolean"
+                }
+              }
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "DefaultExpr"
+          ],
+          "properties": {
+            "DefaultExpr": {
+              "type": "object",
+              "required": [
+                "expr"
+              ],
+              "properties": {
+                "expr": {
+                  "$ref": "#/definitions/IrExpr"
+                }
+              }
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "CjsModuleExports"
+          ],
+          "properties": {
+            "CjsModuleExports": {
+              "type": "object",
+              "required": [
+                "expr"
+              ],
+              "properties": {
+                "expr": {
+                  "$ref": "#/definitions/IrExpr"
+                },
+                "symbol": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/definitions/LocalId"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "CjsExportsProperty"
+          ],
+          "properties": {
+            "CjsExportsProperty": {
+              "type": "object",
+              "required": [
+                "name"
+              ],
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "symbol": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/definitions/LocalId"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "ExportAssignment"
+          ],
+          "properties": {
+            "ExportAssignment": {
+              "type": "object",
+              "properties": {
+                "symbol": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/definitions/LocalId"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "IrExpr": {
+      "description": "A bounded literal expression tree.",
+      "oneOf": [
+        {
+          "type": "string",
+          "enum": [
+            "Null"
+          ]
+        },
+        {
+          "type": "object",
+          "required": [
+            "Str"
+          ],
+          "properties": {
+            "Str": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "Num"
+          ],
+          "properties": {
+            "Num": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "Bool"
+          ],
+          "properties": {
+            "Bool": {
+              "type": "boolean"
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "Ident"
+          ],
+          "properties": {
+            "Ident": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "Member"
+          ],
+          "properties": {
+            "Member": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "Array"
+          ],
+          "properties": {
+            "Array": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/IrExpr"
+              }
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "Object"
+          ],
+          "properties": {
+            "Object": {
+              "type": "array",
+              "items": {
+                "type": "array",
+                "items": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "$ref": "#/definitions/IrExpr"
+                  }
+                ],
+                "maxItems": 2,
+                "minItems": 2
+              }
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "Call"
+          ],
+          "properties": {
+            "Call": {
+              "type": "object",
+              "required": [
+                "args",
+                "callee"
+              ],
+              "properties": {
+                "args": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/IrExpr"
+                  }
+                },
+                "callee": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "description": "`() => X`",
+          "type": "object",
+          "required": [
+            "Arrow"
+          ],
+          "properties": {
+            "Arrow": {
+              "type": "object",
+              "required": [
+                "returns"
+              ],
+              "properties": {
+                "returns": {
+                  "$ref": "#/definitions/IrExpr"
+                }
+              }
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "Template"
+          ],
+          "properties": {
+            "Template": {
+              "type": "object",
+              "required": [
+                "has_subst",
+                "raw"
+              ],
+              "properties": {
+                "has_subst": {
+                  "type": "boolean"
+                },
+                "raw": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "description": "Anything else, or a truncated subtree (`\"…\"`). At most 120 characters.",
+          "type": "object",
+          "required": [
+            "Other"
+          ],
+          "properties": {
+            "Other": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "IrFrameworkFact": {
+      "type": "object",
+      "required": [
+        "adapter",
+        "attrs",
+        "confidence",
+        "kind",
+        "range"
+      ],
+      "properties": {
+        "adapter": {
+          "description": "`\"nestjs\"`, `\"typeorm\"`, `\"bullmq\"`, `\"jest\"`, `\"config\"`, ...",
+          "type": "string"
+        },
+        "attrs": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/definitions/AttrValue"
+          }
+        },
+        "confidence": {
+          "type": "number",
+          "format": "float"
+        },
+        "kind": {
+          "$ref": "#/definitions/FrameworkFactKind"
+        },
+        "range": {
+          "$ref": "#/definitions/SourceRange"
+        },
+        "symbol": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/LocalId"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "IrImport": {
+      "type": "object",
+      "required": [
+        "bindings",
+        "kind",
+        "range",
+        "specifier",
+        "type_only"
+      ],
+      "properties": {
+        "bindings": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ImportBinding"
+          }
+        },
+        "kind": {
+          "$ref": "#/definitions/ImportKind"
+        },
+        "range": {
+          "$ref": "#/definitions/SourceRange"
+        },
+        "specifier": {
+          "type": "string"
+        },
+        "type_only": {
+          "type": "boolean"
+        }
+      }
+    },
+    "IrParam": {
+      "type": "object",
+      "required": [
+        "decorators",
+        "name",
+        "optional",
+        "rest"
+      ],
+      "properties": {
+        "decorators": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/IrDecorator"
+          }
+        },
+        "name": {
+          "type": "string"
+        },
+        "optional": {
+          "type": "boolean"
+        },
+        "property": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/ParamProperty"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "rest": {
+          "type": "boolean"
+        },
+        "type_text": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "IrReference": {
+      "type": "object",
+      "required": [
+        "arg_count",
+        "attrs",
+        "from",
+        "in_test_block",
+        "kind",
+        "name",
+        "range",
+        "receiver"
+      ],
+      "properties": {
+        "arg_count": {
+          "type": "integer",
+          "format": "uint16",
+          "minimum": 0.0
+        },
+        "attrs": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/definitions/AttrValue"
+          }
+        },
+        "from": {
+          "$ref": "#/definitions/LocalId"
+        },
+        "import_binding": {
+          "description": "Set when `name` or the receiver root is an imported binding.",
+          "anyOf": [
+            {
+              "$ref": "#/definitions/BindingRef"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "in_test_block": {
+          "type": "boolean"
+        },
+        "kind": {
+          "$ref": "#/definitions/RefKind"
+        },
+        "name": {
+          "description": "Terminal identifier.",
+          "type": "string"
+        },
+        "range": {
+          "$ref": "#/definitions/SourceRange"
+        },
+        "receiver": {
+          "$ref": "#/definitions/ReceiverHint"
+        }
+      }
+    },
+    "IrSymbol": {
+      "type": "object",
+      "required": [
+        "attr_hash",
+        "attrs",
+        "body_hash",
+        "body_shingles",
+        "body_token_count",
+        "decorators",
+        "has_errors",
+        "heritage",
+        "kind",
+        "local_id",
+        "modifiers",
+        "name",
+        "ordinal",
+        "overload_signatures",
+        "params",
+        "qualified_name",
+        "range",
+        "signature_hash",
+        "type_params",
+        "visibility"
+      ],
+      "properties": {
+        "attr_hash": {
+          "$ref": "#/definitions/Hash128"
+        },
+        "attrs": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/definitions/AttrValue"
+          }
+        },
+        "body_hash": {
+          "$ref": "#/definitions/Hash128"
+        },
+        "body_range": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/SourceRange"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "body_shingles": {
+          "$ref": "#/definitions/ShingleSet"
+        },
+        "body_token_count": {
+          "type": "integer",
+          "format": "uint32",
+          "minimum": 0.0
+        },
+        "const_value": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/ConstValue"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "declared_type": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "decorators": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/IrDecorator"
+          }
+        },
+        "doc_hash": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/Hash128"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "has_errors": {
+          "type": "boolean"
+        },
+        "heritage": {
+          "$ref": "#/definitions/Heritage"
+        },
+        "kind": {
+          "$ref": "#/definitions/SymbolKind"
+        },
+        "local_id": {
+          "$ref": "#/definitions/LocalId"
+        },
+        "modifiers": {
+          "type": "integer",
+          "format": "uint16",
+          "minimum": 0.0
+        },
+        "name": {
+          "type": "string"
+        },
+        "name_range": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/SourceRange"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "ordinal": {
+          "description": "Overload/duplicate ordinal (SID-003); 0 means none.",
+          "type": "integer",
+          "format": "uint16",
+          "minimum": 0.0
+        },
+        "overload_signatures": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "params": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/IrParam"
+          }
+        },
+        "parent": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/LocalId"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "qualified_name": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "range": {
+          "$ref": "#/definitions/SourceRange"
+        },
+        "return_type": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "signature": {
+          "description": "Display text, at most 512 characters, single-spaced.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "signature_hash": {
+          "$ref": "#/definitions/Hash128"
+        },
+        "type_params": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "visibility": {
+          "$ref": "#/definitions/Visibility"
+        }
+      }
+    },
+    "Language": {
+      "description": "A language or file format. Wire form is the lowercase name. New variants are additive.",
+      "type": "string",
+      "enum": [
+        "typescript",
+        "javascript",
+        "python",
+        "java",
+        "go",
+        "rust",
+        "kotlin",
+        "csharp",
+        "ruby",
+        "php",
+        "shell",
+        "sql",
+        "yaml",
+        "json",
+        "toml",
+        "markdown",
+        "html",
+        "css",
+        "dockerfile",
+        "terraform",
+        "protobuf",
+        "graphql",
+        "prisma",
+        "other"
+      ]
+    },
+    "LocalId": {
+      "description": "Index of a symbol inside its [`crate::ParsedUnit`]. `symbols[local_id.0]` is the symbol.",
+      "type": "integer",
+      "format": "uint32",
+      "minimum": 0.0
+    },
+    "ParamProperty": {
+      "description": "TypeScript constructor parameter property (`constructor(private readonly x: X)`).",
+      "type": "object",
+      "required": [
+        "readonly",
+        "visibility"
+      ],
+      "properties": {
+        "readonly": {
+          "type": "boolean"
+        },
+        "visibility": {
+          "$ref": "#/definitions/Visibility"
+        }
+      }
+    },
+    "ParseDiagnostic": {
+      "type": "object",
+      "required": [
+        "code",
+        "message",
+        "severity"
+      ],
+      "properties": {
+        "code": {
+          "$ref": "#/definitions/DiagCode"
+        },
+        "message": {
+          "description": "At most 200 characters; never source text.",
+          "type": "string"
+        },
+        "range": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/SourceRange"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "severity": {
+          "$ref": "#/definitions/DiagSeverity"
+        }
+      }
+    },
+    "ParseStatus": {
+      "oneOf": [
+        {
+          "type": "string",
+          "enum": [
+            "Ok"
+          ]
+        },
+        {
+          "type": "object",
+          "required": [
+            "Partial"
+          ],
+          "properties": {
+            "Partial": {
+              "type": "object",
+              "required": [
+                "error_nodes",
+                "missing_nodes"
+              ],
+              "properties": {
+                "error_nodes": {
+                  "type": "integer",
+                  "format": "uint32",
+                  "minimum": 0.0
+                },
+                "missing_nodes": {
+                  "type": "integer",
+                  "format": "uint32",
+                  "minimum": 0.0
+                }
+              }
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "Failed"
+          ],
+          "properties": {
+            "Failed": {
+              "type": "object",
+              "required": [
+                "reason"
+              ],
+              "properties": {
+                "reason": {
+                  "$ref": "#/definitions/FailReason"
+                }
+              }
+            }
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "Position": {
+      "description": "A point in a source file.\n\n`line` is **1-based**. `column` is a **0-based UTF-8 byte offset** within the line, matching tree-sitter columns. Ordering is by line, then column.",
+      "type": "object",
+      "required": [
+        "column",
+        "line"
+      ],
+      "properties": {
+        "column": {
+          "type": "integer",
+          "format": "uint32",
+          "minimum": 0.0
+        },
+        "line": {
+          "type": "integer",
+          "format": "uint32",
+          "minimum": 0.0
+        }
+      },
+      "additionalProperties": false
+    },
+    "ReceiverHint": {
+      "description": "What is known about the object a member is accessed on.",
+      "oneOf": [
+        {
+          "type": "string",
+          "enum": [
+            "None",
+            "This",
+            "Super",
+            "Computed",
+            "Unknown"
+          ]
+        },
+        {
+          "type": "object",
+          "required": [
+            "ThisField"
+          ],
+          "properties": {
+            "ThisField": {
+              "type": "object",
+              "required": [
+                "field"
+              ],
+              "properties": {
+                "declared_type": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "field": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "Identifier"
+          ],
+          "properties": {
+            "Identifier": {
+              "type": "object",
+              "required": [
+                "name"
+              ],
+              "properties": {
+                "declared_type": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "name": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "ImportedNamespace"
+          ],
+          "properties": {
+            "ImportedNamespace": {
+              "type": "object",
+              "required": [
+                "binding"
+              ],
+              "properties": {
+                "binding": {
+                  "$ref": "#/definitions/BindingRef"
+                }
+              }
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "Chain"
+          ],
+          "properties": {
+            "Chain": {
+              "type": "object",
+              "required": [
+                "root",
+                "segments"
+              ],
+              "properties": {
+                "root": {
+                  "$ref": "#/definitions/ReceiverHint"
+                },
+                "segments": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "CallResult"
+          ],
+          "properties": {
+            "CallResult": {
+              "type": "object",
+              "required": [
+                "callee"
+              ],
+              "properties": {
+                "callee": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "RefKind": {
+      "type": "string",
+      "enum": [
+        "Call",
+        "New",
+        "TypeRef",
+        "Extends",
+        "Implements",
+        "Decorator",
+        "DiInjection",
+        "FrameworkRef",
+        "ValueRead",
+        "JsxElement"
+      ]
+    },
+    "ShingleSet": {
+      "description": "Normalized body shingles (TSA-007): a sorted, de-duplicated sample of token n-gram hashes.",
+      "type": "array",
+      "items": {
+        "type": "integer",
+        "format": "uint32",
+        "minimum": 0.0
+      }
+    },
+    "SourceRange": {
+      "description": "A span between two [`Position`]s. Invariant: `start <= end`.",
+      "type": "object",
+      "required": [
+        "end",
+        "start"
+      ],
+      "properties": {
+        "end": {
+          "$ref": "#/definitions/Position"
+        },
+        "start": {
+          "$ref": "#/definitions/Position"
+        }
+      },
+      "additionalProperties": false
+    },
+    "SymbolFacts": {
+      "type": "object",
+      "required": [
+        "facts",
+        "symbol"
+      ],
+      "properties": {
+        "facts": {
+          "description": "Source order.",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/SyntaxFact"
+          }
+        },
+        "symbol": {
+          "$ref": "#/definitions/LocalId"
+        }
+      }
+    },
+    "SymbolKind": {
+      "description": "What kind of declaration a symbol is. The id string is part of `SymbolId` (ADR-005).",
+      "type": "string",
+      "enum": [
+        "Module",
+        "Namespace",
+        "Class",
+        "Interface",
+        "Enum",
+        "EnumMember",
+        "TypeAlias",
+        "Function",
+        "Method",
+        "Getter",
+        "Setter",
+        "Constructor",
+        "Property",
+        "Field",
+        "Variable",
+        "Constant",
+        "Parameter"
+      ]
+    },
+    "SyntaxFact": {
+      "type": "object",
+      "required": [
+        "detail",
+        "key",
+        "kind",
+        "range"
+      ],
+      "properties": {
+        "detail": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/definitions/AttrValue"
+          }
+        },
+        "key": {
+          "description": "Stable comparison key without positions.",
+          "type": "string"
+        },
+        "kind": {
+          "$ref": "#/definitions/FactKind"
+        },
+        "range": {
+          "$ref": "#/definitions/SourceRange"
+        }
+      }
+    },
+    "UnitStats": {
+      "type": "object",
+      "required": [
+        "bytes",
+        "lines",
+        "parse_micros"
+      ],
+      "properties": {
+        "bytes": {
+          "type": "integer",
+          "format": "uint64",
+          "minimum": 0.0
+        },
+        "lines": {
+          "description": "Number of lines (a file without a trailing newline still counts its last line).",
+          "type": "integer",
+          "format": "uint32",
+          "minimum": 0.0
+        },
+        "parse_micros": {
+          "type": "integer",
+          "format": "uint64",
+          "minimum": 0.0
+        }
+      }
+    },
+    "Visibility": {
+      "oneOf": [
+        {
+          "type": "string",
+          "enum": [
+            "Public",
+            "Protected",
+            "Private"
+          ]
+        },
+        {
+          "description": "ECMAScript `#private` member.",
+          "type": "string",
+          "enum": [
+            "EcmaPrivate"
+          ]
+        }
+      ]
+    }
+  }
+}

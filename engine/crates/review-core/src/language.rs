@@ -142,6 +142,21 @@ impl Language {
     }
 }
 
+/// File dialect within a language: the grammar and module-kind hint for a path.
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize, JsonSchema,
+)]
+#[serde(rename_all = "snake_case")]
+pub enum Dialect {
+    Ts,
+    Tsx,
+    Dts,
+    Js,
+    Jsx,
+    Mjs,
+    Cjs,
+}
+
 impl fmt::Display for Language {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.write_str(self.as_str())

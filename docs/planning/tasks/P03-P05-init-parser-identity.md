@@ -1380,7 +1380,9 @@ Status: â
 
 ### TSA-001 — `analysis-ir` crate: IR types and analyzer traits
 
-Status: ☐
+Status: â
+
+> **Implementation note:** SymbolKind, ModulePath and Hash128 did not exist in review-core and were added there (review_core::symbol), and Dialect moved to review_core::language (repository re-exports it) so analysis-ir does not depend on repository. ParsedUnit derives PartialEq but not Eq because framework facts carry an f32 confidence; Modifiers is a hand-rolled u16 bit set (no bitflags dependency) and AttrValue::Float stores IEEE bits so attribute maps stay Eq. FrameworkSignals mirrors repository::FrameworkSignalsData with scope dirs as plain strings. Diagnostic constructors take static strings (or a prefix plus a count) so source text cannot leak. The IR JSON Schema is exported to docs/graph-schema/ir.schema.json by the export_schema example. No tree-sitter, repository, sqlx or tokio in cargo tree -p analysis-ir.
 
 - **Task ID:** TSA-001
 - **Title:** analysis-ir crate: ParsedUnit, IrSymbol, IrReference (kinds), IrImport/IrExport, SyntaxFact, IrFrameworkFact, ParseDiagnostic; LanguageAnalyzer/FrameworkAdapter/ModuleResolver/SemanticProvider traits (ADR-006)

@@ -15,6 +15,7 @@ pub mod repository;
 pub mod review;
 pub mod reviewer_type;
 pub(crate) mod schema;
+pub mod symbol;
 pub mod version;
 
 pub use error::{Classify, CoreError, ErrorClass};
