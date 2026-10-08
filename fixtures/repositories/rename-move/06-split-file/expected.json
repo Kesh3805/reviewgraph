@@ -1,0 +1,51 @@
+{
+  "description": "order-helpers.ts (5 functions) split across pricing.ts, formatting.ts and validation.ts.",
+  "matches": [
+    {
+      "from": "ts:src/orders/order-helpers#subtotal/function",
+      "to": "ts:src/orders/pricing#subtotal/function",
+      "transition": "moved",
+      "rule": "exact_body",
+      "min_similarity": 1.0
+    },
+    {
+      "from": "ts:src/orders/order-helpers#applyTax/function",
+      "to": "ts:src/orders/pricing#applyTax/function",
+      "transition": "moved",
+      "rule": "exact_body",
+      "min_similarity": 1.0
+    },
+    {
+      "from": "ts:src/orders/order-helpers#orderLabel/function",
+      "to": "ts:src/orders/formatting#orderLabel/function",
+      "transition": "moved",
+      "rule": "exact_body",
+      "min_similarity": 1.0
+    },
+    {
+      "from": "ts:src/orders/order-helpers#lineSummary/function",
+      "to": "ts:src/orders/formatting#lineSummary/function",
+      "transition": "moved",
+      "rule": "exact_body",
+      "min_similarity": 1.0
+    },
+    {
+      "from": "ts:src/orders/order-helpers#isValidSku/function",
+      "to": "ts:src/orders/validation#isValidSku/function",
+      "transition": "moved",
+      "rule": "exact_body",
+      "min_similarity": 1.0
+    }
+  ],
+  "unmatched_added": [
+    "ts:src/orders/pricing#__module__/module",
+    "ts:src/orders/formatting#__module__/module",
+    "ts:src/orders/validation#__module__/module"
+  ],
+  "unmatched_removed": [
+    "ts:src/orders/order-helpers#__module__/module"
+  ],
+  "unchanged": [],
+  "modified": [],
+  "ambiguous": 0
+}

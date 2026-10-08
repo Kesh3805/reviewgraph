@@ -1,0 +1,47 @@
+{
+  "description": "src/util/strings.ts moved to src/common/strings.ts with identical content.",
+  "matches": [
+    {
+      "from": "ts:src/util/strings#__module__/module",
+      "to": "ts:src/common/strings#__module__/module",
+      "transition": "moved",
+      "rule": "exact_body",
+      "min_similarity": 1.0
+    },
+    {
+      "from": "ts:src/util/strings#capitalize/function",
+      "to": "ts:src/common/strings#capitalize/function",
+      "transition": "moved",
+      "rule": "exact_body",
+      "min_similarity": 1.0
+    },
+    {
+      "from": "ts:src/util/strings#slugify/function",
+      "to": "ts:src/common/strings#slugify/function",
+      "transition": "moved",
+      "rule": "exact_body",
+      "min_similarity": 1.0
+    },
+    {
+      "from": "ts:src/util/strings#formatMoney/function",
+      "to": "ts:src/common/strings#formatMoney/function",
+      "transition": "moved",
+      "rule": "exact_body",
+      "min_similarity": 1.0
+    },
+    {
+      "from": "ts:src/util/strings#DEFAULT_LOCALE/constant",
+      "to": "ts:src/common/strings#DEFAULT_LOCALE/constant",
+      "transition": "moved",
+      "rule": "signature_and_name",
+      "min_similarity": 0.8
+    }
+  ],
+  "unmatched_added": [],
+  "unmatched_removed": [],
+  "unchanged": [
+    "ts:src/app/greeting#greet/function"
+  ],
+  "modified": [],
+  "ambiguous": 0
+}

@@ -1,0 +1,37 @@
+{
+  "description": "PaymentService moved from billing.service.ts into payments/payment.service.ts; InvoiceService stays.",
+  "matches": [
+    {
+      "from": "ts:src/billing/billing.service#PaymentService/class",
+      "to": "ts:src/payments/payment.service#PaymentService/class",
+      "transition": "moved",
+      "rule": "exact_body",
+      "min_similarity": 1.0
+    },
+    {
+      "from": "ts:src/billing/billing.service#PaymentService.charge/method",
+      "to": "ts:src/payments/payment.service#PaymentService.charge/method",
+      "transition": "moved",
+      "rule": "exact_body",
+      "min_similarity": 1.0
+    },
+    {
+      "from": "ts:src/billing/billing.service#PaymentService.refund/method",
+      "to": "ts:src/payments/payment.service#PaymentService.refund/method",
+      "transition": "moved",
+      "rule": "exact_body",
+      "min_similarity": 1.0
+    }
+  ],
+  "unmatched_added": [
+    "ts:src/payments/payment.service#__module__/module"
+  ],
+  "unmatched_removed": [],
+  "unchanged": [
+    "ts:src/billing/billing.service#InvoiceService/class",
+    "ts:src/billing/billing.service#InvoiceService.number/method",
+    "ts:src/billing/billing.service#InvoiceService.dueDate/method"
+  ],
+  "modified": [],
+  "ambiguous": 0
+}

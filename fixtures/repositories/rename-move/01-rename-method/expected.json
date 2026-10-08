@@ -1,0 +1,29 @@
+{
+  "description": "UsersService.findByEmail renamed to findOneByEmail with the same body; the caller is updated.",
+  "matches": [
+    {
+      "from": "ts:src/users/users.service#UsersService.findByEmail/method",
+      "to": "ts:src/users/users.service#UsersService.findOneByEmail/method",
+      "transition": "renamed",
+      "rule": "exact_body",
+      "min_similarity": 1.0
+    }
+  ],
+  "unmatched_added": [],
+  "unmatched_removed": [],
+  "unchanged": [
+    "ts:src/users/users.service#UsersService.register/method",
+    "ts:src/users/users.service#UsersService.deactivate/method",
+    "ts:src/users/users.service#UserRecord/interface",
+    "ts:src/users/users.controller#UsersController.health/method"
+  ],
+  "modified": [
+    {
+      "id": "ts:src/users/users.controller#UsersController.lookup/method",
+      "flags": [
+        "body"
+      ]
+    }
+  ],
+  "ambiguous": 0
+}

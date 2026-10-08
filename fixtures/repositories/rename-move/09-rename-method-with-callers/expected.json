@@ -1,0 +1,36 @@
+{
+  "description": "InventoryService.reserveStock renamed to reserveUnits; callers keep their ids and show a body modification only where the call text changed.",
+  "matches": [
+    {
+      "from": "ts:src/inventory/inventory.service#InventoryService.reserveStock/method",
+      "to": "ts:src/inventory/inventory.service#InventoryService.reserveUnits/method",
+      "transition": "renamed",
+      "rule": "exact_body",
+      "min_similarity": 1.0
+    }
+  ],
+  "unmatched_added": [],
+  "unmatched_removed": [],
+  "unchanged": [
+    "ts:src/inventory/inventory.service#InventoryService.restock/method",
+    "ts:src/orders/orders.service#OrdersService.cancelOrder/method",
+    "ts:src/inventory/inventory.controller#InventoryController.restock/method",
+    "ts:src/orders/orders.service#OrdersService/class",
+    "ts:src/inventory/inventory.controller#InventoryController/class"
+  ],
+  "modified": [
+    {
+      "id": "ts:src/orders/orders.service#OrdersService.placeOrder/method",
+      "flags": [
+        "body"
+      ]
+    },
+    {
+      "id": "ts:src/inventory/inventory.controller#InventoryController.reserve/method",
+      "flags": [
+        "body"
+      ]
+    }
+  ],
+  "ambiguous": 0
+}

@@ -3,6 +3,8 @@
 
 #![allow(dead_code, clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 
+pub mod lineage_harness;
+
 use analysis_ir::identity::symbol_id_of;
 use analysis_ir::validate;
 use analysis_ir::{AnalyzerConfig, IrSymbol, LanguageAnalyzer, ParsedUnit, SourceInput};
