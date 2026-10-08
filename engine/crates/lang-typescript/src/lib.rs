@@ -7,11 +7,13 @@
 pub mod analyzer;
 pub mod diagnostics;
 pub mod error;
+pub mod hashing;
 pub mod kinds;
 pub mod naming;
 pub mod ordinals;
 pub mod parser_pool;
 pub mod text;
+pub mod tokens;
 pub mod visit;
 
 use review_core::version::AnalyzerVersion;

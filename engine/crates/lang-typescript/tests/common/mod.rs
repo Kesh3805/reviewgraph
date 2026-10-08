@@ -31,3 +31,14 @@ pub fn analyze_fixture(repo: &str, rel: &str) -> ParsedUnit {
     let bytes = std::fs::read(fixture(repo).join(rel)).unwrap();
     analyze_with(rel, &bytes, &AnalyzerConfig::default())
 }
+
+/// Like [`analyze_fixture`] but reports a missing or unreadable file instead of panicking, so a
+/// test can assert that a fixture exists and what it contains.
+pub fn try_analyze_fixture(repo: &str, rel: &str) -> std::result::Result<ParsedUnit, String> {
+    let path = fixture(repo).join(rel);
+    let bytes = match std::fs::read(&path) {
+        Ok(bytes) => bytes,
+        Err(e) => return Err(format!("{}: {e}", path.display())),
+    };
+    Ok(analyze_with(rel, &bytes, &AnalyzerConfig::default()))
+}
