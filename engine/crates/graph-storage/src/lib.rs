@@ -4,6 +4,7 @@
 //! reference implementation ([`mem`]), the PostgreSQL adapter ([`pg`]) and the file adapter
 //! (`file`). The shared conformance suite lives in [`conformance`] (feature `conformance`).
 
+pub mod cache;
 pub mod error;
 pub mod kinds;
 pub mod mem;
