@@ -6,6 +6,8 @@
  */
 import { api } from '../api-client';
 import type {
+  Subgraph,
+  SubgraphRequest,
   SymbolDetail,
   SymbolSearchResponse,
   AuditEntry,
@@ -420,6 +422,20 @@ export async function getSymbol(
     signal: opts.signal,
   });
   return required(data, 'symbol');
+}
+
+/** Side-effect free POST; `max_nodes` above 500 is a 400. */
+export async function fetchSubgraph(
+  repoId: string,
+  request: SubgraphRequest,
+  opts: Signal = {},
+): Promise<Subgraph> {
+  const { data } = await api.POST('/api/v1/repositories/{repoId}/graph/subgraph', {
+    params: { path: { repoId } },
+    body: request,
+    signal: opts.signal,
+  });
+  return required(data, 'subgraph');
 }
 
 /** Redacted excerpt; the API caps it at 200 lines. */

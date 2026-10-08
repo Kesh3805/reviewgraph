@@ -546,7 +546,8 @@ Status: ◐
 ---
 
 ### GX-002 — Cytoscape subgraph view
-Status: ☐
+Status: ◐
+> **Implementation note:** Built against a hand-typed `POST /repositories/:id/graph/subgraph` (`apps/web/lib/api/pending.ts`); the relation toggles are sent as `kinds: ['callers'|'callees'|'implementations'|'tests'|'dependencies']`, an assumed vocabulary for API-011. `SubgraphView` loads `CytoscapeGraph` with `next/dynamic` (`ssr: false`), lays it out with `cytoscape-fcose`, styles nodes by kind and edges by `mapData(confidence)` width with `edge[?low]` dashed below 0.6. Double-click expands a node at depth 1 (one expansion in flight); `mergeSubgraph` dedupes nodes by key and edges by source/target/kind and refuses a merge that would exceed 500 nodes with a "narrow" banner, as it does for a `truncated` result or a 400. PNG export uses `cy.png({ output: 'blob-promise' })`. Tests replace the canvas renderer with a DOM stub (jsdom has no canvas). The 500-node ≥30 fps manual check and the acceptance check need the API-011/API-013 backend.
 
 - **Task ID:** GX-002
 - **Title:** Cytoscape subgraph view (callers/callees/impls/tests/deps, server-side subgraphs ≤500 nodes)

@@ -3,6 +3,7 @@
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { explorerSearch, parseExplorerState, type ExplorerState } from '@/lib/explorer-url';
 import { SnapshotSelect } from './SnapshotSelect';
+import { SubgraphView } from './SubgraphView';
 import { SymbolPanel } from './SymbolPanel';
 import { SymbolSearch } from './SymbolSearch';
 
@@ -36,7 +37,15 @@ export function GraphExplorer({ repoId }: { repoId: string }) {
         />
         <div className="min-w-0">
           {state.symbol ? (
-            <SymbolPanel repoId={repoId} symbolKey={state.symbol} snapshot={state.snapshot} />
+            <div className="space-y-4">
+              <SymbolPanel repoId={repoId} symbolKey={state.symbol} snapshot={state.snapshot} />
+              <SubgraphView
+                key={`${state.symbol}@${state.snapshot ?? ''}`}
+                repoId={repoId}
+                seed={state.symbol}
+                snapshot={state.snapshot}
+              />
+            </div>
           ) : (
             <p className="rounded-md border border-dashed p-6 text-center text-sm text-muted-foreground">
               Search for a symbol to inspect it.

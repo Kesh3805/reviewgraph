@@ -720,6 +720,26 @@ export interface SymbolDetail {
   snapshot_id: string;
 }
 
+/** Relation toggles of the subgraph view (GX-002), sent as `kinds` (assumed vocabulary). */
+export type SubgraphRelation = 'callers' | 'callees' | 'implementations' | 'tests' | 'dependencies';
+
+export interface SubgraphRequest {
+  seeds: string[];
+  /** 1..3 */
+  depth: number;
+  kinds: SubgraphRelation[];
+  /** ≤ 500; the API answers 400 above it. */
+  max_nodes: number;
+  snapshot?: string;
+}
+
+/** `POST /repositories/:id/graph/subgraph` — a server-side, budgeted subgraph. */
+export interface Subgraph {
+  nodes: GraphNode[];
+  edges: GraphEdge[];
+  truncated: boolean;
+}
+
 /** `GET /repositories/:id/source` — redacted and capped at 200 lines. */
 export interface SourceExcerpt {
   path: string;
@@ -843,6 +863,9 @@ export interface PendingPaths {
       SymbolDetail,
       { path: { repoId: string; key: string }; query?: { snapshot?: string } }
     >;
+  };
+  '/api/v1/repositories/{repoId}/graph/subgraph': {
+    post: BodyOp<Subgraph, SubgraphRequest, PathParams<'repoId'>>;
   };
   /** API-011. */
   '/api/v1/repositories/{repoId}/source': {

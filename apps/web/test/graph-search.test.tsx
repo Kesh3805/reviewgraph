@@ -17,6 +17,8 @@ vi.mock('next/navigation', () => ({
   useSearchParams: () => new URLSearchParams(nav.search),
 }));
 
+vi.mock('../components/graph/CytoscapeGraph', () => import('./cytoscape-stub'));
+
 const server = setupServer();
 const requests: URL[] = [];
 beforeAll(() => server.listen());
@@ -35,6 +37,9 @@ beforeEach(() => {
     ),
     http.get(route('/repositories/:id/intelligence'), () =>
       HttpResponse.json(intelligenceWithSnapshots),
+    ),
+    http.post(route('/repositories/:id/graph/subgraph'), () =>
+      HttpResponse.json({ nodes: [], edges: [], truncated: false }),
     ),
   );
 });
