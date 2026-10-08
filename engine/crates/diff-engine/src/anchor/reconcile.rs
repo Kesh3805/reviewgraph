@@ -130,10 +130,7 @@ pub fn reconcile(local: &DiffModel, provider: &[ProviderFileDiff]) -> Reconciled
         discrepancies.push(Discrepancy::ProviderListTruncated);
     }
 
-    discrepancies.sort_by(|a, b| {
-        let key = |d: &Discrepancy| (d.path().map(RepoPath::as_str).unwrap_or(""), d.label());
-        key(a).cmp(&key(b))
-    });
+    discrepancies.sort_by(|a, b| sort_key(a).cmp(&sort_key(b)));
     for d in &discrepancies {
         metrics::record_discrepancy(d.label());
     }
@@ -145,6 +142,10 @@ pub fn reconcile(local: &DiffModel, provider: &[ProviderFileDiff]) -> Reconciled
         anchors,
         discrepancies,
     }
+}
+
+fn sort_key(d: &Discrepancy) -> (&str, &'static str) {
+    (d.path().map_or("", RepoPath::as_str), d.label())
 }
 
 /// RIGHT and LEFT sets of the local hunks (context + added, context + deleted).
