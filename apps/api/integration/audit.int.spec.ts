@@ -119,12 +119,16 @@ describe('audit log (integration)', () => {
         first_invalid_id: null,
       });
       const rows = await rowsOf(tampered.organizationId);
-      // A privileged user (the superuser test login bypasses the append-only trigger) edits a row.
-      await admin
-        .updateTable('audit_log')
-        .set({ metadata: JSON.stringify({ i: 99 }) })
-        .where('id', '=', rows[1]!.id)
-        .execute();
+      // A privileged database user disables the append-only trigger and edits a row.
+      await admin.transaction().execute(async (trx) => {
+        await sql`alter table audit_log disable trigger audit_log_append_only`.execute(trx);
+        await trx
+          .updateTable('audit_log')
+          .set({ metadata: JSON.stringify({ i: 99 }) })
+          .where('id', '=', rows[1]!.id)
+          .execute();
+        await sql`alter table audit_log enable trigger audit_log_append_only`.execute(trx);
+      });
       expect(await audit.verify(tampered.organizationId)).toMatchObject({
         ok: false,
         first_invalid_id: rows[1]!.id,
