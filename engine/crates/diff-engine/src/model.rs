@@ -6,7 +6,7 @@
 use review_core::change::ChangedFile;
 use review_core::ids::CommitSha;
 
-use crate::disposition::FileDisposition;
+use crate::disposition::{CoverageEntry, FileDisposition};
 use crate::hunks::{DiffHunk, LineStats};
 
 /// Summary counters of one [`DiffModel`].
@@ -34,6 +34,14 @@ pub struct DiffStats {
     pub skipped_symlink: u32,
     /// Submodule (gitlink) entries encountered and skipped by the tree walk.
     pub skipped_submodule: u32,
+    /// Files whose hunks were computed (disposition `Analyze`).
+    pub hunked_files: u32,
+    /// Hunks over all files.
+    pub hunks: u32,
+    /// Added lines over all files with line statistics.
+    pub additions: u32,
+    /// Deleted lines over all files with line statistics.
+    pub deletions: u32,
 }
 
 /// One changed file with everything DIFF-003..006 attach to it.
@@ -89,4 +97,17 @@ pub struct DiffModel {
     pub files: Vec<FileDiff>,
     /// Summary counters.
     pub stats: DiffStats,
+    /// Files listed but not analysed (disposition other than `Analyze`), with the reason, so
+    /// reviewers and the summary can state what was not covered.
+    pub coverage: Vec<CoverageEntry>,
+}
+
+impl DiffModel {
+    /// The file at `path`, if it changed.
+    pub fn file(&self, path: &str) -> Option<&FileDiff> {
+        self.files
+            .binary_search_by(|f| f.file.path.as_str().cmp(path))
+            .ok()
+            .and_then(|i| self.files.get(i))
+    }
 }

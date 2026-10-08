@@ -19,7 +19,6 @@ review-core.workspace = true
 repository.workspace = true
 analysis-ir.workspace = true
 thiserror.workspace = true
-imara-diff.workspace = true
 tracing.workspace = true
 opentelemetry.workspace = true
 gix = { workspace = true, features = [
