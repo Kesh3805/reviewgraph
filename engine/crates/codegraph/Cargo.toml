@@ -9,6 +9,45 @@ publish.workspace = true
 [lints]
 workspace = true
 
+[features]
+# Synthetic graph/IR generators used by the criterion benches and other crates' tests.
+testkit = []
+
 [dependencies]
+analysis-ir.workspace = true
+blake3.workspace = true
+bincode.workspace = true
+hex.workspace = true
+rayon.workspace = true
 review-core.workspace = true
+schemars.workspace = true
+serde.workspace = true
+serde_json.workspace = true
 thiserror.workspace = true
+zstd.workspace = true
+
+[dev-dependencies]
+criterion.workspace = true
+insta.workspace = true
+proptest.workspace = true
+serde_json.workspace = true
+
+[[bench]]
+name = "graph_build"
+harness = false
+required-features = ["testkit"]
+
+[[bench]]
+name = "query_traversals"
+harness = false
+required-features = ["testkit"]
+
+[[bench]]
+name = "bfs"
+harness = false
+required-features = ["testkit"]
+
+[[bench]]
+name = "milestones"
+harness = false
+required-features = ["testkit"]
