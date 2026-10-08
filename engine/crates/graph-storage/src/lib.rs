@@ -5,6 +5,7 @@
 //! (`file`). The shared conformance suite lives in [`conformance`] (feature `conformance`).
 
 pub mod cache;
+pub mod compaction;
 pub mod error;
 pub mod kinds;
 pub mod mem;

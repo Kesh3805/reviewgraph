@@ -581,6 +581,42 @@ async fn delta_symbols_follow_their_file_versions() {
     db.finish().await;
 }
 
+/// GS-007 on Postgres: the compacted full equals the chain, and two concurrent compactions of the
+/// same head leave exactly one ready full snapshot (the ready-fingerprint index decides).
+#[tokio::test]
+async fn concurrent_compaction_yields_single_full() {
+    let db = TestDb::new().await;
+    let f = fixture(&db).await;
+    let base_g = with_file_versions(&f, &fixture_graph()).await.unwrap();
+    let mut head = ready_full(&f, &base_g, FINGERPRINT).await;
+    for n in 0..3u8 {
+        let d = GraphDelta {
+            edges_added: vec![edge(2, EdgeKind::Calls, 4, 300 + u16::from(n))],
+            ..GraphDelta::default()
+        };
+        head = ready_delta(&f, head, &d, n).await;
+    }
+    let (a, b) = tokio::join!(
+        graph_storage::compaction::compact(f.store.as_ref(), &f.scope, head),
+        graph_storage::compaction::compact(f.store.as_ref(), &f.scope, head)
+    );
+    let (a, b) = (a.unwrap(), b.unwrap());
+    assert_eq!(a.id, b.id, "both callers get the winner");
+    let ready_compactions: i64 = sqlx::query_scalar(
+        "SELECT count(*) FROM snapshots
+          WHERE repository_id = $1 AND purpose = 'compaction' AND status = 'ready'",
+    )
+    .bind(*f.scope.repository_id.as_uuid())
+    .fetch_one(&db.pool)
+    .await
+    .unwrap();
+    assert_eq!(ready_compactions, 1);
+    let materialized = f.store.load_graph(&f.scope, head).await.unwrap();
+    let compacted = f.store.load_graph(&f.scope, a.id).await.unwrap();
+    assert_eq!(compacted, materialized);
+    db.finish().await;
+}
+
 #[test]
 fn no_format_built_sql_in_pg() {
     let dir = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("src/pg");
