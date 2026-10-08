@@ -336,6 +336,19 @@ export interface ReviewRuns {
   updated_at: Generated<Timestamp>;
 }
 
+export interface SemanticCollections {
+  activated_at: Timestamp | null;
+  created_at: Generated<Timestamp>;
+  dims: number;
+  model: string;
+  name: string;
+  provider: string;
+  space_id: string;
+  state: string;
+  state_changed_at: Generated<Timestamp>;
+  version: number;
+}
+
 export interface Sessions {
   created_at: Generated<Timestamp>;
   expires_at: Timestamp;
@@ -505,6 +518,7 @@ export interface DB {
   resolved_by_kinds: ResolvedByKinds;
   review_runs: ReviewRuns;
   reviewer_runs: ReviewerRuns;
+  semantic_collections: SemanticCollections;
   sessions: Sessions;
   snapshot_files: SnapshotFiles;
   snapshots: Snapshots;

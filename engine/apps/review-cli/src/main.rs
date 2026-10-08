@@ -1,4 +1,5 @@
 mod contracts;
+mod semantic_cmd;
 
 use std::path::PathBuf;
 
@@ -17,6 +18,14 @@ enum Command {
     Contracts {
         #[command(subcommand)]
         action: ContractsAction,
+    },
+    /// Semantic (vector) collection registry and cut-over.
+    Semantic {
+        /// Postgres connection string.
+        #[arg(long, env = "DATABASE_URL", hide_env_values = true)]
+        database_url: String,
+        #[command(subcommand)]
+        action: semantic_cmd::SemanticAction,
     },
 }
 
@@ -45,5 +54,9 @@ fn main() -> anyhow::Result<()> {
             }
             Ok(())
         }
+        Command::Semantic {
+            database_url,
+            action,
+        } => semantic_cmd::run(&database_url, action),
     }
 }
