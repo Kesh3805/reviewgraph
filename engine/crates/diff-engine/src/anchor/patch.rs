@@ -168,6 +168,7 @@ fn parse_range(s: &str) -> Option<(u32, u32)> {
 }
 
 #[cfg(test)]
+#[allow(clippy::single_range_in_vec_init)]
 mod tests {
     use super::*;
 

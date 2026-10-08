@@ -418,6 +418,7 @@ fn slice<'a>(buf: &'a [u8], span: &Range<u32>) -> &'a [u8] {
 }
 
 #[cfg(test)]
+#[allow(clippy::single_range_in_vec_init)]
 mod tests {
     use super::*;
 

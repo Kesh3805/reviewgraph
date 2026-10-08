@@ -1,4 +1,9 @@
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
+#![allow(
+    clippy::unwrap_used,
+    clippy::expect_used,
+    clippy::panic,
+    clippy::single_range_in_vec_init
+)]
 
 //! DIFF-003 acceptance tests: in-process histogram line diff.
 
@@ -78,11 +83,8 @@ fn git_hunks_by_file(patch: &str) -> Vec<(String, String)> {
         let Some((_, body)) = out.last_mut() else {
             continue;
         };
-        if line.starts_with("@@ ") {
-            let end = line[3..]
-                .find(" @@")
-                .map(|i| i + 3 + 3)
-                .unwrap_or(line.len());
+        if let Some(after) = line.strip_prefix("@@ ") {
+            let end = after.find(" @@").map(|i| i + 3 + 3).unwrap_or(line.len());
             body.push_str(&line[..end]);
             body.push('\n');
         } else if !body.is_empty() {

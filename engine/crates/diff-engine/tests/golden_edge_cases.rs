@@ -1,4 +1,9 @@
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
+#![allow(
+    clippy::unwrap_used,
+    clippy::expect_used,
+    clippy::panic,
+    clippy::single_range_in_vec_init
+)]
 
 //! DIFF-007 edge-case scenarios. Binary and multi-MiB content is generated here rather than
 //! committed; `fixtures/pull-requests/diff-edge-cases/` holds the description and the golden

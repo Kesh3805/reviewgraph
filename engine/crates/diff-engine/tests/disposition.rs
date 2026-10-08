@@ -1,4 +1,9 @@
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
+#![allow(
+    clippy::unwrap_used,
+    clippy::expect_used,
+    clippy::panic,
+    clippy::single_range_in_vec_init
+)]
 
 //! DIFF-004 acceptance tests: binary, large, generated, vendored, minified and lockfile files.
 
