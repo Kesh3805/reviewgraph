@@ -12,7 +12,10 @@ workspace = true
 [features]
 # Database-backed tests; need TEST_DATABASE_URL (or DATABASE_URL) pointing at a Postgres server
 # whose user may CREATE DATABASE. Plain `cargo test` never touches a database.
-integration = []
+# Implies `conformance`, so the CI integration job also runs the in-memory conformance suite.
+integration = ["conformance"]
+# The shared adapter conformance suite (GS-001). Adapters run it from their integration tests.
+conformance = []
 
 [dependencies]
 review-core.workspace = true
@@ -22,8 +25,29 @@ sqlx.workspace = true
 tokio.workspace = true
 tracing.workspace = true
 serde_json.workspace = true
+serde.workspace = true
 chrono.workspace = true
 uuid.workspace = true
+futures.workspace = true
+schemars.workspace = true
+blake3.workspace = true
+async-trait = "0.1"
+bincode.workspace = true
+zstd.workspace = true
+tempfile.workspace = true
+fs2.workspace = true
+moka = { version = "0.12", features = ["future"] }
 
 [dev-dependencies]
 repository = { workspace = true, features = ["test-support"] }
+criterion.workspace = true
+
+[[bench]]
+name = "pg_write"
+harness = false
+required-features = ["integration"]
+
+[[bench]]
+name = "pg_read"
+harness = false
+required-features = ["integration"]
