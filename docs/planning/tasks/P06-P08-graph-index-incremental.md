@@ -75,7 +75,8 @@ These are decisions taken while detailing the tasks. Each one is a refinement of
 ---
 
 ### CG-001 — NodeKind enum and synthetic node ID schemes
-Status: ☐
+Status: ◐
+> **Implementation note:** Code and tests are in place: `NodeKind` has the 44 PRD kinds with every discriminant and spelling written out literally in `codegraph/tests/wire_compat.rs`, so a rename or renumbering fails against a table that already exists in `graph-storage/src/kinds.rs`; the synthetic ID schemes (`http:`, `queue:`, `db:`, `env:`, `pkg:`, `test:`, `file:`, `dir:`, `package:`) are pinned in the same file; `cargo test -p codegraph node_` passes (25 unit + 12 integration tests). Still outstanding and outside this crate's lane: `docs/graph-schema/node-kinds.md`.
 
 **Task ID:** CG-001
 
@@ -183,7 +184,8 @@ impl NodeKind { pub const fn as_str(self) -> &'static str; /* "APIEndpoint", "CL
 ---
 
 ### CG-002 — EdgeKind enum, Edge struct and reverse views
-Status: ☐
+Status: ◐
+> **Implementation note:** Code and tests are in place: 33 stored `EdgeKind` values plus the three `ReverseView` projections, and `wire_compat.rs` asserts that `CALLED_BY`, `DEPENDED_ON_BY` and `TESTED_BY` do not parse back into a stored kind (clarification C2), alongside the frozen `EdgeFlags` bits and `EdgeIdentity`. Still outstanding and outside this crate's lane: `docs/graph-schema/edge-kinds.md`.
 
 **Task ID:** CG-002
 
@@ -277,7 +279,8 @@ pub enum Provenance { Analyzer = 0, Framework = 1, Linker = 2, TypeChecker = 3, 
 ---
 
 ### CG-003 — Confidence table module
-Status: ☐
+Status: ☑
+> **Implementation note:** Done. `confidence_of` is an exhaustive `const fn`, so a new `ResolvedBy` variant does not compile until a value is chosen for it; `derived` takes the weaker of rule and input and is idempotent; the whole table is frozen in `codegraph/tests/wire_compat.rs` together with the exact `permille / 1000` round-trip storage performs. The only `from_permille` callers outside this module are in `graph-storage`, which keeps a documented mirror of the persisted values in its own lane.
 
 **Task ID:** CG-003
 
@@ -351,7 +354,8 @@ pub const TABLE: [(ResolvedBy, Confidence); 10] = [/* generated from confidence_
 ---
 
 ### CG-004 — In-memory Graph builder
-Status: ☐
+Status: ◐
+> **Implementation note:** Code and tests are in place: `tests/graph_build.rs` covers canonical ordering, the property that building from the same input multiset in any order yields an identical graph, dangling-edge rejection and the reverse-index invariants (9 tests, passing at `PROPTEST_CASES=1000`). Still outstanding and outside this crate's lane: the `benchmarks/perf/README.md` baseline row and the memory target or its PERF deviation.
 
 **Task ID:** CG-004
 
@@ -461,7 +465,8 @@ impl GraphBuilder {
 ---
 
 ### CG-005 — Linker: resolve IR references to edges
-Status: ☐
+Status: ◐
+> **Implementation note:** Code and tests are in place: `tests/linker_fixture.rs` builds a nine-file TypeScript-shaped repository in memory covering the whole cascade (import through a barrel, `export *`, a re-export cycle, `this.x()`, constructor injection, unique and ambiguous names inside and outside the fan-out limit, an external package, inheritance with an override), asserts the precision/recall thresholds against a hand-labelled expectation, and commits an insta golden for review. Still outstanding and outside this crate's lane: `fixtures/repositories/graph-linker/README.md` and the golden reviewed against that real fixture, plus the benchmark row.
 
 **Task ID:** CG-005
 
@@ -565,7 +570,8 @@ pub trait NameLookup { fn top(&self, name: &str) -> &[NodeKey]; fn members(&self
 ---
 
 ### CG-006 — Framework-fact mapping to generic nodes and edges
-Status: ☐
+Status: ◐
+> **Implementation note:** Code and tests are in place: `tests/framework_mapping.rs` drives `FrameworkMapper` from hand-built facts (endpoints, controllers, guards, queues, entities, tests, config) so the attribute contract is what is under test rather than any adapter, and a source scan asserts that no framework identifier leaked into the crate. Still outstanding and outside this crate's lane: `docs/graph-schema/framework-facts.md` and the NestJS fixture snapshot owned by `lang-typescript`.
 
 **Task ID:** CG-006
 
@@ -658,7 +664,8 @@ impl FrameworkMapper {
 ---
 
 ### CG-007 — GraphQuery trait and basic queries
-Status: ☐
+Status: ◐
+> **Implementation note:** Code and tests are in place: `GraphQuery` is object-safe and implemented for both `Graph` and `GraphOverlay`, and `let _: &dyn GraphQuery = &graph;` compiles in the tests, which is the acceptance shape downstream crates consume. Still outstanding and outside this crate's lane: the benchmark row.
 
 **Task ID:** CG-007
 
@@ -755,7 +762,8 @@ pub trait GraphQueryExt: GraphQuery {   // blanket impl for all T: GraphQuery + 
 ---
 
 ### CG-008 — Bounded BFS
-Status: ☐
+Status: ◐
+> **Implementation note:** Code and tests are in place: `tests/bfs_props.rs` passes at `PROPTEST_CASES=1000` (and as a 20000-case soak), and truncation is reported explicitly rather than inferred - including the case where the budget is consumed exactly, which the property caught. The two-hop hub walk is measured by `benches/bfs.rs` against the documented p95 < 2 ms target; still outstanding and outside this crate's lane: the recorded baseline row.
 
 **Task ID:** CG-008
 
@@ -834,7 +842,8 @@ impl TraversalResult { pub fn path_to(&self, key: NodeKey) -> Option<Vec<EdgeSte
 ---
 
 ### CG-009 — Shortest path and UI subgraph extraction
-Status: ☐
+Status: ◐
+> **Implementation note:** Code and tests are in place: `tests/path_subgraph.rs` covers minimum hops on a diamond, the difference between "no path" and "gave up", the reverse direction, the `SUBGRAPH_MAX_NODES` cap and explicit truncation, with a committed insta golden; `benches/milestones.rs` measures both at 1k and 100k nodes. Still outstanding and outside this crate's lane: the generated JSON Schemas and the benchmark row.
 
 **Task ID:** CG-009
 
@@ -908,7 +917,8 @@ pub fn subgraph(g: &dyn GraphQuery, s: &SubgraphSpec) -> Result<Subgraph, Traver
 ---
 
 ### CG-010 — GraphDelta and GraphOverlay
-Status: ☐
+Status: ◐
+> **Implementation note:** Code and tests are in place: `tests/overlay_equivalence.rs` proves the central property - for every node and both directions the overlay's `for_each_edge` yields exactly what flattening the overlay and reading the flattened graph yields - by proptest over random bases and random deltas, at `PROPTEST_CASES=1000`. Those tests found three real defects, now fixed: an override could never be expressed (the tombstone also suppressed its own replacement), `flatten` could emit a dangling edge when a delta removed an endpoint without removing the edge, and the delta validator skipped exactly the surviving edges it was meant to report. Still outstanding and outside this crate's lane: recording the query-overhead target or its PERF deviation; `benches/milestones.rs` measures it here (a merged `degree` read over a 50k-node base with a 200-node delta is below timer resolution).
 
 **Task ID:** CG-010
 
@@ -1003,7 +1013,8 @@ pub fn validate_delta_local(base: &Graph, d: &GraphDelta) -> Vec<ValidationIssue
 ---
 
 ### CG-011 — Graph schema version and serialization
-Status: ☐
+Status: ◐
+> **Implementation note:** Code and tests are in place, with one deviation. `tests/codec_roundtrip.rs` pins the 52-byte header field by field, proves that a graph and a delta round-trip and re-encode byte-identically, and rejects every corruption a record can carry: wrong magic, an unknown format/codec/payload, a non-zero reserved byte, a flipped payload or hash byte, a truncated record, a schema the caller does not speak, and an oversized payload refused before it is inflated. **Deviation:** `cargo deny check advisories` fails on `bincode 1.3.3` (`RUSTSEC-2025-0141`, unmaintained by its own maintainers), and that is the codec crate this acceptance criterion names. Replacing it needs a workspace dependency in `engine/Cargo.toml` and a baseline entry in `engine/deny.toml`, neither of which belongs to this crate's lane, so it needs a workspace-level decision. The other two advisories in that run (`quick-xml`) reach the tree through `repository`, not through this crate. Still outstanding and outside this crate's lane: `docs/graph-schema/versioning.md` and the benchmark row.
 
 **Task ID:** CG-011
 
@@ -1076,7 +1087,8 @@ pub struct DecodeLimits { pub max_uncompressed_bytes: u64 /* default 8 GiB */, p
 ---
 
 ### CG-012 — Consistency validator and graph compare
-Status: ☐
+Status: ◐
+> **Implementation note:** Code and tests are in place: `tests/validate_compare.rs` covers a healthy graph, the schema-version error, the kind-rule and orphan-synthetic warnings that must not fail a snapshot, symmetric comparison, per-field node and edge diffs, the strict/lenient distinction, a bounded render, and the three delta-validator cases. That last group found a real defect: the surviving-edge check tested its condition inverted and so reported nothing. Still outstanding and outside this crate's lane: INC-012's use of `compare(...).is_empty()` and `render(50)`, which lives with the incremental indexer.
 
 **Task ID:** CG-012
 
@@ -1153,7 +1165,9 @@ impl GraphDiffReport { pub fn is_empty(&self) -> bool; pub fn render(&self, max_
 ---
 
 ### GS-001 — GraphStore trait and shared conformance suite
-Status: ☐
+Status: ☑
+
+> **Implementation note:** `graph-storage` mirrors the codegraph taxonomy and edge model in `kinds.rs`/`model.rs` instead of depending on `codegraph`, so the persisted discriminants are pinned on both sides (`codegraph/tests/wire_compat.rs` and the `*_seed_matches_rust_enum` migration tests). `StoreError::Backend` carries a boxed `std::error::Error` rather than `anyhow::Error`, because the workspace dependency rules (FND-004/DOM-002) forbid `anyhow` in library crates; classification still downcasts to `sqlx::Error`. The `integration` feature implies `conformance`, so CI's integration job runs the suite against `MemGraphStore`.
 
 **Task ID:** GS-001
 
@@ -1255,7 +1269,7 @@ pub enum StoreError { NotFound(SnapshotId), InvalidStatus { id, expected, found 
 ---
 
 ### GS-002 — Migration: file_versions, symbols, unresolved_refs
-Status: ☐
+Status: ☑
 
 **Task ID:** GS-002
 
@@ -1380,7 +1394,7 @@ ALTER TABLE unresolved_refs ENABLE ROW LEVEL SECURITY;
 ---
 
 ### GS-003 — Migration: snapshots, snapshot_files, graph_edges, synthetic_nodes, symbol_lineage
-Status: ☐
+Status: ☑
 
 **Task ID:** GS-003
 
@@ -2344,7 +2358,9 @@ Status: ☐
 ---
 
 ### INC-001 — Changed-path detection between commits (gix tree diff) incl. renames
-Status: ☐
+Status: ◐
+
+> **Implementation note:** The gix tree-diff primitive (`repository::git::tree_changes`: `diff_trees`, `tree_changes`, rename/copy detection) was built with DIFF-002 and is covered by `diff-engine/tests/files.rs`. Still missing: `incremental::changeset::detect_changes` on top of it and this task's own tests.
 
 - **Task ID:** INC-001
 - **Title:** `incremental::changeset` — path-level change detection between two commits using a gix tree diff with rename tracking; no blob content is read.

@@ -295,10 +295,19 @@ async fn table_names(pool: &PgPool) -> BTreeSet<String> {
 async fn migrations_apply_on_empty_db() {
     let db = TestDb::new(false).await;
     let applied = migrate::run(&db.pool).await.unwrap();
-    assert_eq!(applied.len(), 5);
+    // Every embedded migration applies; later phases add migrations, so the count tracks the
+    // migrator rather than a literal.
+    assert_eq!(applied.len(), MIGRATOR.migrations.len());
+    assert!(
+        applied.len() >= 5,
+        "the DOM-009 baseline has five migrations"
+    );
+    // The DOM-009 tables are all present; later phases may add more tables alongside them.
     let mut expected: BTreeSet<String> = TABLES.iter().map(|t| (*t).to_owned()).collect();
     expected.insert("_sqlx_migrations".to_owned());
-    assert_eq!(table_names(&db.pool).await, expected);
+    let actual = table_names(&db.pool).await;
+    let missing: Vec<&String> = expected.difference(&actual).collect();
+    assert!(missing.is_empty(), "missing tables: {missing:?}");
     db.finish().await;
 }
 
@@ -312,7 +321,7 @@ async fn migrate_twice_is_noop() {
         .await
         .unwrap();
     assert_eq!(count, MIGRATOR.migrations.len() as i64);
-    assert_eq!(count, 5);
+    assert!(count >= 5, "the DOM-009 baseline has five migrations");
     db.finish().await;
 }
 

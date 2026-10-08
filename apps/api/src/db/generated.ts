@@ -69,6 +69,26 @@ export interface CandidateFindings {
   updated_at: Generated<Timestamp>;
 }
 
+export interface EdgeKinds {
+  id: number;
+  name: string;
+}
+
+export interface FileVersions {
+  analyzer_version: string;
+  content_hash: Buffer;
+  created_at: Generated<Timestamp>;
+  diagnostic_count: Generated<number>;
+  id: Generated<Int8>;
+  language: string;
+  organization_id: string;
+  parse_status: string;
+  path: string;
+  repository_id: string;
+  size_bytes: number;
+  symbol_count: Generated<number>;
+}
+
 export interface FindingFeedback {
   comment: string | null;
   created_at: Generated<Timestamp>;
@@ -79,6 +99,24 @@ export interface FindingFeedback {
   updated_at: Generated<Timestamp>;
   user_id: string | null;
   verdict: string;
+}
+
+export interface GraphEdges {
+  col: number | null;
+  confidence: number;
+  file_version_id: Int8 | null;
+  flags: Generated<number>;
+  kind: number;
+  line: number | null;
+  occurrences: Generated<number>;
+  organization_id: string;
+  origin_path: string | null;
+  provenance: number;
+  removed: Generated<boolean>;
+  resolved_by: number;
+  snapshot_id: string;
+  source_key: Buffer;
+  target_key: Buffer;
 }
 
 export interface Memberships {
@@ -127,12 +165,22 @@ export interface ModelCalls {
   tier: string;
 }
 
+export interface NodeKinds {
+  id: number;
+  name: string;
+}
+
 export interface Organizations {
   created_at: Generated<Timestamp>;
   display_name: string;
   id: Generated<string>;
   slug: string;
   updated_at: Generated<Timestamp>;
+}
+
+export interface ProvenanceKinds {
+  id: number;
+  name: string;
 }
 
 export interface ProviderInstallations {
@@ -237,6 +285,11 @@ export interface RepositorySettings {
   updated_at: Generated<Timestamp>;
 }
 
+export interface ResolvedByKinds {
+  id: number;
+  name: string;
+}
+
 export interface ReviewerRuns {
   cached_read_tokens: Generated<Int8>;
   cached_write_tokens: Generated<Int8>;
@@ -292,6 +345,98 @@ export interface Sessions {
   user_id: string;
 }
 
+export interface SnapshotFiles {
+  change: string;
+  file_version_id: Int8 | null;
+  old_path: string | null;
+  organization_id: string;
+  path: string;
+  snapshot_id: string;
+}
+
+export interface Snapshots {
+  analyzer_versions: Json;
+  base_snapshot_id: string | null;
+  chain_depth: Generated<number>;
+  commit_sha: string;
+  completed_at: Timestamp | null;
+  config_components: Generated<Json>;
+  config_hash: Buffer;
+  created_at: Generated<Timestamp>;
+  error: string | null;
+  fingerprint: Buffer;
+  graph_schema_version: number;
+  id: string;
+  kind: string;
+  organization_id: string;
+  purpose: string;
+  repository_id: string;
+  stats: Generated<Json>;
+  status: string;
+  updated_at: Generated<Timestamp>;
+}
+
+export interface SymbolLineage {
+  from_key: Buffer;
+  from_snapshot_id: string;
+  id: Generated<Int8>;
+  organization_id: string;
+  repository_id: string;
+  similarity: number;
+  to_key: Buffer;
+  to_snapshot_id: string;
+  transition: string;
+}
+
+export interface Symbols {
+  attrs: Generated<Json>;
+  body_hash: Buffer | null;
+  end_col: number;
+  end_line: number;
+  file_version_id: Int8;
+  is_exported: Generated<boolean>;
+  is_generated: Generated<boolean>;
+  kind: number;
+  name: string;
+  organization_id: string;
+  parent_key: Buffer | null;
+  qualified_name: string;
+  repository_id: string;
+  signature: string | null;
+  signature_hash: Buffer | null;
+  start_col: number;
+  start_line: number;
+  symbol_id: string;
+  symbol_key: Buffer;
+  visibility: Generated<number>;
+}
+
+export interface SyntheticNodes {
+  attrs: Generated<Json>;
+  kind: number | null;
+  node_id: string | null;
+  node_key: Buffer;
+  organization_id: string;
+  removed: Generated<boolean>;
+  snapshot_id: string;
+}
+
+export interface UnresolvedRefs {
+  candidate_count: Generated<number>;
+  col: number;
+  file_version_id: Int8;
+  from_symbol_key: Buffer | null;
+  import_specifier: string | null;
+  line: number;
+  name: string;
+  ordinal: number;
+  organization_id: string;
+  reason: number;
+  ref_kind: number;
+  repository_id: string;
+  snapshot_id: string;
+}
+
 export interface Users {
   avatar_url: string | null;
   created_at: Generated<Timestamp>;
@@ -341,20 +486,32 @@ export interface WebhookDeliveries {
 export interface DB {
   audit_log: AuditLog;
   candidate_findings: CandidateFindings;
+  edge_kinds: EdgeKinds;
+  file_versions: FileVersions;
   finding_feedback: FindingFeedback;
+  graph_edges: GraphEdges;
   memberships: Memberships;
   model_cache: ModelCache;
   model_calls: ModelCalls;
+  node_kinds: NodeKinds;
   organizations: Organizations;
+  provenance_kinds: ProvenanceKinds;
   provider_installations: ProviderInstallations;
   published_findings: PublishedFindings;
   pull_requests: PullRequests;
   repositories: Repositories;
   repository_init_facts: RepositoryInitFacts;
   repository_settings: RepositorySettings;
+  resolved_by_kinds: ResolvedByKinds;
   review_runs: ReviewRuns;
   reviewer_runs: ReviewerRuns;
   sessions: Sessions;
+  snapshot_files: SnapshotFiles;
+  snapshots: Snapshots;
+  symbol_lineage: SymbolLineage;
+  symbols: Symbols;
+  synthetic_nodes: SyntheticNodes;
+  unresolved_refs: UnresolvedRefs;
   users: Users;
   verified_findings: VerifiedFindings;
   webhook_deliveries: WebhookDeliveries;
