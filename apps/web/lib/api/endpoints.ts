@@ -6,6 +6,8 @@
  */
 import { api } from '../api-client';
 import type {
+  RepositoryIntelligence,
+  RepositoryProfile,
   FeedbackInput,
   FindingFeedback,
   FindingDetail,
@@ -114,6 +116,30 @@ export async function listInstallationRepositories(
     signal: opts.signal,
   });
   return required(data, 'installation repositories').items;
+}
+
+/** API-008; 404 before the first index. */
+export async function getRepositoryProfile(
+  repoId: string,
+  opts: Signal = {},
+): Promise<RepositoryProfile> {
+  const { data } = await api.GET('/api/v1/repositories/{repoId}/profile', {
+    params: { path: { repoId } },
+    signal: opts.signal,
+  });
+  return required(data, 'repository profile');
+}
+
+/** PENDING (WEB-004): graph health and index history from `snapshots.stats`. */
+export async function getRepositoryIntelligence(
+  repoId: string,
+  opts: Signal = {},
+): Promise<RepositoryIntelligence> {
+  const { data } = await api.GET('/api/v1/repositories/{repoId}/intelligence', {
+    params: { path: { repoId } },
+    signal: opts.signal,
+  });
+  return required(data, 'repository intelligence');
 }
 
 /** PENDING (assumed route): top risk areas of a repository. */

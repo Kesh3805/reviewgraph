@@ -222,7 +222,8 @@ Status: ◐
 ---
 
 ### WEB-004 — Repository Intelligence and Repository Profile pages
-Status: ☐
+Status: ◐
+> **Implementation note:** Web side only. The API half (`GET /repositories/:id/intelligence` in `repositories.controller.ts`, read from `snapshots.stats`) is not built: the snapshots, stats and profile tables arrive with the graph and profile tasks, and this lane does not edit `apps/api`. The page codes against `RepositoryIntelligence` in `apps/web/lib/api/pending.ts` (snapshots with chain length, fingerprint and versions, nodes/edges by kind, unresolved references, parse failures, a 10-bucket confidence histogram, `resolved_by`, languages, frameworks, index jobs). The profile uses the real `GET /repositories/:id/profile` (404 before the first index shows "Profile is computed after the first full index") with a hand-typed PROF-001 subset; the layer matrix is assumed to serialize as `{from, to, count}[]` and the effective policy per topic as an optional `effective_policy` array. A convention is shown as enforceable from the API flag, else by the PROF-003 thresholds (confidence ≥ 0.9 and samples ≥ 10). The histogram uses recharts with a table fallback. The "how to override" link points to the target architecture until a config reference document exists. Remaining: the intelligence endpoint and the `nestjs-layered` acceptance check.
 
 - **Task ID:** WEB-004
 - **Title:** Repository Intelligence + Repository Profile pages

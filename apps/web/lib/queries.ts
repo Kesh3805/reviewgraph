@@ -39,6 +39,8 @@ export const keys = {
   findingTrace: (findingId: string) => ['finding', findingId, 'trace'] as const,
   source: (repoId: string, req: object) => ['source', repoId, req] as const,
   feedback: (findingId: string) => ['finding', findingId, 'feedback'] as const,
+  profile: (repoId: string) => ['repository', repoId, 'profile'] as const,
+  intelligence: (repoId: string) => ['repository', repoId, 'intelligence'] as const,
 };
 
 export function repositoriesQuery(orgId: string) {
@@ -164,6 +166,22 @@ export function sourceExcerptQuery(repoId: string, req: ExcerptRequest) {
     queryFn: ({ signal }) => endpoints.getSourceExcerpt(repoId, req, { signal }),
     // Snapshots are immutable: an excerpt never changes.
     staleTime: Infinity,
+    throwOnError: false,
+  });
+}
+
+export function repositoryProfileQuery(repoId: string) {
+  return queryOptions({
+    queryKey: keys.profile(repoId),
+    queryFn: ({ signal }) => endpoints.getRepositoryProfile(repoId, { signal }),
+    throwOnError: false,
+  });
+}
+
+export function repositoryIntelligenceQuery(repoId: string) {
+  return queryOptions({
+    queryKey: keys.intelligence(repoId),
+    queryFn: ({ signal }) => endpoints.getRepositoryIntelligence(repoId, { signal }),
     throwOnError: false,
   });
 }

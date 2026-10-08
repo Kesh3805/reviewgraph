@@ -114,6 +114,90 @@ export interface RiskArea {
 }
 
 // ---------------------------------------------------------------------------------------------
+// WEB-004: repository intelligence (`GET /repositories/:id/intelligence`, read from
+// `snapshots.stats`) and the PROF-001 profile (`GET /repositories/:id/profile` exists but its
+// body is untyped in the OpenAPI document).
+// ---------------------------------------------------------------------------------------------
+
+export interface SnapshotInfo {
+  id: string;
+  kind: 'full' | 'delta';
+  commit_sha: string;
+  branch: string | null;
+  /** Deltas since the last full snapshot (0 for a full one). */
+  chain_length: number;
+  created_at: string;
+  node_count: number;
+  edge_count: number;
+}
+
+export interface GraphStats {
+  nodes_by_kind: Record<string, number>;
+  edges_by_kind: Record<string, number>;
+  unresolved_references: number;
+  parse_failures: number;
+  /** 10 buckets over [0, 1): bucket i counts edges with confidence in [i/10, (i+1)/10). */
+  edge_confidence_histogram: number[];
+  resolved_by: Record<string, number>;
+}
+
+export interface RepositoryIntelligence {
+  snapshots: SnapshotInfo[];
+  fingerprint: string | null;
+  versions: {
+    tool_version: string | null;
+    facts_schema_version: number | null;
+    analyzers: Record<string, string>;
+  };
+  /** Stats of the latest snapshot; null before the first index. */
+  stats: GraphStats | null;
+  languages: { name: string; files: number; share: number }[];
+  frameworks: string[];
+  index_jobs: {
+    id: string;
+    kind: 'initialize' | 'rebuild' | 'incremental';
+    state: 'queued' | 'running' | 'succeeded' | 'failed' | 'cancelled';
+    created_at: string;
+    finished_at: string | null;
+    error_class: ErrorClass | null;
+  }[];
+}
+
+export interface Convention {
+  id: string;
+  rule: string;
+  scope: string;
+  samples: number;
+  violations: number;
+  /** 0..1 */
+  consistency: number;
+  /** 0..1 */
+  confidence: number;
+  /** PROF-003: confidence ≥ 0.9 and samples ≥ 10; computed client-side when absent. */
+  enforceable?: boolean;
+  exceptions: { scope: string; reason: string | null }[];
+  source: 'inferred' | 'documented' | 'explicit';
+}
+
+/** The subset of PROF-001 `RepositoryProfile` the profile page renders. */
+export interface RepositoryProfile {
+  repository_id: string;
+  snapshot_id: string;
+  profile_version: number;
+  config_hash: string;
+  computed_at: string;
+  architecture: {
+    layers: { name: string; globs: string[]; member_count: number; role_confidence: number }[];
+    /** Observed layer dependency counts (IMPORTS/CALLS). */
+    matrix: { from: string; to: string; count: number }[];
+  };
+  conventions: Convention[];
+  documentation_rules: { id: string; title: string; path: string; topics: string[] }[];
+  /** Effective policy per topic (POL-004), when the API includes it. */
+  effective_policy?: EffectivePolicy[];
+}
+
+// ---------------------------------------------------------------------------------------------
 // API-009: pull requests and review runs
 // ---------------------------------------------------------------------------------------------
 
@@ -511,6 +595,14 @@ export interface PendingPaths {
   /** API-009 (assumed): per-repository review activity for the repositories table. */
   '/api/v1/organizations/{id}/repository-activity': {
     get: GetOp<{ items: RepositoryActivity[] }, PathParams<'id'>>;
+  };
+  /** API-008 route; PROF-001 body typed here (404 before the first index). */
+  '/api/v1/repositories/{repoId}/profile': {
+    get: GetOp<RepositoryProfile, PathParams<'repoId'>>;
+  };
+  /** WEB-004 (API side not built yet). */
+  '/api/v1/repositories/{repoId}/intelligence': {
+    get: GetOp<RepositoryIntelligence, PathParams<'repoId'>>;
   };
   /** Assumed route: top risk areas for the repository overview. */
   '/api/v1/repositories/{repoId}/risk-areas': {
