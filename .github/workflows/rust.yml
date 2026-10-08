@@ -155,6 +155,30 @@ jobs:
       - name: cargo test (integration)
         run: cargo test --workspace --locked --features integration -- --test-threads=4
 
+  contracts:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install pinned toolchain
+        run: |
+          channel=$(sed -n 's/^channel *= *"\(.*\)"//p' rust-toolchain.toml)
+          rustup toolchain install "$channel" --profile minimal
+          rustup default "$channel"
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: engine
+          shared-key: contracts
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+        working-directory: .
+      - name: Contract drift
+        working-directory: .
+        run: pnpm contracts:check
+
   deny:
     runs-on: ubuntu-24.04
     steps:

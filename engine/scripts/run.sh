@@ -10,6 +10,13 @@ ENGINE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 REPO_DIR="$(cd "$ENGINE_DIR/.." && pwd)"
 IMAGE="${REVIEWGRAPH_BUILD_IMAGE:-reviewgraph-engine-dev:2}"
 
+# Native mode: run directly on a host that has a C toolchain (CI runners, Linux/macOS dev boxes).
+# On by default under CI; set RG_NATIVE=1 to opt in elsewhere.
+if [ "${RG_NATIVE:-${CI:-}}" = "1" ] || [ "${RG_NATIVE:-${CI:-}}" = "true" ]; then
+  cd "${REVIEWGRAPH_WORKDIR:-$ENGINE_DIR}"
+  exec "$@"
+fi
+
 host_path() {
   if command -v cygpath >/dev/null 2>&1; then cygpath -m "$1"; else printf '%s' "$1"; fi
 }

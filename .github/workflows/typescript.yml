@@ -74,7 +74,5 @@ jobs:
           done
       - name: Kysely type drift
         run: node scripts/db-types.mjs --check --database-url "$RG_TEST_DATABASE_URL"
-      - name: Contract drift
-        run: pnpm contracts:check
       - name: API integration tests
         run: pnpm -F @reviewgraph/api test:integration
