@@ -1,0 +1,114 @@
+---
+source: crates/codegraph/tests/linker_fixture.rs
+expression: "support::dump(&output)"
+---
+NODES
+  Class ts:src/derived#DerivedService/class DerivedService file=src/derived.ts
+  Method ts:src/base#BaseService.render/method render file=src/base.ts
+  Class ts:src/app.service#AppService/class AppService file=src/app.service.ts
+  Function ts:src/caller#run/function run file=src/caller.ts
+  Parameter ts:src/app.service#AppService.guard/parameter guard file=src/app.service.ts
+  Method ts:src/app.service#AppService.callRepo/method callRepo file=src/app.service.ts
+  Directory dir:src/users src/users file=-
+  Class ts:src/base#BaseService/class BaseService file=src/base.ts
+  Method ts:src/users/users.repository#UsersRepository.findAll/method findAll file=src/users/users.repository.ts
+  Function ts:src/first#helper/function helper file=src/first.ts
+  File file:src/cycle/a.ts a.ts file=src/cycle/a.ts
+  Method ts:src/derived#DerivedService.render/method render file=src/derived.ts
+  Function ts:src/second#helper/function helper file=src/second.ts
+  File file:src/first.ts first.ts file=src/first.ts
+  File file:src/caller.ts caller.ts file=src/caller.ts
+  File file:src/users/users.repository.ts users.repository.ts file=src/users/users.repository.ts
+  File file:src/derived.ts derived.ts file=src/derived.ts
+  Method ts:src/app.service#AppService.authorize/method authorize file=src/app.service.ts
+  Directory dir:src/cycle src/cycle file=-
+  Directory dir:src src file=-
+  Parameter ts:src/app.service#AppService.repo/parameter repo file=src/app.service.ts
+  Method ts:src/app.service#AppService.callGuard/method callGuard file=src/app.service.ts
+  File file:src/second.ts second.ts file=src/second.ts
+  File file:src/app.service.ts app.service.ts file=src/app.service.ts
+  Method ts:src/users/users.repository#UsersRepository.findOne/method findOne file=src/users/users.repository.ts
+  Class ts:src/users/users.repository#UsersRepository/class UsersRepository file=src/users/users.repository.ts
+  File file:src/cycle/b.ts b.ts file=src/cycle/b.ts
+  File file:src/users/index.ts index.ts file=src/users/index.ts
+  Repository repo:/ fixture file=-
+  Method ts:src/app.service#AppService.load/method load file=src/app.service.ts
+  Directory dir:. . file=-
+  ExternalDependency pkg:npm/lodash lodash file=-
+  File file:src/base.ts base.ts file=src/base.ts
+EDGES
+  0250e0fdd36f4d2fa8a165e877edc691 -[CONTAINS]-> 708bdf4b55b1e3a39af3d65aa4783c59 conf=1000‰ by=STRUCTURAL prov=ANALYZER flags=
+  0250e0fdd36f4d2fa8a165e877edc691 -[EXTENDS]-> 4d8074b52f172f3b6150e0a9d5fd0117 conf=950‰ by=IMPORT prov=LINKER flags=
+  11e0c0b679b68847e02b5ee0811d377a -[CONTAINS]-> 2588ad66efa48e65fb00924c327b804f conf=1000‰ by=STRUCTURAL prov=ANALYZER flags=
+  11e0c0b679b68847e02b5ee0811d377a -[CONTAINS]-> 35c735a5c829505b4be7377b51bf1859 conf=1000‰ by=STRUCTURAL prov=ANALYZER flags=
+  11e0c0b679b68847e02b5ee0811d377a -[CONTAINS]-> 841b1718d073449395b88692a8b000cb conf=1000‰ by=STRUCTURAL prov=ANALYZER flags=
+  11e0c0b679b68847e02b5ee0811d377a -[CONTAINS]-> aa0177f6d4bf7fc1d4d5a1f36a59ae78 conf=1000‰ by=STRUCTURAL prov=ANALYZER flags=
+  11e0c0b679b68847e02b5ee0811d377a -[CONTAINS]-> b3850072b80ed91cfa2fedc1af1036ed conf=1000‰ by=STRUCTURAL prov=ANALYZER flags=
+  11e0c0b679b68847e02b5ee0811d377a -[CONTAINS]-> ee524bc7f15702c36a02e83d1ce6d495 conf=1000‰ by=STRUCTURAL prov=ANALYZER flags=
+  1e5a4c4a0a65830bb89ce0cf8925e688 -[CALLS]-> 5dd2b18f64028f0b57779bb620f99b6e conf=300‰ by=NAME_AMBIGUOUS prov=LINKER flags=DYNAMIC
+  1e5a4c4a0a65830bb89ce0cf8925e688 -[CALLS]-> 768d01d22082cdfd9492300764807e55 conf=300‰ by=NAME_AMBIGUOUS prov=LINKER flags=DYNAMIC
+  35c735a5c829505b4be7377b51bf1859 -[CALLS]-> 59494a2d3b30ae07b882375521475e5d conf=850‰ by=DI_CONSTRUCTOR prov=LINKER flags=
+  457d7752fcd5be2b51f7168bf5dff64e -[CONTAINS]-> 7c56b99562093a3c47f90b071e0bce13 conf=1000‰ by=STRUCTURAL prov=ANALYZER flags=
+  457d7752fcd5be2b51f7168bf5dff64e -[CONTAINS]-> e0bc14b376ad18d92e6556eb9857b98e conf=1000‰ by=STRUCTURAL prov=ANALYZER flags=
+  4d8074b52f172f3b6150e0a9d5fd0117 -[CONTAINS]-> 0c551abf6665274e784efde71259353d conf=1000‰ by=STRUCTURAL prov=ANALYZER flags=
+  708bdf4b55b1e3a39af3d65aa4783c59 -[OVERRIDES]-> 0c551abf6665274e784efde71259353d conf=950‰ by=STRUCTURAL prov=LINKER flags=
+  779d177771f921e717735f73bc7d2e38 -[CONTAINS]-> 5dd2b18f64028f0b57779bb620f99b6e conf=1000‰ by=STRUCTURAL prov=ANALYZER flags=
+  779d177771f921e717735f73bc7d2e38 -[DECLARES]-> 5dd2b18f64028f0b57779bb620f99b6e conf=1000‰ by=STRUCTURAL prov=ANALYZER flags=
+  779d177771f921e717735f73bc7d2e38 -[EXPORTS]-> 5dd2b18f64028f0b57779bb620f99b6e conf=1000‰ by=STRUCTURAL prov=ANALYZER flags=
+  78257af6742ffd755c7bd4aee99a98df -[CONTAINS]-> 1e5a4c4a0a65830bb89ce0cf8925e688 conf=1000‰ by=STRUCTURAL prov=ANALYZER flags=
+  78257af6742ffd755c7bd4aee99a98df -[DECLARES]-> 1e5a4c4a0a65830bb89ce0cf8925e688 conf=1000‰ by=STRUCTURAL prov=ANALYZER flags=
+  7c56b99562093a3c47f90b071e0bce13 -[CONTAINS]-> d419003a2a317ede6e673b28e83cea5b conf=1000‰ by=STRUCTURAL prov=ANALYZER flags=
+  7c56b99562093a3c47f90b071e0bce13 -[DECLARES]-> d419003a2a317ede6e673b28e83cea5b conf=1000‰ by=STRUCTURAL prov=ANALYZER flags=
+  7c56b99562093a3c47f90b071e0bce13 -[EXPORTS]-> d419003a2a317ede6e673b28e83cea5b conf=1000‰ by=STRUCTURAL prov=ANALYZER flags=
+  7e22a84805829b91e5f33be729ac6b07 -[CONTAINS]-> 0250e0fdd36f4d2fa8a165e877edc691 conf=1000‰ by=STRUCTURAL prov=ANALYZER flags=
+  7e22a84805829b91e5f33be729ac6b07 -[DECLARES]-> 0250e0fdd36f4d2fa8a165e877edc691 conf=1000‰ by=STRUCTURAL prov=ANALYZER flags=
+  7e22a84805829b91e5f33be729ac6b07 -[IMPORTS]-> fd5c680bc6aff0524da6eadaf8c81913 conf=1000‰ by=STRUCTURAL prov=ANALYZER flags=
+  92a45a154b92c317ef426e31b801900d -[CONTAINS]-> 641dfdf2874f9b447029f8fab06de1ae conf=1000‰ by=STRUCTURAL prov=ANALYZER flags=
+  92a45a154b92c317ef426e31b801900d -[CONTAINS]-> daa91c91783eebbe65e5f35740c76be2 conf=1000‰ by=STRUCTURAL prov=ANALYZER flags=
+  9a1a45092423c78d3fae05574649d7c5 -[CONTAINS]-> 457d7752fcd5be2b51f7168bf5dff64e conf=1000‰ by=STRUCTURAL prov=ANALYZER flags=
+  9a1a45092423c78d3fae05574649d7c5 -[CONTAINS]-> 457d7752fcd5be2b51f7168bf5dff64e conf=1000‰ by=STRUCTURAL prov=ANALYZER flags=
+  9a1a45092423c78d3fae05574649d7c5 -[CONTAINS]-> 779d177771f921e717735f73bc7d2e38 conf=1000‰ by=STRUCTURAL prov=ANALYZER flags=
+  9a1a45092423c78d3fae05574649d7c5 -[CONTAINS]-> 78257af6742ffd755c7bd4aee99a98df conf=1000‰ by=STRUCTURAL prov=ANALYZER flags=
+  9a1a45092423c78d3fae05574649d7c5 -[CONTAINS]-> 7e22a84805829b91e5f33be729ac6b07 conf=1000‰ by=STRUCTURAL prov=ANALYZER flags=
+  9a1a45092423c78d3fae05574649d7c5 -[CONTAINS]-> 92a45a154b92c317ef426e31b801900d conf=1000‰ by=STRUCTURAL prov=ANALYZER flags=
+  9a1a45092423c78d3fae05574649d7c5 -[CONTAINS]-> 92a45a154b92c317ef426e31b801900d conf=1000‰ by=STRUCTURAL prov=ANALYZER flags=
+  9a1a45092423c78d3fae05574649d7c5 -[CONTAINS]-> b822eba3b4f03b552f8b556c3e969dfa conf=1000‰ by=STRUCTURAL prov=ANALYZER flags=
+  9a1a45092423c78d3fae05574649d7c5 -[CONTAINS]-> bd15a257ed2d3d87b5a2bce39808078a conf=1000‰ by=STRUCTURAL prov=ANALYZER flags=
+  9a1a45092423c78d3fae05574649d7c5 -[CONTAINS]-> fd5c680bc6aff0524da6eadaf8c81913 conf=1000‰ by=STRUCTURAL prov=ANALYZER flags=
+  b3850072b80ed91cfa2fedc1af1036ed -[CALLS]-> 841b1718d073449395b88692a8b000cb conf=950‰ by=THIS_MEMBER prov=LINKER flags=
+  b822eba3b4f03b552f8b556c3e969dfa -[CONTAINS]-> 768d01d22082cdfd9492300764807e55 conf=1000‰ by=STRUCTURAL prov=ANALYZER flags=
+  b822eba3b4f03b552f8b556c3e969dfa -[DECLARES]-> 768d01d22082cdfd9492300764807e55 conf=1000‰ by=STRUCTURAL prov=ANALYZER flags=
+  b822eba3b4f03b552f8b556c3e969dfa -[EXPORTS]-> 768d01d22082cdfd9492300764807e55 conf=1000‰ by=STRUCTURAL prov=ANALYZER flags=
+  bd15a257ed2d3d87b5a2bce39808078a -[CONTAINS]-> 11e0c0b679b68847e02b5ee0811d377a conf=1000‰ by=STRUCTURAL prov=ANALYZER flags=
+  bd15a257ed2d3d87b5a2bce39808078a -[DECLARES]-> 11e0c0b679b68847e02b5ee0811d377a conf=1000‰ by=STRUCTURAL prov=ANALYZER flags=
+  bd15a257ed2d3d87b5a2bce39808078a -[IMPORTS]-> f623befa0bec92f23ed036e976fd6c98 conf=950‰ by=IMPORT prov=LINKER flags=
+  bd15a257ed2d3d87b5a2bce39808078a -[DEPENDS_ON]-> f623befa0bec92f23ed036e976fd6c98 conf=950‰ by=IMPORT prov=LINKER flags=
+  d419003a2a317ede6e673b28e83cea5b -[CONTAINS]-> 59494a2d3b30ae07b882375521475e5d conf=1000‰ by=STRUCTURAL prov=ANALYZER flags=
+  d419003a2a317ede6e673b28e83cea5b -[CONTAINS]-> bdffff5b1e3bdde11ceea7debe7279d5 conf=1000‰ by=STRUCTURAL prov=ANALYZER flags=
+  eb9df9b8561f5200999f7f886a25178c -[CONTAINS]-> f5fa4b28bb39bcd503cbad99d0066c6f conf=1000‰ by=STRUCTURAL prov=ANALYZER flags=
+  eb9df9b8561f5200999f7f886a25178c -[CONTAINS]-> f5fa4b28bb39bcd503cbad99d0066c6f conf=1000‰ by=STRUCTURAL prov=ANALYZER flags=
+  eb9df9b8561f5200999f7f886a25178c -[CONTAINS]-> f5fa4b28bb39bcd503cbad99d0066c6f conf=1000‰ by=STRUCTURAL prov=ANALYZER flags=
+  eb9df9b8561f5200999f7f886a25178c -[CONTAINS]-> f5fa4b28bb39bcd503cbad99d0066c6f conf=1000‰ by=STRUCTURAL prov=ANALYZER flags=
+  eb9df9b8561f5200999f7f886a25178c -[CONTAINS]-> f5fa4b28bb39bcd503cbad99d0066c6f conf=1000‰ by=STRUCTURAL prov=ANALYZER flags=
+  eb9df9b8561f5200999f7f886a25178c -[CONTAINS]-> f5fa4b28bb39bcd503cbad99d0066c6f conf=1000‰ by=STRUCTURAL prov=ANALYZER flags=
+  eb9df9b8561f5200999f7f886a25178c -[CONTAINS]-> f5fa4b28bb39bcd503cbad99d0066c6f conf=1000‰ by=STRUCTURAL prov=ANALYZER flags=
+  eb9df9b8561f5200999f7f886a25178c -[CONTAINS]-> f5fa4b28bb39bcd503cbad99d0066c6f conf=1000‰ by=STRUCTURAL prov=ANALYZER flags=
+  eb9df9b8561f5200999f7f886a25178c -[CONTAINS]-> f5fa4b28bb39bcd503cbad99d0066c6f conf=1000‰ by=STRUCTURAL prov=ANALYZER flags=
+  eb9df9b8561f5200999f7f886a25178c -[CONTAINS]-> f5fa4b28bb39bcd503cbad99d0066c6f conf=1000‰ by=STRUCTURAL prov=ANALYZER flags=
+  ee524bc7f15702c36a02e83d1ce6d495 -[CALLS]-> d419003a2a317ede6e673b28e83cea5b conf=600‰ by=NAME_UNIQUE prov=LINKER flags=INSTANTIATES
+  ee524bc7f15702c36a02e83d1ce6d495 -[USES_TYPE]-> d419003a2a317ede6e673b28e83cea5b conf=600‰ by=NAME_UNIQUE prov=LINKER flags=TYPE_ONLY
+  f5fa4b28bb39bcd503cbad99d0066c6f -[CONTAINS]-> 9a1a45092423c78d3fae05574649d7c5 conf=1000‰ by=STRUCTURAL prov=ANALYZER flags=
+  f5fa4b28bb39bcd503cbad99d0066c6f -[CONTAINS]-> 9a1a45092423c78d3fae05574649d7c5 conf=1000‰ by=STRUCTURAL prov=ANALYZER flags=
+  f5fa4b28bb39bcd503cbad99d0066c6f -[CONTAINS]-> 9a1a45092423c78d3fae05574649d7c5 conf=1000‰ by=STRUCTURAL prov=ANALYZER flags=
+  f5fa4b28bb39bcd503cbad99d0066c6f -[CONTAINS]-> 9a1a45092423c78d3fae05574649d7c5 conf=1000‰ by=STRUCTURAL prov=ANALYZER flags=
+  f5fa4b28bb39bcd503cbad99d0066c6f -[CONTAINS]-> 9a1a45092423c78d3fae05574649d7c5 conf=1000‰ by=STRUCTURAL prov=ANALYZER flags=
+  f5fa4b28bb39bcd503cbad99d0066c6f -[CONTAINS]-> 9a1a45092423c78d3fae05574649d7c5 conf=1000‰ by=STRUCTURAL prov=ANALYZER flags=
+  f5fa4b28bb39bcd503cbad99d0066c6f -[CONTAINS]-> 9a1a45092423c78d3fae05574649d7c5 conf=1000‰ by=STRUCTURAL prov=ANALYZER flags=
+  f5fa4b28bb39bcd503cbad99d0066c6f -[CONTAINS]-> 9a1a45092423c78d3fae05574649d7c5 conf=1000‰ by=STRUCTURAL prov=ANALYZER flags=
+  f5fa4b28bb39bcd503cbad99d0066c6f -[CONTAINS]-> 9a1a45092423c78d3fae05574649d7c5 conf=1000‰ by=STRUCTURAL prov=ANALYZER flags=
+  f5fa4b28bb39bcd503cbad99d0066c6f -[CONTAINS]-> 9a1a45092423c78d3fae05574649d7c5 conf=1000‰ by=STRUCTURAL prov=ANALYZER flags=
+  fd5c680bc6aff0524da6eadaf8c81913 -[CONTAINS]-> 4d8074b52f172f3b6150e0a9d5fd0117 conf=1000‰ by=STRUCTURAL prov=ANALYZER flags=
+  fd5c680bc6aff0524da6eadaf8c81913 -[DECLARES]-> 4d8074b52f172f3b6150e0a9d5fd0117 conf=1000‰ by=STRUCTURAL prov=ANALYZER flags=
+  fd5c680bc6aff0524da6eadaf8c81913 -[EXPORTS]-> 4d8074b52f172f3b6150e0a9d5fd0117 conf=1000‰ by=STRUCTURAL prov=ANALYZER flags=
+UNRESOLVED
+  src/app.service.ts#3 map Call reason=EXTERNAL candidates=0
