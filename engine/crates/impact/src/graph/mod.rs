@@ -8,6 +8,7 @@
 pub mod budget;
 pub mod builder;
 pub mod calls;
+pub mod entrypoints;
 pub mod model;
 pub mod path;
 pub mod types;

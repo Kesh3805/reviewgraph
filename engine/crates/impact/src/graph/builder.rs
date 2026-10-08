@@ -24,6 +24,7 @@ use crate::metrics;
 
 use super::budget::ImpactBudget;
 use super::calls;
+use super::entrypoints;
 use super::model::{
     compute_input_hash, GraphSide, ImpactFlags, ImpactGraph, ImpactStats, Relation, SeedSkip,
     SeedTruncation, SymbolImpact, TruncReason, Truncation, IMPACT_SCHEMA_VERSION,
@@ -140,6 +141,8 @@ pub(crate) struct SeedState {
     drops: BTreeMap<DropKey, (u32, u32, Option<u32>)>,
     /// Caller nodes at the deepest level reached, for the depth-3 pass.
     pub caller_frontier: Vec<NodeKey>,
+    /// Nodes the endpoint search visited.
+    pub endpoint_visits: u32,
 }
 
 impl SeedState {
@@ -158,6 +161,7 @@ impl SeedState {
             pr_cap,
             drops: BTreeMap::new(),
             caller_frontier: Vec::new(),
+            endpoint_visits: 0,
         }
     }
 
@@ -314,6 +318,7 @@ fn expand_seed(cx: &Cx<'_>, index: usize, symbol: &SymbolInput, cap: u32) -> Exp
         .collect();
     calls::expand_removed_callees(cx, &mut state, &removed);
     types::expand_types(cx, &mut state);
+    state.endpoint_visits = entrypoints::expand_endpoints(cx, &mut state);
 
     Expanded {
         input: index,
@@ -453,6 +458,7 @@ pub fn build_impact(inputs: &ImpactInputs<'_>) -> ImpactGraph {
         if item.missing {
             stats.seeds_without_graph += 1;
         }
+        stats.endpoint_search_visits += state.endpoint_visits;
         if let Some(graph) = cx.graph(state.side) {
             let callers: Vec<NodeKey> = state
                 .set
