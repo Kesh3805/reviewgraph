@@ -127,6 +127,7 @@ Expected facts (assertions reused across tasks):
 | IMP-008 | Impact golden tests incl. auth-bypass |
 | IMP-009 | Change clustering |
 | IMP-010 | Cluster risk ranking, budget allocation, unreviewed-region report |
+| IMP-011 | Semantic-similarity clustering (PRD §92) — deferred to post-MVP, recorded by IMP-009 |
 | RISK-001 | RiskSignal model + rule table (18 PRD §37 categories) |
 | RISK-002 | Path, config and manifest signals |
 | RISK-003 | Framework and graph signals |
