@@ -29,6 +29,7 @@ use super::model::{
     SeedTruncation, SymbolImpact, TruncReason, Truncation, IMPACT_SCHEMA_VERSION,
 };
 use super::path::{Candidate, ElementSet, Extras, Offer, Trail};
+use super::types;
 
 /// An owned copy of the parts of an edge the expansions need.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -312,6 +313,7 @@ fn expand_seed(cx: &Cx<'_>, index: usize, symbol: &SymbolInput, cap: u32) -> Exp
         .filter_map(|call| call.target_key())
         .collect();
     calls::expand_removed_callees(cx, &mut state, &removed);
+    types::expand_types(cx, &mut state);
 
     Expanded {
         input: index,

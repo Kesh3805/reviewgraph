@@ -10,6 +10,7 @@ pub mod builder;
 pub mod calls;
 pub mod model;
 pub mod path;
+pub mod types;
 
 pub use budget::ImpactBudget;
 pub use builder::{build_impact, ImpactInputs};
