@@ -31,6 +31,27 @@ use uuid::Uuid;
 
 static MIGRATOR: Migrator = sqlx::migrate!("../../migrations");
 
+/// Key of the advisory lock that serializes migrations across the test databases.
+const MIGRATION_LOCK_KEY: i64 = 0x5247_4d49_4752;
+
+/// Applies the migrations under a cluster-wide advisory lock: the roles migration creates
+/// cluster-wide roles, so concurrent test databases would race on `CREATE ROLE`.
+async fn migrate(admin: &PgPool, pool: &PgPool) {
+    let mut conn = admin.acquire().await.unwrap();
+    sqlx::query("SELECT pg_advisory_lock($1)")
+        .bind(MIGRATION_LOCK_KEY)
+        .execute(&mut *conn)
+        .await
+        .unwrap();
+    let result = MIGRATOR.run(pool).await;
+    sqlx::query("SELECT pg_advisory_unlock($1)")
+        .bind(MIGRATION_LOCK_KEY)
+        .execute(&mut *conn)
+        .await
+        .unwrap();
+    result.unwrap();
+}
+
 struct TestDb {
     pool: PgPool,
     admin: PgPool,
@@ -58,7 +79,7 @@ impl TestDb {
             .connect_with(options)
             .await
             .unwrap();
-        MIGRATOR.run(&pool).await.unwrap();
+        migrate(&admin, &pool).await;
         Self { pool, admin, name }
     }
 

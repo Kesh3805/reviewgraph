@@ -171,7 +171,7 @@ pub fn edge_from_row(row: &PgRow) -> Result<(GraphEdge, bool), StoreError> {
 /// One `synthetic_nodes` row: a node, or a tombstone key when `removed`.
 #[derive(Debug)]
 pub enum SyntheticRow {
-    Node(Node),
+    Node(Box<Node>),
     Tombstone(NodeKey),
 }
 
@@ -186,12 +186,14 @@ pub fn synthetic_from_row(row: &PgRow) -> Result<SyntheticRow, StoreError> {
     let kind = kind
         .and_then(NodeKind::from_i16)
         .ok_or_else(|| integrity("a synthetic node has no valid kind"))?;
-    Ok(SyntheticRow::Node(Node::Synthetic(SyntheticNode {
-        key,
-        id: id.ok_or_else(|| integrity("a synthetic node has no id"))?,
-        kind,
-        attrs: get(row, "attrs")?,
-    })))
+    Ok(SyntheticRow::Node(Box::new(Node::Synthetic(
+        SyntheticNode {
+            key,
+            id: id.ok_or_else(|| integrity("a synthetic node has no id"))?,
+            kind,
+            attrs: get(row, "attrs")?,
+        },
+    ))))
 }
 
 /// One `symbols` row joined with its file version's `path`.

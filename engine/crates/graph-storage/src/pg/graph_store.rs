@@ -663,7 +663,7 @@ async fn read_full(
     let mut nodes = read_symbols(tx, organization, &versions).await?;
     for row in read_synthetic(tx, snapshot, organization).await? {
         if let SyntheticRow::Node(node) = row {
-            nodes.push(node);
+            nodes.push(*node);
         }
     }
     let edges = read_edges(tx, snapshot, organization)
@@ -701,7 +701,7 @@ async fn read_delta(
     let mut nodes_removed: Vec<NodeKey> = Vec::new();
     for row in read_synthetic(tx, snapshot, organization).await? {
         match row {
-            SyntheticRow::Node(node) => nodes_added.push(node),
+            SyntheticRow::Node(node) => nodes_added.push(*node),
             SyntheticRow::Tombstone(key) => nodes_removed.push(key),
         }
     }
@@ -1430,7 +1430,7 @@ impl GraphStore for PgGraphStore {
                 }
                 matched.push(edge);
             }
-            matched.sort_by(|a, b| (a.kind, other(a)).cmp(&(b.kind, other(b))));
+            matched.sort_by_key(|e| (e.kind, other(e)));
             let take = limit.clamp(1, MAX_NEIGHBOR_LIMIT) as usize;
             let total = matched.len();
             matched.truncate(take);
