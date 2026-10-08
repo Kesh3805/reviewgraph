@@ -3,6 +3,7 @@
 #
 # Usage:
 #   fixtures/build.sh <name>|--all [--out DIR] [--src DIR] [--update-expected]
+#   fixtures/build.sh --pr <scenario> [--update-expected]   (pull-request scenarios, DIFF-007)
 #
 # Fixture format. fixtures/repositories/<name>/steps/ holds directories 001-<slug>,
 # 002-<slug>, ... processed in LC_ALL=C lexical order. Each step may contain:
@@ -32,12 +33,14 @@ EPOCH=1767225600 # 2026-01-01T00:00:00Z
 
 target=""
 update_expected=0
+pr=0
 while [ $# -gt 0 ]; do
   case "$1" in
     --all) target="--all" ;;
     --out) OUT="$2"; shift ;;
     --src) SRC="$2"; shift ;;
     --update-expected) update_expected=1 ;;
+    --pr) pr=1 ;;
     -*) echo "build.sh: unknown option $1" >&2; exit 2 ;;
     *) target="$1" ;;
   esac
@@ -143,7 +146,49 @@ build_one() {
   echo "built $name ($i steps)"
 }
 
-if [ "$target" = "--all" ]; then
+# Pull-request scenarios (DIFF-007): fixtures/pull-requests/<name>/{base/, patch.diff}.
+# Builds a 2-commit repository (base, then base + patch) at <out>/../prs/<name> with the same
+# fixed identity/dates, writes <name>.shas and the git references `git diff --histogram -U3` and
+# `--name-status -M50%` next to it (--update-expected copies them into <name>/expected/).
+# The Rust tests build the same trees in-process (diff_engine::testkit::Scenario); this mode is
+# for inspecting a scenario with git and for regenerating the references.
+build_pr() {
+  local name="$1"
+  local scen="$SCRIPT_DIR/pull-requests/$name"
+  local out="$SCRIPT_DIR/.build/prs"
+  local dst="$out/$name"
+  [ -d "$scen/base" ] && [ -f "$scen/patch.diff" ] \
+    || { echo "build.sh: no such pull-request scenario: $name" >&2; return 1; }
+  rm -rf "$dst"
+  mkdir -p "$out"
+  git init -q --template= -b main "$dst"
+  git -C "$dst" config core.autocrlf false
+  git -C "$dst" config commit.gpgsign false
+  git -C "$dst" config user.name fixture
+  git -C "$dst" config user.email fixture@example.com
+  cp -R "$scen/base/." "$dst/"
+  git -C "$dst" add -A
+  local d
+  d="$(date -u -d "@$EPOCH" +%Y-%m-%dT%H:%M:%SZ)"
+  GIT_AUTHOR_DATE="$d" GIT_COMMITTER_DATE="$d" git -C "$dst" commit -q --no-verify -m base
+  git -C "$dst" apply --whitespace=nowarn "$scen/patch.diff"
+  git -C "$dst" add -A
+  GIT_AUTHOR_DATE="$d" GIT_COMMITTER_DATE="$d" git -C "$dst" commit -q --no-verify -m head
+  printf 'base %s\nhead %s\n' "$(git -C "$dst" rev-parse HEAD~1)" "$(git -C "$dst" rev-parse HEAD)" \
+    > "$out/$name.shas"
+  git -C "$dst" diff --histogram -U3 --no-color HEAD~1 HEAD > "$out/$name.git-diff-u3.patch"
+  git -C "$dst" diff --name-status -M50% HEAD~1 HEAD > "$out/$name.name-status.txt"
+  if [ "$update_expected" = 1 ]; then
+    mkdir -p "$scen/expected"
+    cp "$out/$name.git-diff-u3.patch" "$scen/expected/git-diff-u3.patch"
+    cp "$out/$name.name-status.txt" "$scen/expected/name-status.txt"
+  fi
+  echo "built pull-request $name"
+}
+
+if [ "$pr" = 1 ]; then
+  build_pr "$target"
+elif [ "$target" = "--all" ]; then
   names="$(find "$SRC" -mindepth 1 -maxdepth 1 -type d -exec basename {} \; | sort)"
   [ -n "$names" ] || { echo "build.sh: no fixtures under $SRC" >&2; exit 1; }
   for n in $names; do build_one "$n"; done

@@ -1,0 +1,109 @@
+{
+  "anchors": {
+    "src/auth/auth.service.ts": {
+      "left": [
+        [
+          7,
+          13
+        ]
+      ],
+      "right": [
+        [
+          7,
+          13
+        ]
+      ]
+    },
+    "src/util/format.ts": {
+      "left": [
+        [
+          5,
+          10
+        ]
+      ],
+      "right": [
+        [
+          5,
+          11
+        ]
+      ]
+    }
+  },
+  "coverage": [],
+  "files": [
+    {
+      "additions": 1,
+      "deletions": 1,
+      "disposition": {
+        "kind": "analyze"
+      },
+      "hunks": [
+        {
+          "new_lines": 6,
+          "new_start": 7,
+          "old_lines": 6,
+          "old_start": 7
+        }
+      ],
+      "old_path": null,
+      "path": "src/auth/auth.service.ts",
+      "status": "modified"
+    },
+    {
+      "additions": 1,
+      "deletions": 0,
+      "disposition": {
+        "kind": "analyze"
+      },
+      "hunks": [
+        {
+          "new_lines": 6,
+          "new_start": 5,
+          "old_lines": 5,
+          "old_start": 5
+        }
+      ],
+      "old_path": null,
+      "path": "src/util/format.ts",
+      "status": "modified"
+    }
+  ],
+  "symbols": [
+    {
+      "path": "src/auth/auth.service.ts",
+      "ranges": [
+        [
+          10,
+          11
+        ]
+      ],
+      "ranges_old": [
+        [
+          10,
+          11
+        ]
+      ],
+      "scope": "body",
+      "side": "head",
+      "symbol_id": "ts:src/auth/auth.service#AuthService.authorize/method",
+      "touches_code": true,
+      "whole_symbol": false
+    },
+    {
+      "path": "src/util/format.ts",
+      "ranges": [
+        [
+          8,
+          9
+        ]
+      ],
+      "ranges_old": [],
+      "scope": "body",
+      "side": "head",
+      "symbol_id": "ts:src/util/format#formatName/function",
+      "touches_code": false,
+      "whole_symbol": false
+    }
+  ],
+  "unmapped": 0
+}

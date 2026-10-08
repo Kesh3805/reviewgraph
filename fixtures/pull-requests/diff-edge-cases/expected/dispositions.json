@@ -1,0 +1,118 @@
+[
+  {
+    "disposition": {
+      "kind": "binary"
+    },
+    "hunks": 0,
+    "path": "assets/logo.png",
+    "status": "modified"
+  },
+  {
+    "disposition": {
+      "bytes": 3145728,
+      "kind": "too_large",
+      "lines": null
+    },
+    "hunks": 0,
+    "path": "data/big.json",
+    "status": "added"
+  },
+  {
+    "disposition": {
+      "kind": "vendored"
+    },
+    "hunks": 0,
+    "path": "dist/bundle.js",
+    "status": "modified"
+  },
+  {
+    "disposition": {
+      "ecosystem": "npm",
+      "kind": "lockfile_summary"
+    },
+    "hunks": 0,
+    "path": "package-lock.json",
+    "status": "modified"
+  },
+  {
+    "disposition": {
+      "kind": "analyze"
+    },
+    "hunks": 1,
+    "path": "src/app.ts",
+    "status": "modified"
+  },
+  {
+    "disposition": {
+      "kind": "analyze"
+    },
+    "hunks": 1,
+    "path": "src/crlf.ts",
+    "status": "modified"
+  },
+  {
+    "disposition": {
+      "kind": "generated",
+      "reason": "header_marker"
+    },
+    "hunks": 0,
+    "path": "src/gen/client.ts",
+    "status": "added"
+  },
+  {
+    "disposition": {
+      "kind": "minified"
+    },
+    "hunks": 0,
+    "path": "src/legacy/app.js",
+    "status": "added"
+  },
+  {
+    "disposition": {
+      "kind": "analyze"
+    },
+    "hunks": 1,
+    "path": "src/move_from.ts",
+    "status": "modified"
+  },
+  {
+    "disposition": {
+      "kind": "analyze"
+    },
+    "hunks": 1,
+    "path": "src/move_to.ts",
+    "status": "modified"
+  },
+  {
+    "disposition": {
+      "kind": "analyze"
+    },
+    "hunks": 0,
+    "path": "src/new_name.ts",
+    "status": "renamed"
+  },
+  {
+    "disposition": {
+      "kind": "analyze"
+    },
+    "hunks": 1,
+    "path": "src/remove_me.ts",
+    "status": "deleted"
+  },
+  {
+    "disposition": {
+      "kind": "analyze"
+    },
+    "hunks": 1,
+    "path": "src/util/b.ts",
+    "status": "renamed"
+  },
+  {
+    "disposition": {
+      "kind": "vendored"
+    },
+    "hunks": 0,
+    "path": "vendor/lib.js",
+    "status": "modified"
+  }
+]

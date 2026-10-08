@@ -1,0 +1,22 @@
+name: auth-bypass
+description: >-
+  PRD §151. AuthService.authorize stops delegating to PermissionService.check and grants
+  access to any user whose role is "admin". The method is reachable through
+  UserController.update -> AdminService.updateUser -> AuthService.authorize. A comment-only
+  edit inside formatName in src/util/format.ts is the low-risk control; report.service.ts
+  (an independent PermissionService.check caller) and format.ts#authorizeHeader (a lexically
+  similar name) are decoys that must never appear as impacted.
+base_ref: base
+head_ref: head
+provider:
+  name: github
+  pr_number: 151
+  base_sha: <base>
+  head_sha: <head>
+files:
+  base: base/
+  patch: patch.diff
+expected:
+  diff: expected/diff.json
+  git_diff_u3: expected/git-diff-u3.patch
+  name_status: expected/name-status.txt
