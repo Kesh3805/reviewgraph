@@ -1029,7 +1029,8 @@ Status: ☑
 ---
 
 ### GH-005 — PR fetch, normalize and repository sync
-Status: ☐
+Status: ☑
+> **Implementation note:** `pull_requests.updated_at` is rewritten by the `rg_set_updated_at` trigger, so migration `20261008000001_pull_request_sync.sql` adds `provider_updated_at` (the provider's own `updated_at`) and the upsert guard compares that column. The upsert writes head/base SHAs only on insert (SUP-001 moves the head). `merge_base_sha` stays null: GitHub has no merge-base field on the PR and the engine computes it locally with gix, so no extra compare call is made. Transient errors are retried by the Octokit retry plugin (3 retries, GH-001 factory) and then surface as `ProviderError{transient}`. `RepositorySyncService` (`apps/api/src/repositories/sync.service.ts`) reads the provider only when the row is missing or on an explicit refresh (the orchestrator refreshes after a PR 404, which is how a repository 404 becomes `access_lost`). `collectChangedFiles(stream, cap)` in the ports reports `truncated`. The GitHub provider is registered in the `ProviderRegistry` by `GithubProviderRegistration`. Tests: unit `test/providers/github/repository-provider.spec.ts` (paging, cap, recorded-response contract in `test/fixtures/github/api/`), integration `integration/github-sync.int.spec.ts`.
 
 - **Task ID:** GH-005
 - **Title:** PR fetch/normalize + repository sync
@@ -1072,7 +1073,8 @@ Status: ☐
 ---
 
 ### GH-006 — Clone credential broker internal endpoint
-Status: ☐
+Status: ◐
+> **Implementation note:** API side done: `CloneCredentialsController` (`apps/api/src/internal/clone-credentials.controller.ts`, excluded from the public OpenAPI document) resolves the repository with `resolve_org`, refuses a token whose `org` claim differs, answers 409 `installation_suspended` / `installation_inactive` / `repository_access_lost`, 503 on transient provider errors, and mints through `RepositoryProvider.issueCloneCredential(ref, ttl, { providerRepoId })` (`repository_ids:[id]`, `contents:read`). `clone_url` is derived from `GITHUB_API_URL` (api.github.com -> github.com, otherwise the origin) and never carries the token. The test controller of `test/internal/service-auth.e2e.spec.ts` moved to `/internal/test/...` so it no longer shadows the real route. **Missing:** the Rust half (`engine/crates/pipeline/src/credentials.rs`, the gix credential callback in `repository`, `rust_secret_not_in_debug`) belongs to the engine pipeline lane (the `pipeline` crate is still a stub); `token_absent_from_logs` covers the API process logs only.
 
 - **Task ID:** GH-006
 - **Title:** Clone credential broker internal endpoint
@@ -1243,7 +1245,8 @@ Status: ☑
 ---
 
 ### GH-009 — Publisher (atomic review, check run, published_findings, supersession gate)
-Status: ☐
+Status: ☑
+> **Implementation note:** `PublisherService.publish(runId)` (`apps/api/src/publisher/`) renders before the gate, then in one transaction acquires the SUP-003 gate, upserts `publications` (`posting`, attempt+1), ALWAYS looks for a review carrying `reviewgraph:run=<id>` first (a crash after GitHub accepted the POST rolls our row back, so the marker is the only reliable evidence), posts one `COMMENT` review (the POST is never retried in-process by Octokit, 15 s timeout) and marks the run COMPLETED while the locks are still held, so a waiting supersession never supersedes a run whose review was posted. `published_findings`, candidate `PUBLISHED`, stale resolution and the check run follow outside the transaction and are idempotent (a retry after a posted publication takes the `already_published` path). A 422 relocates every inline comment to the summary and posts once more; 403/404 (permanent) set `FAILED_PUBLISH` and a neutral "Review could not be published" check run. Migration `20261008000003_publications.sql` adds `publications`, `check_runs` (both with RLS) and `published_findings.side/status/resolved_in_run_id`. The PRD §59 explanation is read from `verified_findings.evidence.explanation` (`what_changed`, `why_risky`, `behavior_result`, `corrective_direction`, `evidence_path`, `latent`); a finding without it is relocated to the summary (`render_error`), never dropped — VER/DED must persist that shape. `PublishConsumer.handle(payload)` is ready but is registered with the queue by API-007 (`consume('review-publish', handler, { concurrency: 4 })`); until then nothing consumes `review-publish`. Summary counts for behavioral symbols/API contracts are 0 until the analysis outputs are persisted.
 
 - **Task ID:** GH-009
 - **Title:** Publisher (single atomic review POST event=COMMENT, check run, published_findings with comment ids, publish-time supersession gate)
@@ -1359,7 +1362,8 @@ Status: ☑
 ---
 
 ### GH-011 — Stale comment resolution on re-review
-Status: ☐
+Status: ☑
+> **Implementation note:** `StaleResolutionService` classifies the PR's still-tracked earlier findings (`published_findings.status in open|carried_over|unknown`) before posting (carried-over findings are filtered from the new review; unknown ones are rendered under **Previously reported**) and applies the result after the post. Matching is fingerprint equality or same category plus a symbol mapped through the `SYMBOL_LINEAGE` port; the default has no lineage until the SID-005 store is wired to it. "Anchor changed" is approximated at file level through the optional `RepositoryProvider.listFilesBetween` (GitHub compare API); if the comparison is unavailable the finding is `unknown`, never `fixed`. Thread lookup and `resolveReviewThread` live in `providers/github/graphql.ts`; only threads whose first comment author is the App (`GITHUB_APP_SLUG`, GraphQL or REST form) are resolved. `publish.reply_on_resolve` is not implemented (no such setting exists yet), so no reply is posted.
 
 - **Task ID:** GH-011
 - **Title:** Stale comment resolution on re-review
@@ -1404,7 +1408,8 @@ Status: ☐
 ---
 
 ### GH-012 — Polling reconciler fallback
-Status: ☐
+Status: ◐
+> **Implementation note:** `GithubReconciler` (`apps/api/src/providers/github/reconciler.service.ts`, provided by `WebhooksModule` next to the event sink it feeds) runs on a plain `setInterval` instead of `@nestjs/schedule` to avoid a new dependency. Targets come from the new SECURITY DEFINER function `rg_reconcile_targets` (migration `20261008000004`). Config: `RECONCILER_ENABLED` (unset: on only in development without a webhook secret) and `RECONCILE_INTERVAL_SECONDS` (default 300). Synthetic deliveries are recorded in `webhook_deliveries` with `event='poll'`; a known head is one with a matching PR head and a non-superseded run, which is what makes repeated polls no-ops. Tests call `runCycle()` directly (`integration/reconciler.int.spec.ts`); the 1 s interval acceptance check and the DEV-006 documentation are not done.
 
 - **Task ID:** GH-012
 - **Title:** Polling reconciler fallback
@@ -1496,7 +1501,8 @@ Status: ☑
 ---
 
 ### SUP-001 — Supersession on new head (single transaction)
-Status: ☐
+Status: ☑
+> **Implementation note:** `SupersessionService.startReview` (`apps/api/src/reviews/supersession.service.ts`) implements the transaction with `lock_timeout = 2s`. The schema forbids inserting the new run before the old one leaves the active set (`review_runs_one_active_per_pr`) and requires `superseded_by` on SUPERSEDED rows, so the new run id is chosen up front and migration `20261008000002_supersession.sql` makes the `superseded_by` FK `DEFERRABLE INITIALLY DEFERRED`; it also adds `superseded_at`, `superseded_by_head`, `idempotency_key UNIQUE` and `depth`. The jobs expression index ships with the PIPE-001 `jobs` table. Job enqueue/cancel go through the `REVIEW_JOBS` port (`review-jobs.port.ts`); its default rejects enqueue (rolling the run back) until the API-007 adapter is bound. A head that returns after its run was superseded gets a retry run keyed `...:rerun:<run>`; a manual re-review uses the trigger suffix `manual:<comment id>` with `retry_of`. Stale events compare against `pull_requests.provider_updated_at`. `ReviewOrchestrator` (webhook sink, reconciler) syncs the repository and PR (GH-005) from authoritative reads and then calls `startReview`; closed PRs and `/review cancel` go through `cancelActiveRuns` with the same lock order.
 
 - **Task ID:** SUP-001
 - **Title:** Supersession on new head (single transaction: mark older runs SUPERSEDED, cancel queued jobs, enqueue new)
@@ -1609,7 +1615,8 @@ Status: ☐
 ---
 
 ### SUP-003 — Publish-time gate
-Status: ☐
+Status: ☑
+> **Implementation note:** `PublishGate.acquire` (`apps/api/src/publisher/publish-gate.ts`) locks `pull_requests` then `review_runs` explicitly (two statements, so the order is guaranteed), with `lock_timeout = 20s`. A skip moves a still-PUBLISHING run to CANCELLED (SUPERSEDED needs `superseded_by`, which only SUP-001 can set) and records `publications.state='skipped'`. The webhook acknowledgement is detached from orchestration (GH-002 ack under 500 ms), so the 2 s lock timeout surfaces in the orchestrator, which retries with backoff; for synchronous callers `55P03` is classified by `isDbUnavailable` and becomes 503 + `Retry-After` (`webhook_lock_timeout_returns_503` asserts that mapping).
 
 - **Task ID:** SUP-003
 - **Title:** Publish-time gate (head current + run not superseded, inside publish txn)
@@ -1652,7 +1659,8 @@ Status: ☐
 ---
 
 ### SUP-004 — Concurrency tests
-Status: ☐
+Status: ◐
+> **Implementation note:** API-side cases are in `apps/api/integration/concurrency.int.spec.ts` against real Postgres/Redis and the stateful fake GitHub (`test/helpers/fake-github-api.ts`, with `drop_after_write`, 422, status and delay faults): `two_rapid_updates`, `duplicate_webhook`, `publish_retry`, `superseded_during_publish` (100 randomized interleavings), plus `lock_order_no_deadlock` in `supersession.int.spec.ts`. **Missing:** `retry_after_partial_failure` and `superseded_during_model_call` need the engine worker (SUP-002, PIPE-002/005) and the compose harness under `tests/concurrency/`; the nightly 20-iteration job and the trace-id assertion (OBS-003) are not set up.
 
 - **Task ID:** SUP-004
 - **Title:** Concurrency tests (two rapid updates, duplicate webhook, retry after partial failure, superseded during model call, publish retry)

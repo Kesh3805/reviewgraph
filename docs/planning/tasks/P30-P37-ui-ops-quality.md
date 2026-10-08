@@ -1327,7 +1327,8 @@ Status: ☐
 ---
 
 ### SEC-006 — Webhook replay protection
-Status: ☐
+Status: ☑
+> **Implementation note:** `ReplayGuard` (`apps/api/src/webhooks/replay-guard.ts`) runs in `GithubWebhookController` after signature verification and before the GH-003 idempotency record: per-installation Redis fixed window (`WEBHOOK_INSTALLATION_RATE_LIMIT`, default 120/min, 429 + `Retry-After`), delivery id reuse with a different body (`202 reason:"delivery_id_reuse"`, audited as `webhook.delivery_id_reuse` when the installation's organization is known), and freshness (`WEBHOOK_MAX_EVENT_AGE_SECONDS`, default 900; stale deliveries are recorded and acknowledged `reason:"stale_event"`). `webhook_deliveries` already had the body hash (`payload_sha256`) and the outcome (`status`), so migration `20261008000005_webhook_delivery_security.sql` only adds the `received_at` index and the pre-tenant lookup `rg_webhook_delivery_hash`; the store exposes it as the optional `DeliveryStore.payloadHashOf`. `redelivery_of` was not added: a failed delivery rolls its row back (GH-003), so an operator redelivery of it is processed as a first delivery, which `operator_redelivery_of_failed_delivery_is_processed` asserts. `WEBHOOK_REPLAY_RETENTION_DAYS` (default 30) is the setting the SEC-007 purge must honour. The DEV-005 replay-tool acceptance check is not run (the tool does not exist yet); the unit suite is `test/webhooks/replay-guard.spec.ts`, the Postgres cases are `integration/replay-guard.int.spec.ts`, and `docs/security/webhook-replay.md` documents the windows and tuning.
 
 - **Task ID:** SEC-006
 - **Title:** Replay window and delivery-age checks on top of HMAC verification and delivery-id deduplication

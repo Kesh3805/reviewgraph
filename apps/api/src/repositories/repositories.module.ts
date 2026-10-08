@@ -4,6 +4,7 @@ import { PgRepositorySettings } from './pg-repository-settings';
 import { RepositoriesController } from './repositories.controller';
 import { RepositoriesService } from './repositories.service';
 import { REPOSITORY_SETTINGS } from './repository-settings.port';
+import { RepositorySyncService } from './sync.service';
 
 @Module({
   controllers: [RepositoriesController],
@@ -13,7 +14,8 @@ import { REPOSITORY_SETTINGS } from './repository-settings.port';
     { provide: PROFILE_READER, useClass: NullProfileReader },
     // The review guards read these settings during webhook normalization.
     { provide: REPOSITORY_SETTINGS, useClass: PgRepositorySettings },
+    RepositorySyncService,
   ],
-  exports: [RepositoriesService, REPOSITORY_SETTINGS],
+  exports: [RepositoriesService, REPOSITORY_SETTINGS, RepositorySyncService],
 })
 export class RepositoriesModule {}

@@ -77,6 +77,18 @@ const baseShape = {
   GITHUB_OAUTH_URL: url(['http:', 'https:']).default('https://github.com'),
   /** Optional explicit OAuth redirect_uri; otherwise GitHub uses the callback configured on the App. */
   GITHUB_OAUTH_REDIRECT_URI: url(['http:', 'https:']).optional(),
+  /**
+   * Polling reconciler (GH-012). Unset: on in development without a webhook secret (no public
+   * ingress), off otherwise.
+   */
+  RECONCILER_ENABLED: boolFromString.optional(),
+  RECONCILE_INTERVAL_SECONDS: z.coerce.number().int().min(1).max(86_400).default(300),
+  /** SEC-006: events older than this (by their own timestamps) are acknowledged and ignored. */
+  WEBHOOK_MAX_EVENT_AGE_SECONDS: z.coerce.number().int().min(1).default(900),
+  /** SEC-006: deliveries per installation per minute; 0 disables the limit. */
+  WEBHOOK_INSTALLATION_RATE_LIMIT: z.coerce.number().int().min(0).default(120),
+  /** SEC-006: minimum retention of webhook_deliveries rows (enforced by the SEC-007 purge). */
+  WEBHOOK_REPLAY_RETENTION_DAYS: z.coerce.number().int().min(1).default(30),
   ...telemetryEnvShape,
 };
 

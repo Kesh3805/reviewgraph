@@ -1,4 +1,4 @@
-import { metrics, type Attributes, type Counter } from '@opentelemetry/api';
+import { metrics, type Attributes, type Counter, type Histogram } from '@opentelemetry/api';
 
 const METER_NAME = 'reviewgraph-api';
 const counters = new Map<string, Counter>();
@@ -41,6 +41,25 @@ export function counterTotalAll(name: string): number {
 
 export function resetCounterTotals(): void {
   totals.clear();
+}
+
+const histograms = new Map<string, Histogram>();
+const observations = new Map<string, number[]>();
+
+/** Records a histogram observation (seconds for durations). Tests read `histogramValues`. */
+export function recordHistogram(name: string, value: number, attrs: Attributes = {}): void {
+  let histogram = histograms.get(name);
+  if (!histogram) {
+    histogram = metrics.getMeter(METER_NAME).createHistogram(name);
+    histograms.set(name, histogram);
+  }
+  histogram.record(value, attrs);
+  const key = keyOf(name, attrs);
+  observations.set(key, [...(observations.get(key) ?? []), value].slice(-1000));
+}
+
+export function histogramValues(name: string, attrs: Attributes = {}): number[] {
+  return observations.get(keyOf(name, attrs)) ?? [];
 }
 
 const gauges = new Map<string, Map<string, { value: number; attrs: Attributes }>>();

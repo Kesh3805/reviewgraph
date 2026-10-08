@@ -27,8 +27,15 @@ export interface RepositoryProvider {
   /** Paginated; implementations stream pages lazily. */
   listChangedFiles(ref: PrRef): AsyncIterable<ProviderChangedFile>;
   getCommit(ref: RepoRef, sha: string): Promise<ProviderCommit>;
-  /** Read-only credential scoped to a single repository. */
-  issueCloneCredential(ref: RepoRef, ttlSeconds: number): Promise<CloneCredential>;
+  /**
+   * Read-only credential scoped to a single repository. `providerRepoId` saves a lookup when the
+   * caller already knows it.
+   */
+  issueCloneCredential(
+    ref: RepoRef,
+    ttlSeconds: number,
+    opts?: { providerRepoId?: string },
+  ): Promise<CloneCredential>;
   /** Verifies the delivery signature over the raw body; constant time. */
   verifyWebhook(headers: HeaderBag, rawBody: Buffer): WebhookVerification;
   /**
@@ -37,4 +44,9 @@ export interface RepositoryProvider {
    */
   normalizeEvent(headers: HeaderBag, body: unknown): Promise<NormalizeResult>;
   getActorPermission(ref: RepoRef, login: string): Promise<ActorPermission>;
+  /**
+   * Paths changed between two commits (stale comment resolution, GH-011). Optional: a provider
+   * without it makes every absent finding "unknown" rather than "fixed".
+   */
+  listFilesBetween?(ref: RepoRef, fromSha: string, toSha: string): Promise<string[]>;
 }

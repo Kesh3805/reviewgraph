@@ -1,0 +1,12 @@
+{
+  "id": 700001,
+  "node_id": "R_kgDOAAAAAQ",
+  "name": "billing",
+  "full_name": "acme/billing",
+  "private": true,
+  "owner": { "login": "acme", "id": 9000, "type": "Organization" },
+  "default_branch": "trunk",
+  "archived": false,
+  "disabled": false,
+  "visibility": "private"
+}

@@ -19,6 +19,7 @@ import { incCounter } from '../common/metrics';
 import { APP_CONFIG, type AppConfig } from '../config/config.module';
 import { isIgnored } from '../providers/ports';
 import { TRACER_NAME } from '../telemetry/tracer.service';
+import { ReplayGuard } from './replay-guard';
 import { verifyWebhookSignature } from './signature';
 import {
   COMMAND_ACKNOWLEDGER,
@@ -67,6 +68,7 @@ export class GithubWebhookController {
     @Inject(PROVIDER_EVENT_SINK) private readonly sink: ProviderEventSink,
     @Inject(COMMAND_ACKNOWLEDGER) private readonly acknowledger: CommandAcknowledger,
     @Inject(INSTALLATION_LIFECYCLE) private readonly installations: InstallationLifecycle,
+    private readonly replayGuard: ReplayGuard,
   ) {}
 
   @Post('github')
@@ -107,6 +109,28 @@ export class GithubWebhookController {
     }
     const action = stringField(payload, 'action');
     const installationId = installationIdOf(payload);
+    const delivery: DeliveryRecord = {
+      deliveryId,
+      eventName,
+      action,
+      installationId,
+      payloadSha256: sha256(rawBody),
+    };
+
+    // SEC-006: only after a valid signature, before the idempotency record.
+    const replay = await this.replayGuard.check(delivery, payload);
+    if (replay.kind === 'rate_limited') {
+      this.logger.warn(`webhook intake limited installation=${installationId ?? '-'}`);
+      res.setHeader('Retry-After', String(replay.retryAfterSeconds));
+      res.status(HttpStatus.TOO_MANY_REQUESTS).end();
+      return;
+    }
+    if (replay.kind === 'delivery_id_reuse') {
+      res
+        .status(HttpStatus.ACCEPTED)
+        .json({ delivery_id: deliveryId, accepted: false, reason: 'delivery_id_reuse' });
+      return;
+    }
 
     const ack = await trace
       .getTracer(TRACER_NAME)
@@ -115,10 +139,7 @@ export class GithubWebhookController {
         { attributes: { event: eventName, action: action ?? '', delivery_id: deliveryId } },
         async (span) => {
           try {
-            return await this.process(
-              { deliveryId, eventName, action, installationId, payloadSha256: sha256(rawBody) },
-              payload,
-            );
+            return await this.process(delivery, payload, replay.kind === 'stale');
           } catch (err) {
             span.setStatus({ code: SpanStatusCode.ERROR });
             throw err;
@@ -136,7 +157,11 @@ export class GithubWebhookController {
     res.status(HttpStatus.ACCEPTED).json(ack);
   }
 
-  private async process(delivery: DeliveryRecord, payload: unknown): Promise<WebhookAck> {
+  private async process(
+    delivery: DeliveryRecord,
+    payload: unknown,
+    stale = false,
+  ): Promise<WebhookAck> {
     const { deliveryId, eventName } = delivery;
     if (eventName === 'ping') return { delivery_id: deliveryId, accepted: false, reason: 'ping' };
     // Unsupported events are acknowledged with 202 so GitHub does not retry them.
@@ -149,7 +174,13 @@ export class GithubWebhookController {
       // Records the delivery and runs the handling in one transaction (GH-003): a duplicate is
       // never handled twice, and a failure rolls the record back so GitHub's retry runs fresh.
       outcome = await this.deliveries.process(delivery, (ctx) =>
-        this.handle(delivery, ctx, payload),
+        stale
+          ? // Recorded (so a replay is still a duplicate) and acknowledged, never handled.
+            Promise.resolve({
+              status: 'ignored' as const,
+              ack: { delivery_id: deliveryId, accepted: false, reason: 'stale_event' },
+            })
+          : this.handle(delivery, ctx, payload),
       );
     } catch (err) {
       // A failed store or handler must make GitHub redeliver, never silently drop the event.

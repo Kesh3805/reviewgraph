@@ -8,6 +8,10 @@ export interface FakeRequest {
   path: string;
   headers: IncomingMessage['headers'];
   body: unknown;
+  /** Query string parameters (`?page=2&per_page=100`). */
+  query: URLSearchParams;
+  /** Capture groups of a pattern route. */
+  params: string[];
 }
 
 export interface FakeRoute {
@@ -50,6 +54,7 @@ export class FakeGithub {
     metadata: 'read',
     issues: 'read',
   };
+  readonly patterns: { method: string; pattern: RegExp; handler: FakeRoute }[] = [];
   private server?: Server;
 
   constructor(private readonly publicKey: KeyObject) {}
@@ -75,16 +80,34 @@ export class FakeGithub {
     this.routes.set(`${method} ${path}`, handler);
   }
 
+  /** A route matched by a regular expression over the path; groups land in `req.params`. */
+  routeMatch(method: string, pattern: RegExp, handler: FakeRoute): void {
+    this.patterns.push({ method, pattern, handler });
+  }
+
+  /** Sends JSON (helper for route handlers). */
+  static json(
+    res: ServerResponse,
+    status: number,
+    body: unknown,
+    headers: Record<string, string> = {},
+  ): void {
+    res.writeHead(status, { 'content-type': 'application/json', ...headers });
+    res.end(JSON.stringify(body));
+  }
+
   private async handle(req: IncomingMessage, res: ServerResponse): Promise<void> {
     const chunks: Buffer[] = [];
     for await (const chunk of req) chunks.push(chunk as Buffer);
     const raw = Buffer.concat(chunks).toString('utf8');
-    const path = (req.url ?? '/').split('?')[0] ?? '/';
+    const [path = '/', search = ''] = (req.url ?? '/').split('?');
     const fake: FakeRequest = {
       method: req.method ?? 'GET',
       path,
       headers: req.headers,
       body: raw ? (JSON.parse(raw) as unknown) : undefined,
+      query: new URLSearchParams(search),
+      params: [],
     };
     this.requests.push(fake);
     const json = (status: number, body: unknown, headers: Record<string, string> = {}) => {
@@ -118,7 +141,17 @@ export class FakeGithub {
       }
       return json(200, { id: 1, slug: 'reviewgraph', permissions: this.appPermissions });
     }
-    const custom = this.routes.get(`${fake.method} ${path}`);
+    let custom = this.routes.get(`${fake.method} ${path}`);
+    if (!custom) {
+      for (const p of this.patterns) {
+        const m = p.method === fake.method ? p.pattern.exec(path) : null;
+        if (m) {
+          fake.params = m.slice(1);
+          custom = p.handler;
+          break;
+        }
+      }
+    }
     if (custom) {
       const token = /^token (\S+)$/.exec(req.headers.authorization ?? '')?.[1];
       if (!token || this.revoked.has(token)) return json(401, { message: 'Bad credentials' });
