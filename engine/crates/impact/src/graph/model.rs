@@ -450,6 +450,46 @@ impl ImpactGraph {
         nodes
     }
 
+    /// The human-readable line for the review summary (GH-008), e.g.
+    /// `Impact truncated for 3 of 41 symbols (callers ×2, tests ×1); 12 low-confidence
+    /// relations omitted.`
+    pub fn summary_line(&self) -> String {
+        let total = self.stats.seeds;
+        let noun = if total == 1 { "symbol" } else { "symbols" };
+        let mut truncated_seeds: Vec<SymbolKey> =
+            self.stats.truncations.iter().map(|t| t.seed).collect();
+        truncated_seeds.sort();
+        truncated_seeds.dedup();
+        let mut by_relation: BTreeMap<Option<Relation>, u32> = BTreeMap::new();
+        for entry in &self.stats.truncations {
+            *by_relation.entry(entry.truncation.relation).or_insert(0) += 1;
+        }
+        let mut line = if truncated_seeds.is_empty() {
+            format!("Impact complete for {total} {noun}")
+        } else {
+            let parts: Vec<String> = by_relation
+                .iter()
+                .map(|(relation, count)| {
+                    let label = relation.map_or("missing from graph", Relation::label);
+                    format!("{label} ×{count}")
+                })
+                .collect();
+            format!(
+                "Impact truncated for {} of {total} {noun} ({})",
+                truncated_seeds.len(),
+                parts.join(", ")
+            )
+        };
+        if self.stats.weak_elements > 0 {
+            line.push_str(&format!(
+                "; {} low-confidence relations omitted",
+                self.stats.weak_elements
+            ));
+        }
+        line.push('.');
+        line
+    }
+
     /// The graph's JSON Schema, published with the contracts.
     pub fn json_schema() -> schemars::schema::RootSchema {
         schemars::schema_for!(ImpactGraph)

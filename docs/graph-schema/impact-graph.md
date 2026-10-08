@@ -96,3 +96,35 @@ combined as `score = 1 − Π(1 − signal)` and rounded to four decimals:
 | `max_total_elements_per_symbol` | 200 |
 | `max_total_elements_pr` | 5,000 |
 | `min_confidence` | 0.5 |
+
+### Resolution (IMP-007)
+
+`impact::graph::resolve_budget(config, risk_level, run_budget)` computes the effective budget
+once per run:
+
+* `effective = clamp(base × multiplier, min = base / 2, max = run budget)`, where `base` is the
+  configured value or the default and the multiplier is `low 0.5`, `medium 1.0`, `high 1.5`,
+  `critical 2.0`. Without a run budget the hard maxima apply: callers 200, other relations
+  1,000, total per PR 20,000.
+* Caller depth: `1` (low), `2` (medium, high), `3` (critical — still only when half the PR budget
+  remains after every seed's depth-2 pass).
+* Invalid configuration (a zero cap, a cap above its hard maximum, a confidence outside `0..=1`)
+  falls back to the defaults with a `config_invalid` warning; a build is never unbounded.
+* The effective budget is part of `input_hash`.
+
+Configuration keys (schema owned by POL-001, `.review/config.yaml`):
+
+```yaml
+review:
+  budgets:
+    impact:
+      max_callers: 50
+      max_callees: 30
+      max_tests: 20
+      max_endpoints: 10
+      max_total_elements_pr: 5000
+      min_confidence: 0.5
+```
+
+`ImpactGraph::summary_line()` renders the truncation report for the review summary, e.g.
+`Impact truncated for 3 of 41 symbols (callers ×2, tests ×1); 12 low-confidence relations omitted.`

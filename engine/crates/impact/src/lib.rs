@@ -8,6 +8,7 @@ pub mod error;
 pub mod graph;
 pub mod input;
 mod metrics;
+pub mod risk;
 
 pub use error::{Error, Result};
 pub use graph::{

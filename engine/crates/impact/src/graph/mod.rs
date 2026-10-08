@@ -15,7 +15,9 @@ pub mod resources;
 pub mod tests_map;
 pub mod types;
 
-pub use budget::ImpactBudget;
+pub use budget::{
+    resolve_budget, BudgetWarning, ImpactBudget, ImpactBudgetConfig, ResolvedBudget, RunBudget,
+};
 pub use builder::{build_impact, ImpactInputs};
 pub use model::{
     compute_input_hash, sort_elements, EndpointAttrs, EntryKind, GraphSide, ImpactElement,
