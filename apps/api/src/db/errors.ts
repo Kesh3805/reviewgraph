@@ -1,5 +1,7 @@
 /** Postgres `query_canceled`, raised when `statement_timeout` fires. */
 const QUERY_CANCELED = '57014';
+/** Postgres `lock_not_available`, raised when `lock_timeout` fires (SUP-003). */
+export const LOCK_NOT_AVAILABLE = '55P03';
 const CONNECTION_ERRORS = new Set(['ECONNREFUSED', 'ECONNRESET', 'ETIMEDOUT', 'ENOTFOUND']);
 
 export const DB_RETRY_AFTER_SECONDS = 1;
@@ -11,7 +13,7 @@ export const DB_RETRY_AFTER_SECONDS = 1;
 export function isDbUnavailable(err: unknown): boolean {
   if (!(err instanceof Error)) return false;
   const code = (err as { code?: unknown }).code;
-  if (code === QUERY_CANCELED) return true;
+  if (code === QUERY_CANCELED || code === LOCK_NOT_AVAILABLE) return true;
   if (typeof code === 'string' && CONNECTION_ERRORS.has(code)) return true;
   // pg-pool's acquire timeout carries no code.
   if (err.message === 'timeout exceeded when trying to connect') return true;
