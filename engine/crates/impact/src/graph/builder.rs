@@ -30,6 +30,7 @@ use super::model::{
     SeedTruncation, SymbolImpact, TruncReason, Truncation, IMPACT_SCHEMA_VERSION,
 };
 use super::path::{Candidate, ElementSet, Extras, Offer, Trail};
+use super::resources;
 use super::tests_map::{self, TestIndex};
 use super::types;
 
@@ -325,6 +326,7 @@ fn expand_seed(cx: &Cx<'_>, index: usize, symbol: &SymbolInput, cap: u32) -> Exp
     types::expand_types(cx, &mut state);
     state.endpoint_visits = entrypoints::expand_endpoints(cx, &mut state);
     state.untested = tests_map::expand_tests(cx, cx.tests, &mut state);
+    resources::expand_resources(cx, &mut state);
 
     Expanded {
         input: index,
@@ -516,7 +518,7 @@ pub fn build_impact(inputs: &ImpactInputs<'_>) -> ImpactGraph {
 
     let flags = ImpactFlags {
         test_mapping_degraded: test_index.degraded(),
-        resource_facts_available: false,
+        resource_facts_available: resources::facts_available(inputs.head),
         base_graph_missing: inputs.base.is_none(),
     };
     let test_targets = tests_map::changed_test_targets(change, inputs.head, &test_index);

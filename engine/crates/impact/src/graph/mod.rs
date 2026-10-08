@@ -11,6 +11,7 @@ pub mod calls;
 pub mod entrypoints;
 pub mod model;
 pub mod path;
+pub mod resources;
 pub mod tests_map;
 pub mod types;
 
