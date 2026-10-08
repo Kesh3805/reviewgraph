@@ -46,6 +46,11 @@ export interface DeliveryStore {
     delivery: DeliveryRecord,
     work: (ctx: DeliveryContext) => Promise<DeliveryWorkResult<A>>,
   ): Promise<DeliveryOutcome<A>>;
+  /**
+   * The body hash recorded for a delivery id, or null when it was never recorded (SEC-006 uses
+   * it to tell a same-body redelivery from a replay with a substituted body).
+   */
+  payloadHashOf?(deliveryId: string): Promise<string | null>;
 }
 export const DELIVERY_STORE = Symbol('DELIVERY_STORE');
 

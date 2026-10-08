@@ -76,6 +76,14 @@ export class PgDeliveryStore implements DeliveryStore {
     return { duplicate: false, ack: result.ack };
   }
 
+  async payloadHashOf(deliveryId: string): Promise<string | null> {
+    const { rows } = await this.dbs.withTx(null, (trx) =>
+      sql<{ hash: string | null }>`
+        select rg_webhook_delivery_hash(${DELIVERY_PROVIDER}, ${deliveryId}) as hash`.execute(trx),
+    );
+    return rows[0]?.hash ?? null;
+  }
+
   private duplicate(): { duplicate: true } {
     incCounter('webhook_duplicates_total');
     trace.getActiveSpan()?.setAttribute('duplicate', true);

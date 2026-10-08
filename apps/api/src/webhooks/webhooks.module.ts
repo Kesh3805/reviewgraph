@@ -9,6 +9,7 @@ import { ReviewOrchestrationModule } from '../reviews/orchestration.module';
 import { ReviewOrchestrator } from '../reviews/review-orchestrator';
 import { PgDeliveryStore } from './delivery-store';
 import { GithubWebhookController } from './github-webhook.controller';
+import { ReplayGuard } from './replay-guard';
 import {
   DELIVERY_STORE,
   COMMAND_ACKNOWLEDGER,
@@ -23,6 +24,7 @@ import {
   providers: [
     // GH-012: feeds the same sink as the webhook endpoint, so it lives next to it.
     GithubReconciler,
+    ReplayGuard,
     { provide: DELIVERY_STORE, useClass: PgDeliveryStore },
     { provide: EVENT_NORMALIZER, useExisting: GithubEventNormalizer },
     { provide: COMMAND_ACKNOWLEDGER, useExisting: GithubCommandAcknowledger },
