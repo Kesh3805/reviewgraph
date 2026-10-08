@@ -133,7 +133,11 @@ impl GraphCache {
 
     /// The materialized graph of `id`, loading it at most once however many callers miss at the
     /// same time. A graph cached for another scope is `NotFound`, never returned.
-    pub async fn get(&self, scope: &RepoScope, id: SnapshotId) -> Result<Arc<Graph>, Arc<StoreError>> {
+    pub async fn get(
+        &self,
+        scope: &RepoScope,
+        id: SnapshotId,
+    ) -> Result<Arc<Graph>, Arc<StoreError>> {
         if let Some(cached) = self.inner.get(&id).await {
             if cached.scope != *scope {
                 return Err(Arc::new(StoreError::NotFound(id)));
@@ -152,10 +156,7 @@ impl GraphCache {
                 graph: Arc::new(graph),
             })
         };
-        let loaded = self
-            .inner
-            .try_get_with(id, load.instrument(span))
-            .await?;
+        let loaded = self.inner.try_get_with(id, load.instrument(span)).await?;
         if loaded.scope != *scope {
             return Err(Arc::new(StoreError::NotFound(id)));
         }
