@@ -1,0 +1,1 @@
+Qualified-name fixtures for SID-002
