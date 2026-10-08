@@ -30,11 +30,11 @@
       "min_similarity": 1.0
     },
     {
-      "from": "ts:src/util/strings#DEFAULT_LOCALE/constant",
-      "to": "ts:src/common/strings#DEFAULT_LOCALE/constant",
+      "from": "ts:src/util/strings#SUPPORTED_LOCALES/constant",
+      "to": "ts:src/common/strings#SUPPORTED_LOCALES/constant",
       "transition": "moved",
-      "rule": "signature_and_name",
-      "min_similarity": 0.8
+      "rule": "exact_body",
+      "min_similarity": 1.0
     }
   ],
   "unmatched_added": [],

@@ -1,4 +1,4 @@
-export const DEFAULT_LOCALE = 'en-US';
+export const SUPPORTED_LOCALES = ['en-US', 'de-DE', 'fr-FR', 'es-ES'];
 
 export function capitalize(value: string): string {
   if (value.length === 0) {
@@ -16,6 +16,6 @@ export function slugify(value: string): string {
 }
 
 export function formatMoney(amount: number, currency: string): string {
-  const formatter = new Intl.NumberFormat(DEFAULT_LOCALE, { style: 'currency', currency });
+  const formatter = new Intl.NumberFormat(SUPPORTED_LOCALES[0], { style: 'currency', currency });
   return formatter.format(amount);
 }

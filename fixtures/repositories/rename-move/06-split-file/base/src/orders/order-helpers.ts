@@ -7,7 +7,8 @@ export function applyTax(amount: number, ratePercent: number): number {
 }
 
 export function orderLabel(orderId: string, createdAt: Date): string {
-  return `${orderId.toUpperCase()} (${createdAt.toISOString().slice(0, 10)})`;
+  const day = createdAt.toISOString().slice(0, 10);
+  return `${orderId.toUpperCase()} (${day})`;
 }
 
 export function lineSummary(sku: string, quantity: number): string {
