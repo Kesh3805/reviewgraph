@@ -837,9 +837,12 @@ fn is_validation(callee: &Callee) -> bool {
 }
 
 fn is_transaction(callee: &Callee) -> bool {
-    match callee.name.as_str() {
-        "transaction" | "runInTransaction" => true,
-        "startTransaction" | "commitTransaction" | "rollbackTransaction" => true,
-        _ => false,
-    }
+    matches!(
+        callee.name.as_str(),
+        "transaction"
+            | "runInTransaction"
+            | "startTransaction"
+            | "commitTransaction"
+            | "rollbackTransaction"
+    )
 }
