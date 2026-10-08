@@ -10,6 +10,8 @@ export interface Problem {
   detail?: string;
   instance?: string;
   request_id?: string;
+  /** RFC 9457 extension members, for example `job_id` on a 409 from initialize. */
+  [extension: string]: unknown;
 }
 
 /** Any non-2xx API response, with the problem+json fields mapped onto the error. */

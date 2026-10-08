@@ -9,9 +9,10 @@
     "lint": "eslint .",
     "typecheck": "next typegen && tsc --noEmit",
     "test": "vitest run",
-    "gen:api": "openapi-typescript ../../packages/contracts/openapi/api.json -o lib/api/schema.d.ts"
+    "gen:api": "openapi-typescript ../../packages/contracts/openapi/api.json -o lib/api/generated.ts && prettier --write lib/api/generated.ts"
   },
   "dependencies": {
+    "@hookform/resolvers": "^5.9.1",
     "@opentelemetry/api": "1.9.1",
     "@opentelemetry/api-logs": "0.222.0",
     "@opentelemetry/instrumentation": "^0.222.0",
@@ -30,7 +31,9 @@
     "openapi-fetch": "^0.17.0",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
-    "tailwind-merge": "^3.7.0"
+    "react-hook-form": "^7.89.0",
+    "tailwind-merge": "^3.7.0",
+    "zod": "^4.6.5"
   },
   "devDependencies": {
     "@next/eslint-plugin-next": "^15.5.27",

@@ -181,7 +181,8 @@ Status: ☑
 ---
 
 ### WEB-003 — Repositories list and Repository Overview
-Status: ☐
+Status: ◐
+> **Implementation note:** The web client now uses the generated OpenAPI types (`lib/api/generated.ts`, `gen:api` writes it and runs prettier); routes that are not in the document yet are hand-typed in `lib/api/pending.ts`, merged in `lib/api/schema.ts`, and every call lives in `lib/api/endpoints.ts`. The generated document renders top-level nullable strings as `string[]` (`primary_language`, `initialized_at`, `next_cursor`, `profile_computed_at`), so `pending.ts` restates those DTO fields until the API fixes its OpenAPI output. No task specifies the "Add repository" source, so the dialog calls an assumed `GET /installations/repositories?organization_id=` (installation repositories flagged `enabled`). The last-index column comes from the real `GET /repositories/:id/status` per row; last review and open PRs come from an assumed `GET /organizations/:id/repository-activity` (API-009) and show a dash until it exists. Recent reviews use the API-009 pull-request list and top risk areas an assumed `GET /repositories/:id/risk-areas`. The settings form uses react-hook-form with a zod schema that mirrors `UpdateRepositorySettingsSchema` from the API DTO (the contracts package has no settings schema). The session type was aligned with the real `GET /auth/me` (`display_name`, `slug`, roles owner/admin/member/viewer; `member` is the maintainer role). Tests are Vitest + Testing Library + MSW; the Playwright compose flow is deferred with WEB-001's Playwright setup.
 
 - **Task ID:** WEB-003
 - **Title:** Repositories list + Repository Overview
