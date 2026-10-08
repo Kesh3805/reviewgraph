@@ -30,7 +30,7 @@ uuid.workspace = true
 ignore.workspace = true
 globset.workspace = true
 rayon.workspace = true
-gix = { workspace = true, features = ["max-performance-safe", "status", "revision", "excludes", "attributes", "sha1", "dirwalk"] }
+gix = { workspace = true, features = ["max-performance-safe", "status", "revision", "excludes", "attributes", "sha1", "dirwalk", "blob-diff"] }
 
 [features]
 # Exposes the store conformance suite to adapter crates.

@@ -3,6 +3,13 @@
 //! Read-only. No subprocess is ever spawned and user/system git configuration is ignored, so the
 //! result is identical on the CLI host and on a worker.
 
+pub mod tree_changes;
+
+pub use tree_changes::{
+    diff_trees, tree_changes, RawKind, RawTreeChange, TreeDiffError, TreeDiffOptions,
+    TreeDiffResult, TreeDiffStats,
+};
+
 use std::collections::BTreeSet;
 use std::path::{Path, PathBuf};
 

@@ -156,7 +156,7 @@ Expected facts (assertions reused across tasks):
 ---
 
 ### DIFF-001 — Git object access (gix): resolve SHAs, merge base, read blobs at commit, bare mirror support
-Status: ☐
+Status: ☑
 
 - **Task ID:** DIFF-001
 - **Title:** `repository::git::GitRepo` — a config-isolated, read-only gix wrapper for commit resolution, merge base, tree/blob reads and bare mirrors.
@@ -205,7 +205,7 @@ Status: ☐
 ---
 
 ### DIFF-002 — Tree diff → ChangedFile {added/modified/deleted/renamed/copied, old_path} with rename threshold
-Status: ☐
+Status: ☑
 
 - **Task ID:** DIFF-002
 - **Title:** `diff_engine::files::diff_commits` — three-dot (`merge_base..head`) file-level diff producing `ChangedFile`s with correct status, `old_path`, similarity and ordering, on top of INC-001's tree-diff primitive.
@@ -249,6 +249,8 @@ Status: ☐
 - **Benchmarks if applicable:** `diff_commits/1_file_in_100k_tree` < 50 ms warm; `diff_commits/rename_1000_candidates` recorded.
 - **Acceptance criteria:** Fixture outputs equal git's `--name-status` for all statuses; golden `auth-bypass` lists exactly `src/auth/auth.service.ts` and `src/util/format.ts` as `Modified`.
 - **Definition of done:** Global DoD; `DiffModel` documented.
+
+> **Implementation note:** INC-001's tree-diff primitive was implemented as part of this task in `repository/src/git/tree_changes.rs` (plus the `blob-diff` gix feature and a `pub mod tree_changes;` line) so INC-001 only has to build `detect_changes` on top of it; public entry points are `diff_trees(old_tree, new_tree, opts)` and `tree_changes(base_commit, head_commit, opts)`. All 13 required tests pass (`tests/files.rs`, 14 with the extra `max_files_truncates_and_flags`); the golden `auth-bypass` fixture lives in `fixtures/diff/auth-bypass/{base/,head/,expected/name-status.txt}` with `expected/` generated once by host git 2.49 (`git diff -M50% HEAD~1 HEAD --name-status`). Deviations: `RawTreeChange.old_mode/new_mode` are `Option<EntryMode>` (gix's `EntryMode` cannot represent an absent side); `TreeDiffOptions` adds `copy_similarity` (0.9); `DiffOptions` adds `max_files` (cap 20,000 → `stats.truncated`, never fails). gix quirk: copy detection pairs an addition against the source modification's *post*-image (git `-C` uses the pre-image), so copy results on edge cases differ from `git -C`; additionally gix suppresses a matched copy source's own `Modified` event, which this task re-emits from the old tree for git parity.
 
 ---
 
