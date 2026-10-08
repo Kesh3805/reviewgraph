@@ -35,7 +35,7 @@ export function OrgSwitcher({
       >
         {organizations.map((org) => (
           <option key={org.id} value={org.id}>
-            {org.name}
+            {org.display_name}
           </option>
         ))}
       </select>

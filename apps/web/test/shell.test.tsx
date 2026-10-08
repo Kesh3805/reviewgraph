@@ -14,8 +14,8 @@ vi.mock('next/navigation', () => ({
 }));
 
 const orgs: SessionOrganization[] = [
-  { id: 'o1', name: 'Acme', role: 'owner' },
-  { id: 'o2', name: 'Globex', role: 'member' },
+  { id: 'o1', slug: 'acme', display_name: 'Acme', role: 'owner' },
+  { id: 'o2', slug: 'globex', display_name: 'Globex', role: 'member' },
 ];
 
 afterEach(() => {
