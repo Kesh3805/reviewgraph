@@ -202,14 +202,15 @@ pub struct SchemaErrorSummary {
 }
 
 /// A repair turn appended by the gateway after an invalid structured output (GW-009).
-///
-/// Only `previous_output` and `errors` enter the request hash; `tool_use_id` is provider wire
-/// detail (Anthropic needs it to answer the original `tool_use` block).
+// Only `previous_output` and `errors` enter the request hash; `tool_use_id` is provider wire
+// detail (Anthropic needs it to answer the original `tool_use` block), so it is not part of the
+// exported contract either.
 #[derive(Debug, Clone, Serialize, JsonSchema)]
 pub struct RepairTurn {
     pub previous_output: serde_json::Value,
     pub errors: Vec<SchemaErrorSummary>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(skip)]
+    #[schemars(skip)]
     pub tool_use_id: Option<String>,
 }
 
