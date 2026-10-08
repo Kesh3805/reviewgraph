@@ -1944,7 +1944,9 @@ Status: ☐
 
 ### TSA-007 — Normalized body_hash / signature_hash
 
-Status: ☐
+Status: ◐
+
+> **Implementation note:** The language-neutral primitives (`analysis_ir::hashing`: framed BLAKE3 token hasher, 128-bit truncation, shingle sketch) and the TypeScript pass (`lang_typescript::tokens` lexer plus `lang_typescript::hashing::assign_hashes`, containers folding each member into one placeholder) are in place and `tests/hashing_pass.rs` passes in CI. Still missing: calling the pass from the analyzer itself (today the differ and matcher tests call it explicitly), the normalization section of `docs/languages/typescript.md`, the golden hash vectors, the `hashes` test target and the reformat-every-`ts-basic`-file check.
 
 - **Task ID:** TSA-007
 - **Title:** Normalized `body_hash` / `signature_hash` / `attr_hash` (token stream excluding comments and whitespace, blake3) and token-shingle sketch
@@ -2400,7 +2402,7 @@ Status: ☐
 
 ### SID-001 — SymbolId canonical form, SymbolKey, parse/format round-trip
 
-Status: ☐
+Status: ☑
 
 - **Task ID:** SID-001
 - **Title:** `SymbolId` canonical form `{lang}:{module_path}#{qualified_name}/{kind}[~{n}]`, `SymbolKey` (blake3, 128-bit hex), parse/format round-trip with escaping (ADR-005)
@@ -2443,7 +2445,9 @@ Status: ☐
 
 ### SID-002 — Qualified-name rules for TypeScript
 
-Status: ☐
+Status: ◐
+
+> **Implementation note:** `tests/naming.rs` passes in CI (table-driven `naming::qualify` cases plus the analyzer cases on `fixtures/repositories/ts-basic/steps/002-naming`). Still missing: the test that parses the rule table in `docs/languages/typescript.md` and asserts one fixture example per row.
 
 - **Task ID:** SID-002
 - **Title:** Qualified-name rules for TS: nested classes, namespaces, object-literal methods, const arrows, default exports, anonymous functions → enclosing + ordinal, getters/setters, static members
@@ -2505,7 +2509,7 @@ Status: ☐
 
 ### SID-003 — Overload and duplicate ordinal determinism
 
-Status: ☐
+Status: ☑
 
 - **Task ID:** SID-003
 - **Title:** Overload/duplicate ordinal assignment: deterministic `~n` suffix for same-(qualified name, kind) collisions within a file
@@ -2546,7 +2550,9 @@ Status: ☐
 
 ### SID-004 — Per-file symbol diff
 
-Status: ☐
+Status: ◐
+
+> **Implementation note:** `diff_units` keys both sides by `SymbolId` and never looks at ordinals beyond what the id carries, exactly as specified below, so a *shifted* ordinal is not observable through it: when a duplicate is inserted before an existing symbol, the inserted declaration takes the plain id and the original moves to `~1`, so the diff reports `Modified{signature, body}` for the plain id (a different declaration now occupies it) and `Added` for `~1`, with nothing removed. The pairing that repairs this is the matcher's (SID-005 `shifted_ordinal_pairing`), which therefore has to be handed both sides of the shifted pair explicitly. `fixtures/repositories/diff-basic` and `expected.json` do not exist yet, so the second acceptance criterion was not executed.
 
 - **Task ID:** SID-004
 - **Title:** Per-file symbol diff: `unchanged` / `modified{signature, body, attributes}` / `added` / `removed` keyed by `SymbolId`
@@ -2592,7 +2598,9 @@ Status: ☐
 
 ### SID-005 — Rename/move matcher and symbol_lineage records
 
-Status: ☐
+Status: ◐
+
+> **Implementation note:** The rule ladder, the thresholds and `engine/crates/incremental/tests/matcher.rs` are green (`pnpm cargo test -p incremental`, `pnpm cargo test -p review-core`, `pnpm lint:rust`), but two acceptance criteria remain open: `tests/rename_move.rs` (SID-006) does not exist yet, and the reference-repository replay needs `RG_REFERENCE_REPO_PATH`, so lineage miss/false-match rates were not measured. Four points where the spec above was ambiguous or silent were resolved conservatively, and are now written into the rule text below: a container is matched by rule 1 on body-hash equality with no token minimum, because TSA-007 folds its members into one placeholder each and the folded stream is therefore always far below `min_tokens_exact` (SID-006 scenario 02 requires `ExactBody` on the container hash, which the leaf minimum made unreachable); the ambiguity policy is symmetric, so a removed symbol with several equally plausible successors is left unmatched too, it applies to the best candidates only (the previous reading, "any tied candidate", suppressed every match in `benches/matcher.rs` 5,000 x 5,000 because each symbol has ~20 candidates sharing a weaker tie key), and the `ambiguous` notes are built from the full candidate set before the tied symbols are filtered out, otherwise the note would always be empty; the runner-up that sets `LineageRecord.ambiguous` is the best alternative of the paired *removed* symbol, so a lone candidate is never compared against itself; and the file-rename hint is recorded on the candidate but is not part of the sort key, so it can never decide a pairing — the conservative reading of "never creates a match by itself". `LineageRecord.ambiguous` and `AmbiguityNote.key` now refer to the symbol on either side of the tie, which is slightly wider than the field comments in `review-core/src/lineage.rs`. `benches/matcher.rs` also asserts that 50,000 x 50,000 pools are degraded, which contradicts the "> 50k" threshold stated above; that assertion lives outside this lane and is left untouched.
 
 - **Task ID:** SID-005
 - **Title:** Rename/move matcher in `incremental::matcher` (body_hash → signature+name → token Jaccard ≥ 0.8) producing `symbol_lineage` records
@@ -2609,10 +2617,10 @@ Status: ☐
 - **Implementation details:**
   - Types: `MatcherConfig { min_tokens_exact: u32 = 6, min_tokens_fuzzy: u32 = 12, jaccard_min: f32 = 0.8, max_candidates: usize = 64 }`; `MatchRule { ExactBody, SignatureAndName, TokenSimilarity }`; `SymbolTransition { Renamed, Moved, RenamedAndMoved }` (derived from comparing name/qualified name and module path); `LineageRecord { from: SymbolKey, to: SymbolKey, from_id: SymbolId, to_id: SymbolId, transition, rule, similarity: f32, ambiguous: bool }`; `MatchResult { matches: Vec<LineageRecord>, unmatched_added: Vec<SymbolKey>, unmatched_removed: Vec<SymbolKey>, ambiguous: Vec<AmbiguityNote> }`.
   - Candidate pairs exist only for the **same `SymbolKind`** and, for members, after their parents are decided. Process kinds in the order Class/Interface/Enum/Namespace → Function/Constant/Variable/TypeAlias → Method/Getter/Setter/Property/Constructor/EnumMember. Once a container pair is matched, member candidates are restricted to children of the matched removed parent and the matched added parent (this stops copy-pasted small methods from cross-matching between unrelated classes). Members of an *unmatched* container are matched globally but only by rule 1 with `body_token_count ≥ min_tokens_exact`.
-  - Rule 1 `ExactBody`: identical `body_hash` and `body_token_count ≥ min_tokens_exact`; similarity 1.0. Rule 2 `SignatureAndName`: identical `signature_hash` **and** same simple name, module path differs (a pure move); similarity = max(jaccard(body), 0.8). Rule 3 `TokenSimilarity`: `jaccard(body_shingles) ≥ 0.8` and `body_token_count ≥ min_tokens_fuzzy`; similarity = the Jaccard value.
+  - Rule 1 `ExactBody`: identical `body_hash` and `body_token_count ≥ min_tokens_exact`; similarity 1.0. A **container** is matched by rule 1 alone and is exempt from the token minimum: its `body_hash` folds every member into one placeholder (TSA-007), so its token count is two plus the member count and would otherwise never reach `min_tokens_exact`, which would make a renamed class unmatchable; the folded stream is still specific, because each placeholder carries the member's kind and name. Rule 2 `SignatureAndName`: identical `signature_hash` **and** same simple name, module path differs (a pure move); similarity = max(jaccard(body), 0.8). Rule 3 `TokenSimilarity`: `jaccard(body_shingles) ≥ 0.8` and `body_token_count ≥ min_tokens_fuzzy`; similarity = the Jaccard value.
   - Assignment per rule (rules applied in order, each over what remains): build candidate edges, sort by `(similarity desc, same_parent_match desc, same_name desc, same_dir_distance asc, from_id asc, to_id asc)`, then greedily take the best edge whose endpoints are both free (a stable greedy 1:1 assignment; no Hungarian needed at this scale). Complexity is bounded by indexing candidates through `body_hash` and a shingle-bucket LSH (first 4 min-hashes) so work is O(n log n + candidates), capped by `max_candidates` per symbol.
-  - Ambiguity policy: if a symbol has several equally best candidates after all tie-breakers (same similarity, same name, same directory distance) it stays unmatched and is reported in `ambiguous` (a wrong pairing is worse than none); `LineageRecord.ambiguous` is true when the winner beat another candidate by < 0.02 similarity.
-  - Transition classification: name or qualified name differs → `Renamed`; only module path differs → `Moved`; both → `RenamedAndMoved`. A DIFF-supplied file-rename hint (`old_path → new_path`) raises the sort priority of candidates in the renamed file but never creates a match by itself.
+  - Ambiguity policy: if a symbol has several equally best candidates after all tie-breakers (same similarity, same parent match, same name, same directory distance) it stays unmatched and is reported in `ambiguous` (a wrong pairing is worse than none). The check is symmetric, so it covers an added symbol with several equally plausible predecessors *and* a removed symbol with several equally plausible successors; the `from_id`/`to_id` tie-breakers above are for determinism only and must never decide a pairing nothing else distinguishes. Only the *best* candidates count: a symbol whose best candidate is unique is paired with it however many weaker candidates it has, so a duplicated `body_hash` among unrelated symbols is broken by the name or directory tie-breaker rather than suppressing the match. The notes are computed from the full candidate set, before the tied symbols are dropped, because the candidates that made a symbol ambiguous are exactly the ones that get dropped. `LineageRecord.ambiguous` is true when the winner beat another candidate for the same removed symbol by < 0.02 similarity.
+  - Transition classification: name or qualified name differs → `Renamed`; only module path differs → `Moved`; both → `RenamedAndMoved`. A DIFF-supplied file-rename hint (`old_path → new_path`) is recorded on the candidate of a pair in the renamed file but is deliberately **not** one of the sort keys, so it can order nothing and can never create a match by itself.
   - Splits and merges are expressed as independent 1:1 symbol matches (a file split moves each symbol to a different file; no file-level lineage exists). Many-to-one (two removed functions merged into one added) is not matched (documented).
   - `follow(lineage: &LineageIndex, key) -> SymbolKey` walks chained records across snapshots with a cycle/length guard (≤ 32 hops).
 - **Data model changes:** Produces rows for `symbol_lineage(repository_id, from_snapshot_id, to_snapshot_id, from_key, to_key, transition, similarity)` (table owned by GS); extra `rule`/`ambiguous` stored in a `detail jsonb` column added by that migration.
@@ -2624,6 +2632,7 @@ Status: ☐
 - **Observability additions:** `symbols_renamed_total` (ADR-004 counter), `symbols_moved_total`, `matcher_matches_total{rule}`, `matcher_ambiguous_total`, `matcher_degraded_total`, `matcher_duration_seconds`.
 - **Tests required** (`tests/matcher.rs`):
   - `exact_body_rename_method`, `exact_body_move_function_to_other_file`, `signature_and_name_move_with_body_edit`, `token_similarity_rename_with_small_edit`, `below_threshold_not_matched`, `kind_mismatch_never_matches`, `tiny_bodies_not_matched_by_exact_rule`, `container_first_restricts_member_candidates`, `renamed_class_members_follow_via_body_hash`, `ambiguous_identical_candidates_left_unmatched`, `tie_breakers_prefer_same_name_then_directory`, `rule_order_exact_before_fuzzy`, `file_rename_hint_only_prioritizes`, `input_order_independence_proptest`, `greedy_assignment_is_one_to_one`, `transition_classification`, `degraded_mode_rule1_only`, `follow_chain_with_cycle_guard`, `shifted_ordinal_pairing` (SID-003 limitation).
+  - Two of these cannot be built end to end from `pools()` alone, and say so in a comment. `shifted_ordinal_pairing` hands the matcher the pre-shift and post-shift symbol directly, because an id-keyed diff cannot express the shift (see the SID-004 note above). `token_similarity_rename_with_small_edit` renames the *class* and edits the *method body* rather than renaming the method, because a member rename also changes the container's folded hash, which would leave the container unmatched and forbid the member from using a fuzzy rule at all.
 - **Benchmarks if applicable:** `benches/matcher.rs`: 5,000 removed × 5,000 added with 10% true renames; target < 150 ms, and 50k × 50k < 3 s.
 - **Acceptance criteria:** `engine/scripts/cargo.sh test -p incremental --test matcher` passes; SID-006 suite passes; on the replayed history of the reference NestJS repository (IDX-006, `#[ignore]`) lineage miss rate on a hand-labelled sample is ≤ 5% and false-match rate ≤ 1%, results written to `target/lineage-quality.json`.
 - **Definition of done:** Tests green; rules and thresholds documented in `docs/architecture/incremental.md`; thresholds exposed in `MatcherConfig` and covered by the calibration report; global DoD met.
@@ -2635,6 +2644,8 @@ Status: ☐
 ### SID-006 — Rename/move test suite on fixtures/repositories/rename-move
 
 Status: ☐
+
+> **Implementation note:** Not started: `fixtures/repositories/rename-move` and `tests/rename_move.rs` do not exist. One scenario needs a decision before it can be built, because it contradicts the SID-005 rule above. `05-rename-plus-small-edit` expects a *method* that was renamed and edited to pair by `TokenSimilarity`, but a member may only use a fuzzy rule inside a container that paired first: renaming a method changes its container's folded `body_hash`, and in the scenario the class itself is unchanged, so it never reaches the matcher pool at all and the container counts as unmatched. Under the documented rules the conservative answer is `added + removed`, which is the same answer `05b` already expects. Either the scenario moves the rename onto the container (a renamed class with an edited method pairs `TokenSimilarity` inside the matched class) or SID-005 has to grant fuzzy rules to members of a container that was not in the pool at all, which is the less conservative of the two and would re-admit the copy-pasted-method cross-matching the container-first ordering exists to prevent. The SID-005 implementation follows the spec text, so the scenario needs the rename moved, not the rule relaxed.
 
 - **Task ID:** SID-006
 - **Title:** Rename/move acceptance suite on `fixtures/repositories/rename-move`: rename method, rename class, move file, move class across files, rename + small edit, split file (plus negative cases)
