@@ -17,7 +17,7 @@ import type {
 } from './dto/graph.dto';
 import { EngineClient, type EngineScope } from './engine.client';
 import { GRAPH_SCOPE, type GraphScope } from './graph-scope';
-import { redactExcerpt } from './redact';
+import { redactExcerpt } from '../common/redact';
 
 /** Snapshots are immutable, so a query result for one can be cached safely. */
 export const GRAPH_CACHE_TTL_SECONDS = 300;

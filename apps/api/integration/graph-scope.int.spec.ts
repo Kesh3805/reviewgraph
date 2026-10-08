@@ -20,7 +20,7 @@ describe('PgGraphScope (integration)', () => {
   );
   const scope = new PgGraphScope(
     new DbService(db, { DB_APP_ROLE: 'rg_api' } as AppConfig),
-    new AuditService(),
+    new AuditService(new DbService(db, { DB_APP_ROLE: 'rg_api' } as AppConfig)),
   );
   let org: SeededOrg;
   let other: SeededOrg;

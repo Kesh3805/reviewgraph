@@ -82,4 +82,10 @@ describe('OpenAPI document', () => {
     expect(has('/api/v1/reviews/{reviewId}/impact/{symbolKey}', 'get')).toBe(true);
     expect(has('/api/v1/repositories/{repoId}/source', 'get')).toBe(true);
   });
+
+  it('lists the audit read routes (SEC-008)', () => {
+    const paths = buildOpenApiDocument(app).paths;
+    expect(paths['/api/v1/organizations/{organizationId}/audit']?.get).toBeDefined();
+    expect(paths['/api/v1/organizations/{organizationId}/audit/verify']?.get).toBeDefined();
+  });
 });

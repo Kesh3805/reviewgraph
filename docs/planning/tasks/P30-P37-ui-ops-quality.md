@@ -1439,7 +1439,20 @@ Status: ☐
 ---
 
 ### SEC-008 — Audit log
-Status: ☐
+Status: ◐
+
+> **Implementation note (apps/api side):** `audit_log` already existed (API-008).
+> Migration `20261008100030_audit_chain.sql` adds the per-organization hash chain (`chain_seq`,
+> a BEFORE INSERT trigger owned by `rg_ops` under a per-organization advisory lock, hashing a
+> time-zone independent canonical payload), `dedupe_key` with a unique index, and
+> `rg_audit_verify(org)`. `AuditService` writes in the caller's transaction (fail closed),
+> redacts metadata (`src/common/redact.ts`), fills `trace_id`, supports `dedupeKey`, and offers
+> `recordStandalone` for denial events that must survive a rollback. The catalog is
+> `src/audit/audit.types.ts`, and the admin read and verify routes are
+> `GET /organizations/:id/audit` and `GET /organizations/:id/audit/verify`. Still open: the Rust
+> `audit` helper and the shared event enum in contracts, auditing login/logout, membership
+> changes, publication (GH-009), credential issuance (SEC-005) and replay rejections (SEC-006),
+> guard denials above a threshold, and `docs/security/audit-log.md`.
 
 - **Task ID:** SEC-008
 - **Title:** Append-only audit log for configuration changes, publication, feedback and security-relevant events

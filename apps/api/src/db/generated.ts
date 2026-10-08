@@ -29,6 +29,8 @@ export interface AuditLog {
   action: string;
   actor_id: string | null;
   actor_type: string;
+  chain_seq: Int8 | null;
+  dedupe_key: string | null;
   hash: Buffer | null;
   id: Generated<string>;
   metadata: Generated<Json>;

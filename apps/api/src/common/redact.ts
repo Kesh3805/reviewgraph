@@ -1,5 +1,6 @@
 /**
- * Defense-in-depth redaction of source excerpts served to the UI (API-011). The engine already
+ * Secret redaction for text that leaves the API: source excerpts served to the UI (API-011)
+ * and audit metadata (SEC-008). For excerpts the engine already
  * redacts (API-013 runs `telemetry::redact`); the proxy re-applies the same kind of rules so an
  * excerpt is never shown unredacted even if the engine side regresses. Structure is kept:
  * `API_KEY = "abc"` becomes `API_KEY="<redacted>"`.
@@ -47,4 +48,27 @@ export function redactExcerpt(text: string): { text: string; redactions: number 
     });
   }
   return { text: out, redactions };
+}
+
+/** Object keys whose string values are secrets (narrower than the assignment names). */
+const SENSITIVE_KEY =
+  /(secret|token|password|passwd|credential|api_?key|private_?key|authorization|cookie)/i;
+
+/**
+ * Redacts a JSON-like value: string leaves go through `redactExcerpt`, and the value of any key
+ * with a sensitive name (`token`, `client_secret`, ...) is replaced as a whole.
+ */
+export function redactValue(value: unknown, depth = 0): unknown {
+  if (depth > 20) return REDACTED;
+  if (typeof value === 'string') return redactExcerpt(value).text;
+  if (Array.isArray(value)) return value.map((v) => redactValue(v, depth + 1));
+  if (value && typeof value === 'object') {
+    return Object.fromEntries(
+      Object.entries(value).map(([k, v]) => [
+        k,
+        SENSITIVE_KEY.test(k) && typeof v === 'string' ? REDACTED : redactValue(v, depth + 1),
+      ]),
+    );
+  }
+  return value;
 }

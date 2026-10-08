@@ -5,7 +5,7 @@ import { requestIdMiddleware } from './common/request-id.middleware';
 import { RedisModule } from './common/redis.module';
 import { APP_PIPE } from '@nestjs/core';
 import { ZodValidationPipe } from 'nestjs-zod';
-import { AuditModule } from './audit/audit.service';
+import { AuditModule } from './audit/audit.module';
 import { DbModule } from './db/db.module';
 import { JobsModule } from './jobs/jobs.module';
 import { RepositoriesModule } from './repositories/repositories.module';

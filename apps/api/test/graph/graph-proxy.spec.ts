@@ -6,7 +6,7 @@ import request from 'supertest';
 import { SessionService } from '../../src/auth/session.service';
 import { counterTotal } from '../../src/common/metrics';
 import { GRAPH_SCOPE, type GraphScope } from '../../src/graph/graph-scope';
-import { redactExcerpt } from '../../src/graph/redact';
+import { redactExcerpt } from '../../src/common/redact';
 import { ServiceKeyRing, verifyServiceToken } from '../../src/internal/service-token';
 import { MembershipService } from '../../src/tenancy/membership.service';
 import { createTestApp } from '../helpers';
