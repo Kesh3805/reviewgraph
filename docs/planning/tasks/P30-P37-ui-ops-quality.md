@@ -464,7 +464,8 @@ Status: ☐
 ---
 
 ### WEB-009 — Feedback actions
-Status: ☐
+Status: ◐
+> **Implementation note:** Built against the API-012 contract, hand-typed in `apps/web/lib/api/pending.ts`. The response of `GET`/`POST /findings/:id/feedback` is assumed to be `{ mine: {verdict, comment, updated_at} | null, counts: Record<verdict, number> }`. `FeedbackMenu` applies the verdict optimistically (latest wins, counts adjusted), rolls back and shows a toast on error. When a suppression is refused with 403, the verdict is re-sent without it so it is saved, and the role message is shown. Finding cards open the menu on demand (`FeedbackToggle`) so a long list does not issue one feedback request per finding. A small toast provider was added to the app providers. `verdict_persisted_on_reload` (Playwright) is deferred with the rest of the Playwright suite. Remaining: generated types and the dashboard FP-rate acceptance check once API-012 lands.
 
 - **Task ID:** WEB-009
 - **Title:** Feedback actions

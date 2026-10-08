@@ -6,6 +6,8 @@
  */
 import { api } from '../api-client';
 import type {
+  FeedbackInput,
+  FindingFeedback,
   FindingDetail,
   FindingTrace,
   SourceExcerpt,
@@ -203,6 +205,33 @@ export async function getFindingTrace(findingId: string, opts: Signal = {}): Pro
     signal: opts.signal,
   });
   return required(data, 'finding trace');
+}
+
+// ---------------------------------------------------------------------------------------------
+// Feedback (API-012, pending)
+// ---------------------------------------------------------------------------------------------
+
+export async function getFindingFeedback(
+  findingId: string,
+  opts: Signal = {},
+): Promise<FindingFeedback> {
+  const { data } = await api.GET('/api/v1/findings/{findingId}/feedback', {
+    params: { path: { findingId } },
+    signal: opts.signal,
+  });
+  return required(data, 'feedback');
+}
+
+/** Upserts the caller's verdict (repeated clicks update it). */
+export async function submitFeedback(
+  findingId: string,
+  input: FeedbackInput,
+): Promise<FindingFeedback> {
+  const { data } = await api.POST('/api/v1/findings/{findingId}/feedback', {
+    params: { path: { findingId } },
+    body: input,
+  });
+  return required(data, 'feedback');
 }
 
 // ---------------------------------------------------------------------------------------------

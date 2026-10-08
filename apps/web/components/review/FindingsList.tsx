@@ -1,5 +1,6 @@
 'use client';
 
+import { FeedbackToggle } from '@/components/feedback/FeedbackToggle';
 import type { FindingSummary } from '@/lib/api/pending';
 import { groupFindings } from '@/lib/findings';
 import { FindingCard } from './FindingCard';
@@ -7,7 +8,7 @@ import { SuppressedGroup } from './SuppressedGroup';
 
 /**
  * Published findings first, then relocated (outside the diff) findings, then a collapsible
- * "Suppressed (N)" group by reason.
+ * "Suppressed (N)" group by reason. Published findings carry the feedback menu (WEB-009).
  */
 export function FindingsList({ findings }: { findings: FindingSummary[] }) {
   const groups = groupFindings(findings);
@@ -20,7 +21,9 @@ export function FindingsList({ findings }: { findings: FindingSummary[] }) {
         ) : (
           <ul className="divide-y rounded-md border">
             {groups.published.map((f) => (
-              <FindingCard key={f.id} finding={f} />
+              <FindingCard key={f.id} finding={f}>
+                <FeedbackToggle findingId={f.id} />
+              </FindingCard>
             ))}
           </ul>
         )}
@@ -34,7 +37,9 @@ export function FindingsList({ findings }: { findings: FindingSummary[] }) {
           </p>
           <ul className="divide-y rounded-md border">
             {groups.relocated.map((f) => (
-              <FindingCard key={f.id} finding={f} />
+              <FindingCard key={f.id} finding={f}>
+                <FeedbackToggle findingId={f.id} />
+              </FindingCard>
             ))}
           </ul>
         </section>

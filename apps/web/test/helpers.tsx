@@ -3,6 +3,7 @@ import { render } from '@testing-library/react';
 import { HttpResponse } from 'msw';
 import type { ReactNode } from 'react';
 import { OrgProvider, type CurrentOrg } from '../components/org/OrgContext';
+import { ToastProvider } from '../components/ui/toast';
 import type { MembershipRole } from '../lib/session';
 
 export const ORG_ID = '00000000-0000-4000-8000-000000000001';
@@ -21,7 +22,9 @@ export function renderWithProviders(
   });
   const result = render(
     <QueryClientProvider client={client}>
-      <OrgProvider org={role ? org(role) : null}>{ui}</OrgProvider>
+      <OrgProvider org={role ? org(role) : null}>
+        <ToastProvider>{ui}</ToastProvider>
+      </OrgProvider>
     </QueryClientProvider>,
   );
   return { ...result, client };

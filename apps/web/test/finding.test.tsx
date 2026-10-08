@@ -6,6 +6,7 @@ import { setupServer } from 'msw/node';
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { computeConfidence } from '../components/finding/ConfidenceBreakdown';
 import { FindingDetailView } from '../components/finding/FindingDetailView';
+import { emptyCounts } from '../lib/feedback';
 import { buildFlow } from '../lib/impact-flow';
 import { FINDING_ID, excerpt, findingDetail, findingTrace } from './finding-fixtures';
 import { renderWithProviders, route } from './helpers';
@@ -32,6 +33,9 @@ function handlers({ detail = findingDetail(), trace = findingTrace(), baseStatus
   server.use(
     http.get(route('/findings/:id'), () => HttpResponse.json(detail)),
     http.get(route('/findings/:id/trace'), () => HttpResponse.json(trace)),
+    http.get(route('/findings/:id/feedback'), () =>
+      HttpResponse.json({ mine: null, counts: emptyCounts() }),
+    ),
     http.get(route('/repositories/:id/source'), ({ request }) => {
       const snapshot = new URL(request.url).searchParams.get('snapshot');
       if (snapshot === 'snap-base') {

@@ -5,6 +5,7 @@ import { ExternalLink } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import type { ReactNode } from 'react';
+import { FeedbackMenu } from '@/components/feedback/FeedbackMenu';
 import { EffectivePolicy } from '@/components/profile/EffectivePolicy';
 import { SeverityLabel } from '@/components/review/FindingCard';
 import { Badge } from '@/components/ui/badge';
@@ -80,14 +81,7 @@ function PublicationInfo({ publication }: { publication: Publication | null }) {
  * Finding Detail: why a comment exists, reconstructed from the trace. It never renders prompts
  * or raw model output (the API does not return them; only typed fields are rendered here).
  */
-export function FindingDetailView({
-  findingId,
-  feedback,
-}: {
-  findingId: string;
-  /** The feedback panel (WEB-009). */
-  feedback?: (finding: FindingDetail) => ReactNode;
-}) {
+export function FindingDetailView({ findingId }: { findingId: string }) {
   const router = useRouter();
   const finding = useQuery(findingQuery(findingId));
   const trace = useQuery(findingTraceQuery(findingId));
@@ -126,7 +120,7 @@ export function FindingDetailView({
         <p className="max-w-3xl text-sm whitespace-pre-line">{f.explanation}</p>
       </div>
 
-      {feedback?.(f)}
+      <FeedbackMenu findingId={f.id} />
 
       <div className="grid gap-6 lg:grid-cols-2">
         <Section title="Confidence">

@@ -38,6 +38,7 @@ export const keys = {
   finding: (findingId: string) => ['finding', findingId] as const,
   findingTrace: (findingId: string) => ['finding', findingId, 'trace'] as const,
   source: (repoId: string, req: object) => ['source', repoId, req] as const,
+  feedback: (findingId: string) => ['finding', findingId, 'feedback'] as const,
 };
 
 export function repositoriesQuery(orgId: string) {
@@ -138,6 +139,14 @@ export function findingTraceQuery(findingId: string) {
   return queryOptions({
     queryKey: keys.findingTrace(findingId),
     queryFn: ({ signal }) => endpoints.getFindingTrace(findingId, { signal }),
+    throwOnError: false,
+  });
+}
+
+export function feedbackQuery(findingId: string) {
+  return queryOptions({
+    queryKey: keys.feedback(findingId),
+    queryFn: ({ signal }) => endpoints.getFindingFeedback(findingId, { signal }),
     throwOnError: false,
   });
 }

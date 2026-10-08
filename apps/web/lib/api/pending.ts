@@ -433,6 +433,29 @@ export interface FindingTrace {
 }
 
 // ---------------------------------------------------------------------------------------------
+// API-012: feedback
+// ---------------------------------------------------------------------------------------------
+
+export type Verdict =
+  'useful' | 'false_positive' | 'already_handled' | 'not_relevant' | 'intentional';
+
+export type SuppressionKind = 'fingerprint' | 'symbol' | 'path';
+
+export interface FeedbackInput {
+  verdict: Verdict;
+  /** Plain text, at most 2,000 characters. */
+  comment?: string;
+  /** Only with `intentional` or `not_relevant`; requires maintainer. */
+  create_suppression?: { kind: SuppressionKind; reason: string };
+}
+
+/** `GET /findings/:id/feedback` (assumed shape): the caller's verdict plus aggregate counts. */
+export interface FindingFeedback {
+  mine: { verdict: Verdict; comment: string | null; updated_at: string } | null;
+  counts: Record<Verdict, number>;
+}
+
+// ---------------------------------------------------------------------------------------------
 // API-011: graph proxy and source excerpts
 // ---------------------------------------------------------------------------------------------
 
@@ -527,6 +550,11 @@ export interface PendingPaths {
   /** API-010. */
   '/api/v1/findings/{findingId}': { get: GetOp<FindingDetail, PathParams<'findingId'>> };
   '/api/v1/findings/{findingId}/trace': { get: GetOp<FindingTrace, PathParams<'findingId'>> };
+  /** API-012 (the POST response shape is assumed to equal the GET). */
+  '/api/v1/findings/{findingId}/feedback': {
+    get: GetOp<FindingFeedback, PathParams<'findingId'>>;
+    post: BodyOp<FindingFeedback, FeedbackInput, PathParams<'findingId'>>;
+  };
   /** API-011. */
   '/api/v1/repositories/{repoId}/source': {
     get: GetOp<
