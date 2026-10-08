@@ -14,6 +14,7 @@ import { incCounter, recordHistogram, setGauge } from '../common/metrics';
 import { DbService, PG_POOL } from '../db/db.module';
 import type { Tx } from '../db/tx';
 import { TRACER_NAME } from '../telemetry/tracer.service';
+import type { PrReviewJob, ReviewJobs } from '../reviews/review-jobs.port';
 import { JobConsumer } from './consumer';
 import type {
   ActiveJob,
@@ -45,7 +46,9 @@ const truncate = (text: string): string => (text.length > 2000 ? text.slice(0, 2
  * their own short transactions, without a tenant (the table is not tenant scoped).
  */
 @Injectable()
-export class PgJobQueue implements JobQueue, JobStore, JobCanceller, BeforeApplicationShutdown {
+export class PgJobQueue
+  implements JobQueue, JobStore, JobCanceller, ReviewJobs, BeforeApplicationShutdown
+{
   private readonly logger = new Logger(PgJobQueue.name);
   private readonly consumers = new Set<{ stop(graceMs?: number): Promise<void> }>();
   private lastDepthSample = 0;
@@ -129,6 +132,21 @@ export class PgJobQueue implements JobQueue, JobStore, JobCanceller, BeforeAppli
 
   cancelQueuedForRepositories(trx: Tx, repositoryIds: string[]): Promise<number> {
     return this.cancelWhere(trx, { repositoryIds });
+  }
+
+  /** SUP-001's `ReviewJobs`: the run's `pr-review` job, keyed like the run. */
+  async enqueuePrReview(trx: Tx, job: PrReviewJob): Promise<{ created: boolean }> {
+    const result = await this.enqueue(trx, {
+      queue: 'pr-review',
+      idempotencyKey: job.idempotencyKey,
+      organizationId: job.organizationId,
+      payload: { review_run_id: job.reviewRunId },
+    });
+    return { created: result.created };
+  }
+
+  cancelQueuedForRuns(trx: Tx, reviewRunIds: string[]): Promise<number> {
+    return this.cancelWhere(trx, { reviewRunIds });
   }
 
   async findActive(trx: Tx, queue: JobQueueName, repositoryId: string): Promise<ActiveJob | null> {

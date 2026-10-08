@@ -17,6 +17,7 @@ export const AUDIT_ACTIONS = [
   'auth.logout',
   'credentials.issued',
   'service_token.replay_rejected',
+  'webhook.delivery_id_reuse',
   'access.denied',
 ] as const;
 

@@ -68,9 +68,7 @@ describe('reviews API (integration)', () => {
     const newJob = await job(res.body.job_id as string);
     expect(newJob).toMatchObject({ queue: 'pr-review', state: 'queued' });
     expect(newJob.payload).toEqual({ review_run_id: newId });
-    expect(newJob.idempotency_key).toMatch(
-      /^pr-review:github:\d+:\d+:a{40}:manual:\d{12}$/,
-    );
+    expect(newJob.idempotency_key).toMatch(/^pr-review:github:\d+:\d+:a{40}:manual:\d{12}$/);
     expect(counterTotal('manual_reviews_total')).toBe(before + 1);
 
     // A double click within the minute is the same review.

@@ -62,6 +62,8 @@ const baseShape = {
   TOKEN_CACHE_KEY: tokenCacheKey,
   WEB_ORIGIN: url(['http:', 'https:']),
   GITHUB_ENABLED: boolFromString.default(true),
+  /** Run the in-process queue consumers (`review-publish`). Default: on, except NODE_ENV=test. */
+  QUEUE_CONSUMERS_ENABLED: boolFromString.optional(),
   GITHUB_APP_ID: nonEmpty.optional(),
   GITHUB_APP_PRIVATE_KEY: nonEmpty.optional(),
   GITHUB_APP_PRIVATE_KEY_FILE: nonEmpty.optional(),

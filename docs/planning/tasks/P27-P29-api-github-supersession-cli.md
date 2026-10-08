@@ -445,7 +445,10 @@ Status: ◐
 > Concurrency defaults live in `DEFAULT_CONCURRENCY` (`review-publish: 4`) and can be overridden per
 > `consume` call. `ts_and_rust_claim_interoperate` runs the target-architecture claim statement
 > verbatim on a plain connection; running it through the Rust engine test binary waits for
-> PIPE-001, which is why the task stays ◐.
+> PIPE-001, which is why the task stays ◐. `PgJobQueue` also backs SUP-001's `REVIEW_JOBS` port,
+> and `PublishWorker` registers `PublishConsumer.handle` on `review-publish` with concurrency 4 at
+> boot (off under NODE_ENV=test unless `QUEUE_CONSUMERS_ENABLED=true`). Worker transactions set
+> `app.job_worker=on` for the `jobs` RLS policy (SEC-001).
 
 - **Task ID:** API-007
 - **Title:** TS JobQueue adapter (same PG jobs table, transactional enqueue)
