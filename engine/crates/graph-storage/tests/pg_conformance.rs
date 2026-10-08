@@ -21,7 +21,7 @@ use graph_storage::model::{flatten, EdgeCursor, FileChange, Graph, GraphDelta};
 use graph_storage::pg::PgGraphStore;
 use graph_storage::status::SnapshotStatus;
 use graph_storage::types::{NewSnapshot, SnapshotPurpose};
-use graph_storage::{GraphStore, StoreError};
+use graph_storage::StoreError;
 use repository::store::RepoScope;
 use review_core::ids::{OrganizationId, RepositoryId, SnapshotId};
 use sqlx::migrate::Migrator;
