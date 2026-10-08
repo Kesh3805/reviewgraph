@@ -24,3 +24,20 @@ the wiremock suite (`engine/scripts/cargo.sh test -p model-gateway`) for adapter
 
 Limits are configured per model in `routing.yaml` (`providers.<p>.limits`). Tests that need Redis
 are behind the `integration` feature: `engine/scripts/cargo.sh test -p model-gateway --features integration`.
+
+## Semantic retrieval (embeddings and Qdrant)
+
+| Variable | Meaning |
+| --- | --- |
+| `SEMANTIC_EMBEDDING_PROVIDER` | `hash` (default: deterministic, offline, no key), `openai`, or `voyage` (recommended in production). |
+| `SEMANTIC_EMBEDDING_MODEL` / `SEMANTIC_EMBEDDING_DIMS` | Provider defaults: `text-embedding-3-small`/1536, `voyage-code-3`/1024, hash 768. |
+| `SEMANTIC_EMBEDDING_CONCURRENCY` | Parallel requests per provider instance (default 4). |
+| `SEMANTIC_EMBEDDING_VERSION` | Re-embed epoch (default 1); bumping it creates a new collection. |
+| `VOYAGE_API_KEY` / `OPENAI_API_KEY` | Needed only by the matching provider. A missing key fails provider construction; the worker then runs without semantic sync and reviews use structural context only. |
+| `QDRANT_URL` / `QDRANT_API_KEY` | Qdrant REST endpoint (CI integration job: `http://127.0.0.1:36333`). |
+
+`hash` is the default in development and tests: no text leaves the machine and vectors are
+bit-exact across runs. A repository with privacy `no_external` always uses `hash`. Collections are
+managed with `review semantic collections|activate|retire`; see
+[semantic-reembed.md](semantic-reembed.md). Qdrant tests are behind the `semantic` crate's
+`integration` feature and need `QDRANT_URL`.
