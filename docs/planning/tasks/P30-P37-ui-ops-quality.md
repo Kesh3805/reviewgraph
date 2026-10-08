@@ -362,7 +362,8 @@ Status: ◐
 ---
 
 ### WEB-007 — Finding Detail with React Flow impact path and base/head evidence
-Status: ☐
+Status: ◐
+> **Implementation note:** Built against hand-typed API-010/API-011 contracts (`FindingDetail`, `FindingTrace`, `SourceExcerpt` in `apps/web/lib/api/pending.ts`). The trace is assumed to carry the curated `impact_path` (ordered nodes plus edges with kind and confidence) and `base_head` (anchor sides with the predicate result); confidence components are `{term, value, weight}` with signed ADR-011 weights, and the breakdown checks that `clamp(Σ weight × value)` matches the stored confidence. `ImpactPathFlow` uses `@xyflow/react` with a `@dagrejs/dagre` LR layout (capped at 30 nodes, dashed below 0.6) plus a text chain of the same path; clicking a node opens `/repositories/:id/graph?symbol=&snapshot=`. `SourceExcerpt` renders the API text as plain text and swaps in tokens from a shiki server action (`lib/highlight.ts`, tokens only, no HTML). A missing base side or a 404 base excerpt shows "The file did not exist at base". Remaining: generated types and the §151 acceptance check once API-010/API-011 land.
 
 - **Task ID:** WEB-007
 - **Title:** Finding Detail with React Flow impact path + base/head evidence

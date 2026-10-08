@@ -333,6 +333,145 @@ export interface FindingSummary {
 
 export type FindingStateFilter = 'published' | 'verified' | 'suppressed' | 'all';
 
+/** ADR-011 confidence terms. */
+export type ConfidenceTerm =
+  | 'anchor'
+  | 'deterministic'
+  | 'graph'
+  | 'repo'
+  | 'reproduction'
+  | 'agreement'
+  | 'contradiction'
+  | 'uncertainty';
+
+export interface ConfidenceComponent {
+  term: ConfidenceTerm;
+  /** The component score in [0, 1]. */
+  value: number;
+  /** Signed weight from the `verification_version` table (negative for penalties). */
+  weight: number;
+}
+
+export interface Publication {
+  state: 'published' | 'not_published' | 'resolved';
+  provider_comment_url: string | null;
+  published_at: string | null;
+}
+
+/** `GET /findings/:id` (API-010, schema `FindingDetail`). */
+export interface FindingDetail extends FindingSummary {
+  explanation: string;
+  symbols: { key: string; name: string; kind: string }[];
+  confidence_components: ConfidenceComponent[];
+  verification_version: string;
+  repository_id: string;
+  pull_request: { id: string; number: number; title: string; repository_full_name: string };
+  /** Snapshot ids used for source excerpts (base is null for a file added in the PR). */
+  snapshots: { base: string | null; head: string };
+  publication: Publication | null;
+}
+
+/** A typed evidence item (DOM-007); code is referenced, never embedded. */
+export interface EvidenceItem {
+  kind: string;
+  summary: string;
+  path: string | null;
+  start_line: number | null;
+  end_line: number | null;
+  snapshot_id: string | null;
+}
+
+export type PolicySourceKind = 'explicit' | 'documented' | 'convention' | 'generic';
+
+export interface PolicySource {
+  kind: PolicySourceKind;
+  /** Rule, document or convention id; null for generic guidance. */
+  id: string | null;
+  confidence?: number | null;
+  samples?: number | null;
+}
+
+/** POL-004 `EffectivePolicy`. */
+export interface EffectivePolicy {
+  topic: string;
+  decision: 'required' | 'forbidden' | 'allowed' | 'no_policy';
+  winner: PolicySource;
+  overridden: PolicySource[];
+  conflict?: boolean;
+}
+
+export interface AnchorSide {
+  path: string;
+  start_line: number;
+  end_line: number;
+  snapshot_id: string;
+  /** The finding predicate evaluated on this side (null when it could not be evaluated). */
+  predicate: { name: string; holds: boolean | null };
+}
+
+/** `GET /findings/:id/trace` (API-010, schema `FindingTrace`). No prompts or model output. */
+export interface FindingTrace {
+  finding_id: string;
+  /** True when some stage rows are missing (an older run). */
+  incomplete: boolean;
+  change: { path: string; status: string } | null;
+  symbol: { key: string; name: string; kind: string } | null;
+  context_items: { kind: string; ref: string }[];
+  reviewer: { name: string; version: string };
+  candidate: { id: string; created_at: string } | null;
+  /** Curated path from the entrypoint to the changed symbol (at most 30 nodes). */
+  impact_path: GraphPath | null;
+  verification: {
+    stage: string;
+    outcome: 'passed' | 'failed' | 'inconclusive' | 'not_executed';
+    evidence: EvidenceItem[];
+  }[];
+  base_head: { symbol_key: string; base: AnchorSide | null; head: AnchorSide } | null;
+  dedup_merges: { finding_id: string; reviewer: string; title: string; similarity: number }[];
+  effective_policy: EffectivePolicy[];
+  publication: Publication | null;
+}
+
+// ---------------------------------------------------------------------------------------------
+// API-011: graph proxy and source excerpts
+// ---------------------------------------------------------------------------------------------
+
+export interface GraphNode {
+  key: string;
+  name: string;
+  qualified_name?: string | null;
+  kind: string;
+  path: string | null;
+  line: number | null;
+}
+
+export interface GraphEdge {
+  source: string;
+  target: string;
+  kind: string;
+  /** 0..1 */
+  confidence: number;
+}
+
+/** An ordered chain: `nodes[0]` is the entrypoint, `edges[i]` joins `nodes[i]` → `nodes[i+1]`. */
+export interface GraphPath {
+  nodes: GraphNode[];
+  edges: GraphEdge[];
+  min_confidence?: number;
+}
+
+/** `GET /repositories/:id/source` — redacted and capped at 200 lines. */
+export interface SourceExcerpt {
+  path: string;
+  start_line: number;
+  end_line: number;
+  snapshot_id: string;
+  language: string | null;
+  text: string;
+  truncated: boolean;
+  redacted: boolean;
+}
+
 // ---------------------------------------------------------------------------------------------
 // Paths
 // ---------------------------------------------------------------------------------------------
@@ -382,6 +521,19 @@ export interface PendingPaths {
       {
         path: { reviewId: string };
         query?: { state?: FindingStateFilter; severity?: Severity; reviewer?: string };
+      }
+    >;
+  };
+  /** API-010. */
+  '/api/v1/findings/{findingId}': { get: GetOp<FindingDetail, PathParams<'findingId'>> };
+  '/api/v1/findings/{findingId}/trace': { get: GetOp<FindingTrace, PathParams<'findingId'>> };
+  /** API-011. */
+  '/api/v1/repositories/{repoId}/source': {
+    get: GetOp<
+      SourceExcerpt,
+      {
+        path: { repoId: string };
+        query: { path: string; start: number; end: number; snapshot?: string };
       }
     >;
   };

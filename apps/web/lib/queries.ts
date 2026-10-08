@@ -35,6 +35,9 @@ export const keys = {
   review: (reviewId: string) => ['review', reviewId] as const,
   reviewFindings: (reviewId: string) => ['review', reviewId, 'findings'] as const,
   reviewHistory: (prId: string) => ['pull-request', prId, 'reviews'] as const,
+  finding: (findingId: string) => ['finding', findingId] as const,
+  findingTrace: (findingId: string) => ['finding', findingId, 'trace'] as const,
+  source: (repoId: string, req: object) => ['source', repoId, req] as const,
 };
 
 export function repositoriesQuery(orgId: string) {
@@ -120,6 +123,38 @@ export function reviewHistoryQuery(prId: string) {
   return queryOptions({
     queryKey: keys.reviewHistory(prId),
     queryFn: ({ signal }) => endpoints.listReviewHistory(prId, { signal }),
+    throwOnError: false,
+  });
+}
+
+export function findingQuery(findingId: string) {
+  return queryOptions({
+    queryKey: keys.finding(findingId),
+    queryFn: ({ signal }) => endpoints.getFinding(findingId, { signal }),
+  });
+}
+
+export function findingTraceQuery(findingId: string) {
+  return queryOptions({
+    queryKey: keys.findingTrace(findingId),
+    queryFn: ({ signal }) => endpoints.getFindingTrace(findingId, { signal }),
+    throwOnError: false,
+  });
+}
+
+export interface ExcerptRequest {
+  path: string;
+  start: number;
+  end: number;
+  snapshot?: string;
+}
+
+export function sourceExcerptQuery(repoId: string, req: ExcerptRequest) {
+  return queryOptions({
+    queryKey: keys.source(repoId, req),
+    queryFn: ({ signal }) => endpoints.getSourceExcerpt(repoId, req, { signal }),
+    // Snapshots are immutable: an excerpt never changes.
+    staleTime: Infinity,
     throwOnError: false,
   });
 }

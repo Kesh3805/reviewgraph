@@ -6,6 +6,9 @@
  */
 import { api } from '../api-client';
 import type {
+  FindingDetail,
+  FindingTrace,
+  SourceExcerpt,
   FindingStateFilter,
   FindingSummary,
   ReviewDetail,
@@ -184,6 +187,39 @@ export async function listReviewFindings(
     signal: opts.signal,
   });
   return required(data, 'findings').items;
+}
+
+export async function getFinding(findingId: string, opts: Signal = {}): Promise<FindingDetail> {
+  const { data } = await api.GET('/api/v1/findings/{findingId}', {
+    params: { path: { findingId } },
+    signal: opts.signal,
+  });
+  return required(data, 'finding');
+}
+
+export async function getFindingTrace(findingId: string, opts: Signal = {}): Promise<FindingTrace> {
+  const { data } = await api.GET('/api/v1/findings/{findingId}/trace', {
+    params: { path: { findingId } },
+    signal: opts.signal,
+  });
+  return required(data, 'finding trace');
+}
+
+// ---------------------------------------------------------------------------------------------
+// Graph proxy and source (API-011, pending)
+// ---------------------------------------------------------------------------------------------
+
+/** Redacted excerpt; the API caps it at 200 lines. */
+export async function getSourceExcerpt(
+  repoId: string,
+  query: { path: string; start: number; end: number; snapshot?: string },
+  opts: Signal = {},
+): Promise<SourceExcerpt> {
+  const { data } = await api.GET('/api/v1/repositories/{repoId}/source', {
+    params: { path: { repoId }, query },
+    signal: opts.signal,
+  });
+  return required(data, 'source excerpt');
 }
 
 /** PENDING (API-009, assumed route): last review and open PR counts per repository. */
