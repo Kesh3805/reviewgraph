@@ -1,0 +1,106 @@
+---
+source: crates/codegraph/tests/path_subgraph.rs
+expression: json
+---
+{
+  "nodes": [
+    {
+      "key": "58af14b6187dafd861238b45c29b4a65",
+      "id": "ts:src/c.ts#c/function",
+      "kind": "Function",
+      "name": "c",
+      "qualified_name": "c",
+      "file": "src/c.ts",
+      "range": null,
+      "depth": 1
+    },
+    {
+      "key": "b134b32110b102dccde537fba3e2af06",
+      "id": "ts:src/b.ts#b/function",
+      "kind": "Function",
+      "name": "b",
+      "qualified_name": "b",
+      "file": "src/b.ts",
+      "range": null,
+      "depth": 1
+    },
+    {
+      "key": "b309dc006249ded2b19496759507f2eb",
+      "id": "ts:src/a.ts#a/function",
+      "kind": "Function",
+      "name": "a",
+      "qualified_name": "a",
+      "file": "src/a.ts",
+      "range": null,
+      "depth": 0
+    },
+    {
+      "key": "c8f549761070cc667a45a9fb87b882b5",
+      "id": "ts:src/e.ts#e/function",
+      "kind": "Function",
+      "name": "e",
+      "qualified_name": "e",
+      "file": "src/e.ts",
+      "range": null,
+      "depth": 2
+    },
+    {
+      "key": "f7cca38a779974b1fa894fbca9367dc0",
+      "id": "ts:src/d.ts#d/function",
+      "kind": "Function",
+      "name": "d",
+      "qualified_name": "d",
+      "file": "src/d.ts",
+      "range": null,
+      "depth": 1
+    }
+  ],
+  "edges": [
+    {
+      "kind": "CALLS",
+      "source": "58af14b6187dafd861238b45c29b4a65",
+      "target": "f7cca38a779974b1fa894fbca9367dc0",
+      "confidence": 1000,
+      "resolved_by": "NAME_UNIQUE"
+    },
+    {
+      "kind": "CALLS",
+      "source": "b134b32110b102dccde537fba3e2af06",
+      "target": "c8f549761070cc667a45a9fb87b882b5",
+      "confidence": 1000,
+      "resolved_by": "NAME_UNIQUE"
+    },
+    {
+      "kind": "CALLS",
+      "source": "b134b32110b102dccde537fba3e2af06",
+      "target": "f7cca38a779974b1fa894fbca9367dc0",
+      "confidence": 1000,
+      "resolved_by": "NAME_UNIQUE"
+    },
+    {
+      "kind": "CALLS",
+      "source": "b309dc006249ded2b19496759507f2eb",
+      "target": "58af14b6187dafd861238b45c29b4a65",
+      "confidence": 1000,
+      "resolved_by": "NAME_UNIQUE"
+    },
+    {
+      "kind": "CALLS",
+      "source": "b309dc006249ded2b19496759507f2eb",
+      "target": "b134b32110b102dccde537fba3e2af06",
+      "confidence": 1000,
+      "resolved_by": "NAME_UNIQUE"
+    },
+    {
+      "kind": "CALLS",
+      "source": "b309dc006249ded2b19496759507f2eb",
+      "target": "f7cca38a779974b1fa894fbca9367dc0",
+      "confidence": 400,
+      "resolved_by": "NAME_UNIQUE"
+    }
+  ],
+  "truncated": false,
+  "seeds": [
+    "b309dc006249ded2b19496759507f2eb"
+  ]
+}
