@@ -270,7 +270,8 @@ Status: ☐
 ---
 
 ### WEB-005 — Pull Requests list
-Status: ☐
+Status: ◐
+> **Implementation note:** Built against the API-009 contract while API-009 is not merged: the routes and `PullRequestSummary` (with `latest_run {state, degraded}` and published `findings_by_severity`) are hand-typed in `apps/web/lib/api/pending.ts`. API-009 only specifies `GET /repositories/:id/pull-requests`; the organization-wide list assumes `GET /pull-requests?organization_id=` with the same filters (`state`, `has_findings`, `severity`, `cursor`, `limit`). Run states are the contracts `ReviewState` set (RECEIVED…FAILED_*, SUPERSEDED, CANCELLED); "Completed (degraded)" is `COMPLETED` with `degraded: true`. Remaining: switch to generated types and run the seeded acceptance check once API-009 lands.
 
 - **Task ID:** WEB-005
 - **Title:** Pull Requests list

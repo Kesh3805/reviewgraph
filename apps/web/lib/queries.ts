@@ -4,7 +4,13 @@
  */
 import { queryOptions } from '@tanstack/react-query';
 import * as endpoints from './api/endpoints';
-import type { PullRequestListQuery, RepositoryStatus } from './api/pending';
+import type {
+  Page,
+  PullRequestListQuery,
+  PullRequestSummary,
+  RepositoryStatus,
+} from './api/pending';
+import { isTerminalReview } from './run-state';
 
 /** Status card / active job polling interval (WEB-003). */
 export const INDEX_POLL_MS = 5000;
@@ -67,6 +73,24 @@ export function repositoryActivityQuery(orgId: string) {
     // Optional enrichment: a failure leaves dashes in the table.
     throwOnError: false,
     retry: false,
+  });
+}
+
+/** Rows with a non-terminal latest run refetch every 5 s (WEB-005). */
+export const RUN_POLL_MS = 5000;
+
+export function pullsRefetchInterval(page: Page<PullRequestSummary> | undefined): number | false {
+  return page?.items.some((pr) => pr.latest_run && !isTerminalReview(pr.latest_run.state))
+    ? RUN_POLL_MS
+    : false;
+}
+
+export function pullRequestsQuery(query: PullRequestListQuery) {
+  return queryOptions({
+    queryKey: keys.pullRequests(query),
+    queryFn: ({ signal }) => endpoints.listPullRequests(query, { signal }),
+    refetchInterval: (q) => pullsRefetchInterval(q.state.data),
+    throwOnError: false,
   });
 }
 

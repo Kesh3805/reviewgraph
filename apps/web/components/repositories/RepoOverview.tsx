@@ -6,21 +6,15 @@ import { useCurrentOrg } from '@/components/org/OrgContext';
 import { RunStateBadge } from '@/components/pulls/RunStateBadge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { EmptyState, ErrorState, Loading } from '@/components/ui/states';
-import { listPullRequests } from '@/lib/api/endpoints';
 import { formatDateTime, formatPercent } from '@/lib/format';
-import { keys, repositoryQuery, riskAreasQuery } from '@/lib/queries';
+import { pullRequestsQuery, repositoryQuery, riskAreasQuery } from '@/lib/queries';
 import { canMaintain } from '@/lib/roles';
 import { SEVERITY_TOKENS } from '@/lib/severity';
 import { RepoSettingsForm } from './RepoSettingsForm';
 import { StatusCard } from './StatusCard';
 
 function RecentReviews({ repoId }: { repoId: string }) {
-  const query = { repository_id: repoId, limit: 5 };
-  const pulls = useQuery({
-    queryKey: keys.pullRequests(query),
-    queryFn: ({ signal }) => listPullRequests(query, { signal }),
-    throwOnError: false,
-  });
+  const pulls = useQuery(pullRequestsQuery({ repository_id: repoId, limit: 5 }));
   if (pulls.isPending) return <Loading label="Loading recent reviews" className="h-16" />;
   if (pulls.isError) return <ErrorState error={pulls.error} onRetry={() => void pulls.refetch()} />;
   const reviewed = pulls.data.items.flatMap((pr) =>
