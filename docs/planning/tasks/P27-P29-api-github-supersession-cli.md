@@ -673,7 +673,17 @@ Status: ☑
 ---
 
 ### API-011 — Graph proxy API
-Status: ☐
+Status: ◐
+
+> **Implementation note:** The proxy, the typed `EngineClient` (Node's built-in fetch, which is
+> undici with keep-alive, and a 5 s timeout; no extra dependency), the server-side tenant claims,
+> the Redis query cache, the budgets, the redaction of excerpts (`src/graph/redact.ts`, applied on
+> top of the engine's own) and the source-access audit are done and tested against a stand-in
+> engine HTTP server that follows the API-013 contract. Snapshot resolution goes through the
+> `GraphScope` port: graph snapshots (GS-005) are not in the schema yet, so the database
+> implementation has no default snapshot and validates no snapshot id (graph queries answer 404
+> until GS-005 replaces `defaultSnapshot`/`snapshotBelongsTo`). Excerpts are never cached in Redis.
+> Still open: the acceptance run against the real engine (API-013) and the GX-002 explorer.
 
 - **Task ID:** API-011
 - **Title:** Graph proxy API

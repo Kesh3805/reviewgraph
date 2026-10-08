@@ -69,4 +69,17 @@ describe('OpenAPI document', () => {
     expect(has('/api/v1/findings/{findingId}/feedback', 'get')).toBe(true);
     expect(has('/api/v1/repositories/{repoId}/feedback/summary', 'get')).toBe(true);
   });
+
+  it('lists every graph proxy route (API-011)', () => {
+    const paths = buildOpenApiDocument(app).paths;
+    const has = (path: string, method: string): boolean =>
+      Boolean((paths[path] as Record<string, unknown> | undefined)?.[method]);
+    expect(has('/api/v1/repositories/{repoId}/graph/symbols', 'get')).toBe(true);
+    expect(has('/api/v1/repositories/{repoId}/graph/symbols/{key}', 'get')).toBe(true);
+    expect(has('/api/v1/repositories/{repoId}/graph/symbols/{key}/neighbors', 'get')).toBe(true);
+    expect(has('/api/v1/repositories/{repoId}/graph/subgraph', 'post')).toBe(true);
+    expect(has('/api/v1/repositories/{repoId}/graph/path', 'get')).toBe(true);
+    expect(has('/api/v1/reviews/{reviewId}/impact/{symbolKey}', 'get')).toBe(true);
+    expect(has('/api/v1/repositories/{repoId}/source', 'get')).toBe(true);
+  });
 });

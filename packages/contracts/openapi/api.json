@@ -833,6 +833,423 @@
         ]
       }
     },
+    "/api/v1/repositories/{repoId}/graph/symbols": {
+      "get": {
+        "operationId": "GraphController_symbols",
+        "parameters": [
+          {
+            "name": "repoId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "q",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minLength": 1,
+              "maxLength": 200,
+              "type": "string"
+            }
+          },
+          {
+            "name": "kind",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "pattern": "^[A-Za-z_]{1,40}$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "snapshot",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 50,
+              "default": 20,
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GraphResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "graph"
+        ]
+      }
+    },
+    "/api/v1/repositories/{repoId}/graph/symbols/{key}": {
+      "get": {
+        "operationId": "GraphController_symbol",
+        "parameters": [
+          {
+            "name": "repoId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "key",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "snapshot",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GraphResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "graph"
+        ]
+      }
+    },
+    "/api/v1/repositories/{repoId}/graph/symbols/{key}/neighbors": {
+      "get": {
+        "operationId": "GraphController_neighbors",
+        "parameters": [
+          {
+            "name": "repoId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "key",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "dir",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": "out",
+              "type": "string",
+              "enum": [
+                "in",
+                "out"
+              ]
+            }
+          },
+          {
+            "name": "kinds",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "maxLength": 500,
+              "type": "string"
+            }
+          },
+          {
+            "name": "min_confidence",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 0,
+              "maximum": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "snapshot",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GraphResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "graph"
+        ]
+      }
+    },
+    "/api/v1/repositories/{repoId}/graph/subgraph": {
+      "post": {
+        "operationId": "GraphController_subgraph",
+        "parameters": [
+          {
+            "name": "repoId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SubgraphRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GraphResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "graph"
+        ]
+      }
+    },
+    "/api/v1/repositories/{repoId}/graph/path": {
+      "get": {
+        "operationId": "GraphController_path",
+        "parameters": [
+          {
+            "name": "repoId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "from",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "minLength": 1,
+              "maxLength": 500,
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "minLength": 1,
+              "maxLength": 500,
+              "type": "string"
+            }
+          },
+          {
+            "name": "max_depth",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 6,
+              "default": 4,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "snapshot",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GraphResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "graph"
+        ]
+      }
+    },
+    "/api/v1/reviews/{reviewId}/impact/{symbolKey}": {
+      "get": {
+        "operationId": "GraphController_impact",
+        "parameters": [
+          {
+            "name": "reviewId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "symbolKey",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GraphResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "graph"
+        ]
+      }
+    },
+    "/api/v1/repositories/{repoId}/source": {
+      "get": {
+        "operationId": "GraphController_source",
+        "parameters": [
+          {
+            "name": "repoId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "path",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "minLength": 1,
+              "maxLength": 1000,
+              "type": "string"
+            }
+          },
+          {
+            "name": "start",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 9007199254740991,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "end",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 9007199254740991,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "snapshot",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SourceExcerptDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "graph"
+        ]
+      }
+    },
     "/api/v1/health/live": {
       "get": {
         "operationId": "HealthController_live",
@@ -3566,6 +3983,104 @@
           "acceptance_rate",
           "false_positive_rate",
           "by_reviewer"
+        ]
+      },
+      "GraphResponseDto": {
+        "type": "object",
+        "properties": {
+          "snapshot_id": {
+            "type": "string"
+          },
+          "truncated": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "snapshot_id",
+          "truncated"
+        ]
+      },
+      "SubgraphRequestDto": {
+        "type": "object",
+        "properties": {
+          "seeds": {
+            "minItems": 1,
+            "maxItems": 50,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 500
+            }
+          },
+          "depth": {
+            "default": 1,
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 3
+          },
+          "kinds": {
+            "maxItems": 40,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^[A-Z_]{1,40}$"
+            }
+          },
+          "max_nodes": {
+            "default": 200,
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 500
+          },
+          "snapshot": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          }
+        },
+        "required": [
+          "seeds"
+        ],
+        "additionalProperties": false
+      },
+      "SourceExcerptDto": {
+        "type": "object",
+        "properties": {
+          "snapshot_id": {
+            "type": "string"
+          },
+          "path": {
+            "type": "string"
+          },
+          "start": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "end": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "text": {
+            "type": "string"
+          },
+          "redacted": {
+            "type": "boolean"
+          },
+          "truncated": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "snapshot_id",
+          "path",
+          "start",
+          "end",
+          "text",
+          "redacted",
+          "truncated"
         ]
       }
     }

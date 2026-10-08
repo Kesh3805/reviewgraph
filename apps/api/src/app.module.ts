@@ -11,6 +11,7 @@ import { JobsModule } from './jobs/jobs.module';
 import { RepositoriesModule } from './repositories/repositories.module';
 import { ReviewsModule } from './reviews/reviews.module';
 import { FindingsModule } from './findings/findings.module';
+import { GraphModule } from './graph/graph.module';
 import { AuthModule } from './auth/auth.module';
 import { TenancyModule } from './tenancy/tenancy.module';
 import { InternalModule } from './internal/internal.module';
@@ -39,6 +40,7 @@ import { TelemetryModule } from './telemetry/telemetry.module';
     RepositoriesModule,
     ReviewsModule,
     FindingsModule,
+    GraphModule,
     HealthModule,
   ],
   providers: [ShutdownService, { provide: APP_PIPE, useClass: ZodValidationPipe }],
