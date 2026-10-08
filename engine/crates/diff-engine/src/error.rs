@@ -2,13 +2,17 @@
 
 use review_core::{Classify, CoreError, ErrorClass};
 
-/// Errors returned by this crate. Add domain variants as the crate gains behaviour, and keep
-/// the [`Classify`] mapping exhaustive.
+use crate::git::GitError;
+
+/// Errors returned by this crate. Each domain error is wrapped in its own variant so callers can
+/// match on the stage that failed; the [`Classify`] mapping stays exhaustive.
 #[derive(Debug, thiserror::Error)]
 #[non_exhaustive]
 pub enum Error {
     #[error(transparent)]
     Core(#[from] CoreError),
+    #[error(transparent)]
+    Git(#[from] GitError),
 }
 
 pub type Result<T, E = Error> = std::result::Result<T, E>;
@@ -17,6 +21,7 @@ impl Classify for Error {
     fn class(&self) -> ErrorClass {
         match self {
             Error::Core(e) => e.class(),
+            Error::Git(e) => e.class(),
         }
     }
 }
@@ -29,9 +34,15 @@ mod tests {
     fn each_library_error_wraps_core_error() {
         let e = Error::from(CoreError::OutOfRange {
             field: "x",
-            value: "1".into(),
+            value: "x".into(),
         });
         assert_eq!(e.class(), ErrorClass::InvalidInput);
+    }
+
+    #[test]
+    fn git_errors_classify() {
+        let e = Error::from(GitError::ObjectNotFound("abc".to_owned()));
+        assert_eq!(e.class(), ErrorClass::NotFound);
     }
 
     #[test]
