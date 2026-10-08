@@ -110,6 +110,9 @@ pub struct AnalyzerConfig {
     pub enabled_adapters: Option<BTreeSet<String>>,
     /// Compute per-symbol syntax facts. Default true.
     pub syntax_facts: bool,
+    /// Decorator names (last segment) that produce `GuardDecorator` facts (TSA-006). `None` uses
+    /// the default pattern `^(UseGuards|Roles?|Permissions?|Public|Auth\w*|Authorize\w*|Skip\w*Auth\w*)$`.
+    pub guard_decorator_names: Option<Vec<String>>,
 }
 
 impl Default for AnalyzerConfig {
@@ -121,6 +124,7 @@ impl Default for AnalyzerConfig {
             frameworks: FrameworkSignals::default(),
             enabled_adapters: None,
             syntax_facts: true,
+            guard_decorator_names: None,
         }
     }
 }

@@ -20,7 +20,7 @@ pub mod validate;
 
 pub use diagnostic::{DiagCode, DiagSeverity, ParseDiagnostic};
 pub use error::{Error, Result};
-pub use facts::{FactKind, SymbolFacts, SyntaxFact};
+pub use facts::{compare_keys, FactDelta, FactKind, SymbolFacts, SyntaxFact};
 pub use framework::{FrameworkFactKind, FrameworkPresence, FrameworkSignals, IrFrameworkFact};
 pub use module::{ImportBinding, ImportKind, Imported, IrExport, IrImport};
 pub use reference::{BindingRef, IrReference, ReceiverHint, RefKind};
