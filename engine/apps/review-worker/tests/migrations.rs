@@ -37,6 +37,28 @@ const TABLES: [&str; 13] = [
     "webhook_deliveries",
 ];
 
+/// Key of the advisory lock that serializes migrations across the test databases.
+const MIGRATION_LOCK_KEY: i64 = 0x5247_4d49_4752;
+
+/// Runs `work` (a migration) while holding a cluster-wide advisory lock on the admin connection.
+/// `20261002000006_db_roles` creates cluster-wide roles, so two throwaway databases migrating at
+/// the same time race on `CREATE ROLE` (a duplicate key in `pg_authid`).
+async fn with_migration_lock<T>(admin: &PgPool, work: impl std::future::Future<Output = T>) -> T {
+    let mut conn = admin.acquire().await.unwrap();
+    sqlx::query("SELECT pg_advisory_lock($1)")
+        .bind(MIGRATION_LOCK_KEY)
+        .execute(&mut *conn)
+        .await
+        .unwrap();
+    let out = work.await;
+    sqlx::query("SELECT pg_advisory_unlock($1)")
+        .bind(MIGRATION_LOCK_KEY)
+        .execute(&mut *conn)
+        .await
+        .unwrap();
+    out
+}
+
 struct TestDb {
     pool: PgPool,
     admin: PgPool,
@@ -65,7 +87,9 @@ impl TestDb {
             .await
             .unwrap();
         if apply_migrations {
-            migrate::run(&pool).await.unwrap();
+            with_migration_lock(&admin, migrate::run(&pool))
+                .await
+                .unwrap();
         }
         Self { pool, admin, name }
     }
@@ -294,7 +318,9 @@ async fn table_names(pool: &PgPool) -> BTreeSet<String> {
 #[tokio::test]
 async fn migrations_apply_on_empty_db() {
     let db = TestDb::new(false).await;
-    let applied = migrate::run(&db.pool).await.unwrap();
+    let applied = with_migration_lock(&db.admin, migrate::run(&db.pool))
+        .await
+        .unwrap();
     // Every embedded migration applies; later phases add migrations, so the count tracks the
     // migrator rather than a literal.
     assert_eq!(applied.len(), MIGRATOR.migrations.len());
@@ -314,7 +340,9 @@ async fn migrations_apply_on_empty_db() {
 #[tokio::test]
 async fn migrate_twice_is_noop() {
     let db = TestDb::new(true).await;
-    let again = migrate::run(&db.pool).await.unwrap();
+    let again = with_migration_lock(&db.admin, migrate::run(&db.pool))
+        .await
+        .unwrap();
     assert!(again.is_empty());
     let count: i64 = sqlx::query_scalar("SELECT count(*) FROM _sqlx_migrations")
         .fetch_one(&db.pool)

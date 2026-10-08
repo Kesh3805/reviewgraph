@@ -18,6 +18,28 @@ use uuid::Uuid;
 
 static MIGRATOR: sqlx::migrate::Migrator = sqlx::migrate!("../../migrations");
 
+/// Key of the advisory lock that serializes migrations across the test databases.
+const MIGRATION_LOCK_KEY: i64 = 0x5247_4d49_4752;
+
+/// Runs `work` (a migration) while holding a cluster-wide advisory lock on the admin connection.
+/// `20261002000006_db_roles` creates cluster-wide roles, so two throwaway databases migrating at
+/// the same time race on `CREATE ROLE` (a duplicate key in `pg_authid`).
+async fn with_migration_lock<T>(admin: &PgPool, work: impl std::future::Future<Output = T>) -> T {
+    let mut conn = admin.acquire().await.unwrap();
+    sqlx::query("SELECT pg_advisory_lock($1)")
+        .bind(MIGRATION_LOCK_KEY)
+        .execute(&mut *conn)
+        .await
+        .unwrap();
+    let out = work.await;
+    sqlx::query("SELECT pg_advisory_unlock($1)")
+        .bind(MIGRATION_LOCK_KEY)
+        .execute(&mut *conn)
+        .await
+        .unwrap();
+    out
+}
+
 struct TestDb {
     pool: PgPool,
     admin: PgPool,
@@ -45,7 +67,9 @@ impl TestDb {
             .connect_with(options)
             .await
             .unwrap();
-        MIGRATOR.run(&pool).await.unwrap();
+        with_migration_lock(&admin, MIGRATOR.run(&pool))
+            .await
+            .unwrap();
         Self { pool, admin, name }
     }
 
