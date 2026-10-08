@@ -53,6 +53,18 @@ export interface SummaryInput {
   };
   /** POL-002 notice when the repository policy changed in this PR. */
   policyChange?: string;
+  /**
+   * Findings of an earlier review that are no longer reported although the code they point at
+   * did not change (GH-011 "unknown"): their threads stay open and are listed here.
+   */
+  previouslyReported?: PreviouslyReportedFinding[];
+}
+
+export interface PreviouslyReportedFinding {
+  severity: Severity;
+  title: string;
+  path?: string;
+  line?: number;
 }
 
 const plural = (n: number, one: string, many: string): string => `${n} ${n === 1 ? one : many}`;
@@ -100,6 +112,16 @@ export function renderSummary(s: SummaryInput): string {
     });
     out.push(
       `**Findings outside the diff**\nThese could not be placed as inline comments on this diff.\n${items.join('\n')}`,
+    );
+  }
+
+  if (s.previouslyReported && s.previouslyReported.length > 0) {
+    const items = s.previouslyReported.map((f) => {
+      const where = f.path ? ` (\`${fenceSafe(f.path)}${f.line ? `:${f.line}` : ''}\`)` : '';
+      return `- ${severityEmoji(f.severity)} **${severityLabel(f.severity)}** — ${escapeMarkdown(f.title)}${where}`;
+    });
+    out.push(
+      `**Previously reported**\nNot reported on this head, but the code they point at did not change; their threads stay open.\n${items.join('\n')}`,
     );
   }
 

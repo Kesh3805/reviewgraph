@@ -11,6 +11,9 @@ import { JOB_CANCELLER, NoopJobCanceller } from '../../common/job-canceller';
 import { INSTALLATION_GATE, InstallationService } from './installation.service';
 import { GITHUB_PERMISSIONS_STATUS, GithubPermissionsMonitor } from './permissions-monitor';
 import { ACTOR_PERMISSION_LOOKUP, GithubActorPermissions } from './permissions';
+import { GithubProviderRegistration } from './provider-registration';
+import { GithubRepositoryProvider } from './repository-provider';
+import { GithubReviewPublisher } from './review-publisher';
 import { InstallationTokenCache } from './token-cache';
 
 /** Null when `GITHUB_ENABLED=false` (CLI-only local development). */
@@ -44,6 +47,9 @@ export function createGithubAppAuth(config: AppConfig, redis: Redis): GithubAppA
     InstallationService,
     { provide: INSTALLATION_GATE, useExisting: InstallationService },
     { provide: GITHUB_PERMISSIONS_STATUS, useExisting: GithubPermissionsMonitor },
+    GithubRepositoryProvider,
+    GithubReviewPublisher,
+    GithubProviderRegistration,
   ],
   exports: [
     GITHUB_APP_AUTH,
@@ -53,6 +59,8 @@ export function createGithubAppAuth(config: AppConfig, redis: Redis): GithubAppA
     InstallationService,
     INSTALLATION_GATE,
     GITHUB_PERMISSIONS_STATUS,
+    GithubRepositoryProvider,
+    GithubReviewPublisher,
   ],
 })
 export class GithubModule {}
