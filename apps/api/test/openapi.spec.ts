@@ -45,4 +45,16 @@ describe('OpenAPI document', () => {
     expect(has('/api/v1/repositories/{repoId}/settings', 'patch')).toBe(true);
     expect(has('/api/v1/auth/me', 'get')).toBe(true);
   });
+
+  it('lists every reviews route (API-009)', () => {
+    const paths = buildOpenApiDocument(app).paths;
+    const has = (path: string, method: string): boolean =>
+      Boolean((paths[path] as Record<string, unknown> | undefined)?.[method]);
+    expect(has('/api/v1/repositories/{repoId}/pull-requests', 'get')).toBe(true);
+    expect(has('/api/v1/pull-requests/{pullRequestId}', 'get')).toBe(true);
+    expect(has('/api/v1/pull-requests/{pullRequestId}/review', 'post')).toBe(true);
+    expect(has('/api/v1/pull-requests/{pullRequestId}/reviews', 'get')).toBe(true);
+    expect(has('/api/v1/pull-requests/{pullRequestId}/reviews/{reviewId}', 'get')).toBe(true);
+    expect(has('/api/v1/reviews/{reviewId}/cancel', 'post')).toBe(true);
+  });
 });

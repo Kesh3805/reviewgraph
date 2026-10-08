@@ -9,6 +9,7 @@ import { AuditModule } from './audit/audit.service';
 import { DbModule } from './db/db.module';
 import { JobsModule } from './jobs/jobs.module';
 import { RepositoriesModule } from './repositories/repositories.module';
+import { ReviewsModule } from './reviews/reviews.module';
 import { AuthModule } from './auth/auth.module';
 import { TenancyModule } from './tenancy/tenancy.module';
 import { InternalModule } from './internal/internal.module';
@@ -35,6 +36,7 @@ import { TelemetryModule } from './telemetry/telemetry.module';
     WebhooksModule,
     PublisherModule,
     RepositoriesModule,
+    ReviewsModule,
     HealthModule,
   ],
   providers: [ShutdownService, { provide: APP_PIPE, useClass: ZodValidationPipe }],

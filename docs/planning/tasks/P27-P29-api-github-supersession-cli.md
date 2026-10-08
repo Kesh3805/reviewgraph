@@ -564,7 +564,15 @@ Status: ☐
 ---
 
 ### API-009 — Reviews API
-Status: ☐
+Status: ☑
+
+> **Implementation note:** The manual trigger calls SUP-001's `SupersessionService.startInTx` at
+> the stored head with the suffix `manual:{yyyyMMddHHmm}` (one per head and minute), in the same
+> transaction as its audit row; an active run of the same head is returned rather than replaced
+> (SUP-001 semantics), so "supersedes the running run" applies to runs of an older head. The
+> response's `job_id` is the run's `pr-review` job. Stage timings, risk assessment, change summary and coverage are read
+> from `review_runs.provenance` (`stages`, `risk_assessment`, `change_summary`, `coverage`) until
+> PIPE-007 records transitions; they are empty or null before that.
 
 - **Task ID:** API-009
 - **Title:** Reviews API
