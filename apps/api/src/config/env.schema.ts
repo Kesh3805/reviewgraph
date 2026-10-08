@@ -77,6 +77,12 @@ const baseShape = {
   GITHUB_OAUTH_URL: url(['http:', 'https:']).default('https://github.com'),
   /** Optional explicit OAuth redirect_uri; otherwise GitHub uses the callback configured on the App. */
   GITHUB_OAUTH_REDIRECT_URI: url(['http:', 'https:']).optional(),
+  /**
+   * Polling reconciler (GH-012). Unset: on in development without a webhook secret (no public
+   * ingress), off otherwise.
+   */
+  RECONCILER_ENABLED: boolFromString.optional(),
+  RECONCILE_INTERVAL_SECONDS: z.coerce.number().int().min(1).max(86_400).default(300),
   ...telemetryEnvShape,
 };
 
