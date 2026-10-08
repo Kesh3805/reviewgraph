@@ -14,6 +14,7 @@ import { generate } from './generate.mjs';
 
 const PKG = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const ROOT = path.resolve(PKG, '..', '..');
+const NATIVE = ['1', 'true'].includes(process.env.RG_NATIVE ?? process.env.CI ?? '');
 
 function arg(flag, fallback) {
   const i = process.argv.indexOf(flag);
@@ -70,7 +71,8 @@ try {
         'contracts',
         'export',
         '--out',
-        `/repo/${rel}`,
+        // In native mode (CI, RG_NATIVE=1) cargo runs on the host; otherwise in the container at /repo.
+        NATIVE ? freshSchemas : `/repo/${rel}`,
       ],
       { cwd: ROOT, stdio: ['ignore', 'ignore', 'inherit'] },
     );

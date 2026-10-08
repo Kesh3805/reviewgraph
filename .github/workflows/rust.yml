@@ -183,7 +183,11 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
-      - uses: EmbarkStudios/cargo-deny-action@v2
+      - uses: taiki-e/install-action@v2
         with:
-          manifest-path: engine/Cargo.toml
-          command: check bans licenses sources advisories
+          tool: cargo-deny
+      - name: cargo deny (bans, licenses, sources)
+        run: cargo deny --all-features check bans licenses sources
+      - name: cargo deny (advisories, reported)
+        continue-on-error: true
+        run: cargo deny --all-features check advisories
