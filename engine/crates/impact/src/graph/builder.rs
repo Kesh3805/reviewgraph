@@ -30,6 +30,7 @@ use super::model::{
     SeedTruncation, SymbolImpact, TruncReason, Truncation, IMPACT_SCHEMA_VERSION,
 };
 use super::path::{Candidate, ElementSet, Extras, Offer, Trail};
+use super::tests_map::{self, TestIndex};
 use super::types;
 
 /// An owned copy of the parts of an edge the expansions need.
@@ -92,6 +93,7 @@ pub(crate) struct Cx<'a> {
     pub base: Option<&'a dyn GraphQuery>,
     pub budget: &'a ImpactBudget,
     pub change: &'a ChangeSet,
+    pub tests: &'a TestIndex,
 }
 
 impl<'a> Cx<'a> {
@@ -143,6 +145,8 @@ pub(crate) struct SeedState {
     pub caller_frontier: Vec<NodeKey>,
     /// Nodes the endpoint search visited.
     pub endpoint_visits: u32,
+    /// No included, non-mocked test with score ≥ 0.8 (IMP-005).
+    pub untested: bool,
 }
 
 impl SeedState {
@@ -162,6 +166,7 @@ impl SeedState {
             drops: BTreeMap::new(),
             caller_frontier: Vec::new(),
             endpoint_visits: 0,
+            untested: false,
         }
     }
 
@@ -319,6 +324,7 @@ fn expand_seed(cx: &Cx<'_>, index: usize, symbol: &SymbolInput, cap: u32) -> Exp
     calls::expand_removed_callees(cx, &mut state, &removed);
     types::expand_types(cx, &mut state);
     state.endpoint_visits = entrypoints::expand_endpoints(cx, &mut state);
+    state.untested = tests_map::expand_tests(cx, cx.tests, &mut state);
 
     Expanded {
         input: index,
@@ -361,11 +367,13 @@ pub fn build_impact(inputs: &ImpactInputs<'_>) -> ImpactGraph {
         endpoints_found = tracing::field::Empty,
     );
     let _entered = span.enter();
+    let test_index = TestIndex::build(inputs.head);
     let cx = Cx {
         head: inputs.head,
         base: inputs.base,
         budget,
         change,
+        tests: &test_index,
     };
 
     let order = seed_order(change);
@@ -500,17 +508,18 @@ pub fn build_impact(inputs: &ImpactInputs<'_>) -> ImpactGraph {
             seed_id: symbol.id().to_owned(),
             side,
             skipped: None,
-            untested: false,
+            untested: state.untested,
             elements,
             truncation,
         });
     }
 
     let flags = ImpactFlags {
-        test_mapping_degraded: false,
+        test_mapping_degraded: test_index.degraded(),
         resource_facts_available: false,
         base_graph_missing: inputs.base.is_none(),
     };
+    let test_targets = tests_map::changed_test_targets(change, inputs.head, &test_index);
     let graph = ImpactGraph {
         schema_version: IMPACT_SCHEMA_VERSION,
         input_hash: compute_input_hash(
@@ -523,7 +532,7 @@ pub fn build_impact(inputs: &ImpactInputs<'_>) -> ImpactGraph {
         budget: budget.clone(),
         stats,
         flags,
-        test_targets: Vec::new(),
+        test_targets,
     };
     span.record("elements", u64::from(graph.stats.total_elements));
     span.record("truncated_relations", graph.stats.truncations.len() as u64);

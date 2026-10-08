@@ -56,6 +56,28 @@ Resource elements carry `resource { role, removed }`; `removed = true` marks an 
 on base only. Callers carry `touches`, the tables and queues the caller itself reads or writes,
 so a caller's table is visible on the caller instead of being duplicated as a seed relation.
 
+## Test mapping (IMP-005)
+
+Each (test case `t`, changed symbol `s`) pair is scored from independent signals in `[0, 1]`,
+combined as `score = 1 − Π(1 − signal)` and rounded to four decimals:
+
+| Signal | Weight | Evidence |
+|---|---|---|
+| `invocation` | 1.0 | `t`, or a test-file helper within depth 2, reaches `s` through `CALLS`/`TESTS` (reverse search from `s` over test-file nodes, depth ≤ 3) |
+| `tests_edge` | 1.0 | `TESTS(t → s)` or `TESTS(suite of t → class of s)` |
+| `import` | 0.8 (0.6 through an `index.*` barrel) | the test file imports the module of `s` |
+| `naming` | 0.6 | a suite/case name token equals the name of `s` or its class, or `x.spec.ts` / `x.test.ts` / `x.e2e-spec.ts` matches `x.ts` |
+| `path` | 0.4 | same directory, `__tests__/` beside the source, or a `test/` mirror of `src/` |
+| `mock` | 0.5 | `t` (its suite or file) mocks the class of `s` (`jest.mock`, `useValue` override) |
+
+* A test is included when `score ≥ 0.6`. A test that only mocks `s` is included with
+  `mocked = true` — it depends on `s` without exercising it.
+* `untested(s)` holds when no included, non-mocked test scores ≥ 0.8.
+* Without test-case nodes (no Jest adapter) only `import`, `naming` and `path` apply, the
+  elements are test *files*, and `flags.test_mapping_degraded` is set.
+* Tests are capped at `max_tests`, strongest first.
+* For each changed test file, `test_targets` lists the production symbols its cases target.
+
 ## Budgets
 
 `ImpactBudget` caps every expansion; every stop is a `Truncation` and is aggregated into
