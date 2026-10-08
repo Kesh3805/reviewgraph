@@ -3,12 +3,16 @@
 //! * [`model`] — elements, relations, paths, truncation and the serialized [`ImpactGraph`].
 //! * [`path`] — the best-path merge rule for elements reached more than once.
 //! * [`budget`] — caps for every expansion.
+//! * [`builder`] — the per-seed orchestration; [`calls`] — callers, callees, removed callees.
 
 pub mod budget;
+pub mod builder;
+pub mod calls;
 pub mod model;
 pub mod path;
 
 pub use budget::ImpactBudget;
+pub use builder::{build_impact, ImpactInputs};
 pub use model::{
     compute_input_hash, sort_elements, EndpointAttrs, EntryKind, GraphSide, ImpactElement,
     ImpactFlags, ImpactGraph, ImpactStats, PathStep, Relation, ResourceAttrs, ResourceRole,
