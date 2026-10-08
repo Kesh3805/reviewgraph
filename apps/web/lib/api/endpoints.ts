@@ -6,6 +6,16 @@
  */
 import { api } from '../api-client';
 import type {
+  AuditEntry,
+  CreateSuppressionInput,
+  GithubIntegration,
+  Member,
+  OrganizationSettings,
+  OrganizationSettingsPatch,
+  RepositoryRules,
+  Suppression,
+  UsageGroupBy,
+  UsageReport,
   RepositoryIntelligence,
   RepositoryProfile,
   FeedbackInput,
@@ -140,6 +150,119 @@ export async function getRepositoryIntelligence(
     signal: opts.signal,
   });
   return required(data, 'repository intelligence');
+}
+
+// ---------------------------------------------------------------------------------------------
+// Rules, integrations, usage and settings (WEB-008, pending)
+// ---------------------------------------------------------------------------------------------
+
+export async function getRepositoryRules(
+  repoId: string,
+  opts: Signal = {},
+): Promise<RepositoryRules> {
+  const { data } = await api.GET('/api/v1/repositories/{repoId}/rules', {
+    params: { path: { repoId } },
+    signal: opts.signal,
+  });
+  return required(data, 'rules');
+}
+
+export async function listSuppressions(
+  repoId: string,
+  opts: Signal = {},
+): Promise<{ items: Suppression[]; audit: AuditEntry[] }> {
+  const { data } = await api.GET('/api/v1/repositories/{repoId}/suppressions', {
+    params: { path: { repoId } },
+    signal: opts.signal,
+  });
+  return required(data, 'suppressions');
+}
+
+export async function createSuppression(
+  repoId: string,
+  input: CreateSuppressionInput,
+): Promise<Suppression> {
+  const { data } = await api.POST('/api/v1/repositories/{repoId}/suppressions', {
+    params: { path: { repoId } },
+    body: input,
+  });
+  return required(data, 'suppression');
+}
+
+/** Revokes (never deletes) a suppression; the API records it in the audit log. */
+export async function revokeSuppression(
+  repoId: string,
+  suppressionId: string,
+): Promise<Suppression> {
+  const { data } = await api.DELETE('/api/v1/repositories/{repoId}/suppressions/{suppressionId}', {
+    params: { path: { repoId, suppressionId } },
+  });
+  return required(data, 'suppression');
+}
+
+export async function getGithubIntegration(
+  orgId: string,
+  opts: Signal = {},
+): Promise<GithubIntegration> {
+  const { data } = await api.GET('/api/v1/organizations/{id}/integrations/github', {
+    params: { path: { id: orgId } },
+    signal: opts.signal,
+  });
+  return required(data, 'integration');
+}
+
+export async function getUsage(
+  orgId: string,
+  query: { from: string; to: string; group_by: UsageGroupBy },
+  opts: Signal = {},
+): Promise<UsageReport> {
+  const { data } = await api.GET('/api/v1/organizations/{id}/usage', {
+    params: { path: { id: orgId }, query },
+    signal: opts.signal,
+  });
+  return required(data, 'usage');
+}
+
+export async function getOrganizationSettings(
+  orgId: string,
+  opts: Signal = {},
+): Promise<OrganizationSettings> {
+  const { data } = await api.GET('/api/v1/organizations/{id}/settings', {
+    params: { path: { id: orgId } },
+    signal: opts.signal,
+  });
+  return required(data, 'settings');
+}
+
+export async function updateOrganizationSettings(
+  orgId: string,
+  patch: OrganizationSettingsPatch,
+): Promise<OrganizationSettings> {
+  const { data } = await api.PATCH('/api/v1/organizations/{id}/settings', {
+    params: { path: { id: orgId } },
+    body: patch,
+  });
+  return required(data, 'settings');
+}
+
+export async function listMembers(orgId: string, opts: Signal = {}): Promise<Member[]> {
+  const { data } = await api.GET('/api/v1/organizations/{id}/members', {
+    params: { path: { id: orgId } },
+    signal: opts.signal,
+  });
+  return required(data, 'members').items;
+}
+
+export async function updateMemberRole(
+  orgId: string,
+  userId: string,
+  role: Member['role'],
+): Promise<Member> {
+  const { data } = await api.PATCH('/api/v1/organizations/{id}/members/{userId}', {
+    params: { path: { id: orgId, userId } },
+    body: { role },
+  });
+  return required(data, 'member');
 }
 
 /** PENDING (assumed route): top risk areas of a repository. */

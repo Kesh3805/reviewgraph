@@ -198,6 +198,115 @@ export interface RepositoryProfile {
 }
 
 // ---------------------------------------------------------------------------------------------
+// WEB-008: rules and suppressions (POL-001..POL-006, assumed routes), integrations (GH-010,
+// GH-012), usage (GW accounting, QB-005) and organization settings (SEC-007).
+// ---------------------------------------------------------------------------------------------
+
+/** `GET /repositories/:id/rules`: the effective `.review/config.yaml` and explicit rules. */
+export interface RepositoryRules {
+  config: { path: string; yaml: string | null };
+  rules: { id: string; description: string; severity: Severity; violations_30d: number }[];
+}
+
+export interface Suppression {
+  id: string;
+  kind: 'fingerprint' | 'symbol' | 'path' | 'rule';
+  value: string;
+  reason: string;
+  created_by: string;
+  created_at: string;
+  revoked_at: string | null;
+  revoked_by: string | null;
+}
+
+export interface AuditEntry {
+  id: string;
+  action: string;
+  actor: string;
+  target: string;
+  at: string;
+}
+
+export interface CreateSuppressionInput {
+  kind: Suppression['kind'];
+  value: string;
+  reason: string;
+}
+
+/** `GET /organizations/:id/integrations/github`. */
+export interface GithubIntegration {
+  installation: {
+    id: string;
+    account_login: string;
+    state: 'active' | 'suspended' | 'deleted';
+    installed_at: string;
+  } | null;
+  /** GH-010: the App permission manifest check (no merge permission, minimal scopes). */
+  permissions_check: {
+    ok: boolean;
+    checked_at: string | null;
+    missing: string[];
+    excess: string[];
+  };
+  webhooks: {
+    last_delivery_at: string | null;
+    last_delivery_event: string | null;
+    deliveries_24h: number;
+    signature_failures_24h: number;
+  };
+  /** GH-012 polling reconciler. */
+  reconciler: {
+    state: 'ok' | 'lagging' | 'failing' | 'disabled';
+    last_run_at: string | null;
+    repaired_24h: number;
+  };
+}
+
+export type UsageGroupBy = 'day' | 'reviewer' | 'tier' | 'model';
+
+export interface UsageMetrics {
+  model_calls: number;
+  input_tokens: number;
+  output_tokens: number;
+  cached_tokens: number;
+  cost_usd_micros: number;
+}
+
+/** `GET /organizations/:id/usage?from&to&group_by`. */
+export interface UsageReport {
+  from: string;
+  to: string;
+  group_by: UsageGroupBy;
+  rows: (UsageMetrics & { key: string })[];
+  totals: UsageMetrics & { reviewed_prs: number; useful_findings: number };
+  cost_per_reviewed_pr_usd_micros: number | null;
+  /** QB-005. */
+  cost_per_useful_finding_usd_micros: number | null;
+}
+
+/** `GET/PATCH /organizations/:id/settings`; PATCH carries `updated_at` as a precondition. */
+export interface OrganizationSettings {
+  retention: { source_days: number; artifacts_days: number };
+  /** When false, no source is sent to external model providers (next runs). */
+  external_models: boolean;
+  updated_at: string;
+}
+
+export interface OrganizationSettingsPatch {
+  retention?: OrganizationSettings['retention'];
+  external_models?: boolean;
+  /** Optimistic concurrency: 409 when the settings changed since this timestamp. */
+  updated_at: string;
+}
+
+export interface Member {
+  user_id: string;
+  login: string;
+  display_name: string | null;
+  role: 'owner' | 'admin' | 'member' | 'viewer';
+}
+
+// ---------------------------------------------------------------------------------------------
 // API-009: pull requests and review runs
 // ---------------------------------------------------------------------------------------------
 
@@ -603,6 +712,34 @@ export interface PendingPaths {
   /** WEB-004 (API side not built yet). */
   '/api/v1/repositories/{repoId}/intelligence': {
     get: GetOp<RepositoryIntelligence, PathParams<'repoId'>>;
+  };
+  /** WEB-008 (assumed routes): rules, suppressions and their audit history. */
+  '/api/v1/repositories/{repoId}/rules': { get: GetOp<RepositoryRules, PathParams<'repoId'>> };
+  '/api/v1/repositories/{repoId}/suppressions': {
+    get: GetOp<{ items: Suppression[]; audit: AuditEntry[] }, PathParams<'repoId'>>;
+    post: BodyOp<Suppression, CreateSuppressionInput, PathParams<'repoId'>>;
+  };
+  '/api/v1/repositories/{repoId}/suppressions/{suppressionId}': {
+    delete: BodyOp<Suppression, never, { path: { repoId: string; suppressionId: string } }>;
+  };
+  /** WEB-008. */
+  '/api/v1/organizations/{id}/integrations/github': {
+    get: GetOp<GithubIntegration, PathParams<'id'>>;
+  };
+  '/api/v1/organizations/{id}/usage': {
+    get: GetOp<
+      UsageReport,
+      { path: { id: string }; query: { from: string; to: string; group_by: UsageGroupBy } }
+    >;
+  };
+  '/api/v1/organizations/{id}/settings': {
+    get: GetOp<OrganizationSettings, PathParams<'id'>>;
+    patch: BodyOp<OrganizationSettings, OrganizationSettingsPatch, PathParams<'id'>>;
+  };
+  /** Assumed list route for the members table. */
+  '/api/v1/organizations/{id}/members': { get: GetOp<{ items: Member[] }, PathParams<'id'>> };
+  '/api/v1/organizations/{id}/members/{userId}': {
+    patch: BodyOp<Member, { role: Member['role'] }, { path: { id: string; userId: string } }>;
   };
   /** Assumed route: top risk areas for the repository overview. */
   '/api/v1/repositories/{repoId}/risk-areas': {

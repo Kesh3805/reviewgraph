@@ -9,6 +9,7 @@ import type {
   PullRequestListQuery,
   PullRequestSummary,
   RepositoryStatus,
+  UsageGroupBy,
 } from './api/pending';
 import { isTerminalReview } from './run-state';
 
@@ -41,6 +42,12 @@ export const keys = {
   feedback: (findingId: string) => ['finding', findingId, 'feedback'] as const,
   profile: (repoId: string) => ['repository', repoId, 'profile'] as const,
   intelligence: (repoId: string) => ['repository', repoId, 'intelligence'] as const,
+  rules: (repoId: string) => ['repository', repoId, 'rules'] as const,
+  suppressions: (repoId: string) => ['repository', repoId, 'suppressions'] as const,
+  integration: (orgId: string) => ['organization', orgId, 'integrations', 'github'] as const,
+  usage: (orgId: string, query: object) => ['organization', orgId, 'usage', query] as const,
+  orgSettings: (orgId: string) => ['organization', orgId, 'settings'] as const,
+  members: (orgId: string) => ['organization', orgId, 'members'] as const,
 };
 
 export function repositoriesQuery(orgId: string) {
@@ -182,6 +189,57 @@ export function repositoryIntelligenceQuery(repoId: string) {
   return queryOptions({
     queryKey: keys.intelligence(repoId),
     queryFn: ({ signal }) => endpoints.getRepositoryIntelligence(repoId, { signal }),
+    throwOnError: false,
+  });
+}
+
+export function repositoryRulesQuery(repoId: string) {
+  return queryOptions({
+    queryKey: keys.rules(repoId),
+    queryFn: ({ signal }) => endpoints.getRepositoryRules(repoId, { signal }),
+    throwOnError: false,
+  });
+}
+
+export function suppressionsQuery(repoId: string) {
+  return queryOptions({
+    queryKey: keys.suppressions(repoId),
+    queryFn: ({ signal }) => endpoints.listSuppressions(repoId, { signal }),
+    throwOnError: false,
+  });
+}
+
+export function githubIntegrationQuery(orgId: string) {
+  return queryOptions({
+    queryKey: keys.integration(orgId),
+    queryFn: ({ signal }) => endpoints.getGithubIntegration(orgId, { signal }),
+    throwOnError: false,
+  });
+}
+
+export function usageQuery(
+  orgId: string,
+  query: { from: string; to: string; group_by: UsageGroupBy },
+) {
+  return queryOptions({
+    queryKey: keys.usage(orgId, query),
+    queryFn: ({ signal }) => endpoints.getUsage(orgId, query, { signal }),
+    throwOnError: false,
+  });
+}
+
+export function orgSettingsQuery(orgId: string) {
+  return queryOptions({
+    queryKey: keys.orgSettings(orgId),
+    queryFn: ({ signal }) => endpoints.getOrganizationSettings(orgId, { signal }),
+    throwOnError: false,
+  });
+}
+
+export function membersQuery(orgId: string) {
+  return queryOptions({
+    queryKey: keys.members(orgId),
+    queryFn: ({ signal }) => endpoints.listMembers(orgId, { signal }),
     throwOnError: false,
   });
 }

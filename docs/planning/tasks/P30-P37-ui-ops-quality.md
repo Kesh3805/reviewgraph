@@ -414,7 +414,8 @@ Status: ◐
 ---
 
 ### WEB-008 — Rules, Integrations, Usage and Settings pages
-Status: ☐
+Status: ◐
+> **Implementation note:** Web side only; the API half (`apps/api/src/usage/*`, organization settings, integrations and members endpoints) is not built and this lane does not edit `apps/api`. The pages code against hand-typed contracts in `apps/web/lib/api/pending.ts`: `GET /organizations/:id/usage?from&to&group_by` (rows per key plus totals, cost per reviewed PR and per useful finding), `GET/PATCH /organizations/:id/settings` (retention days, `external_models`, `updated_at` sent back as the precondition; 409 shows a reload prompt), `GET /organizations/:id/integrations/github`, and `PATCH /organizations/:id/members/:userId`. Assumed routes not named by the spec: `GET /organizations/:id/members`, `GET /repositories/:id/rules` (config path and YAML, explicit rules with 30-day violations), `GET/POST /repositories/:id/suppressions` (with the audit history) and `DELETE /repositories/:id/suppressions/:id` (revoke). Config validation errors come from the real API-008 status. The YAML is highlighted with the shared shiki server action. `/rules` (sidebar entry) lists repositories and links to each Rules tab. Remaining: the API endpoints and the seed-data acceptance check.
 
 - **Task ID:** WEB-008
 - **Title:** Rules, Integrations, Usage, Settings pages
