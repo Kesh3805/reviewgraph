@@ -3312,8 +3312,30 @@ dependencies = [
 name = "profile"
 version = "0.1.0"
 dependencies = [
+ "analysis-ir",
+ "blake3",
+ "chrono",
+ "codegraph",
+ "globset",
+ "hex",
+ "opentelemetry",
+ "pretty_assertions",
+ "profile",
+ "proptest",
+ "rayon",
+ "repository",
  "review-core",
+ "review-test-support",
+ "schemars",
+ "serde",
+ "serde_json",
+ "serde_yaml",
+ "sqlx",
+ "tempfile",
  "thiserror",
+ "tokio",
+ "tracing",
+ "uuid",
 ]
 
 [[package]]

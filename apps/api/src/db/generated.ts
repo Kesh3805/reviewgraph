@@ -255,6 +255,17 @@ export interface Repositories {
   visibility: string;
 }
 
+export interface RepositoryConfigs {
+  config_hash: string;
+  created_at: Generated<Timestamp>;
+  normalized: Json;
+  organization_id: string;
+  raw_blob_sha: string | null;
+  repository_id: string;
+  status: string;
+  validation: Generated<Json>;
+}
+
 export interface RepositoryInitFacts {
   commit_sha: string;
   created_at: Generated<Timestamp>;
@@ -362,6 +373,7 @@ export interface Snapshots {
   completed_at: Timestamp | null;
   config_components: Generated<Json>;
   config_hash: Buffer;
+  config_source_path: string | null;
   created_at: Generated<Timestamp>;
   error: string | null;
   fingerprint: Buffer;
@@ -500,6 +512,7 @@ export interface DB {
   published_findings: PublishedFindings;
   pull_requests: PullRequests;
   repositories: Repositories;
+  repository_configs: RepositoryConfigs;
   repository_init_facts: RepositoryInitFacts;
   repository_settings: RepositorySettings;
   resolved_by_kinds: ResolvedByKinds;
