@@ -47,6 +47,8 @@ export interface ProviderPullRequest {
   headRef: string;
   author: ProviderActor;
   labels: string[];
+  /** Provider's last-modified time (ISO 8601); orders out-of-order events (GH-005). */
+  updatedAt?: string;
 }
 
 export type ChangedFileStatus =
@@ -60,6 +62,28 @@ export interface ProviderChangedFile {
   deletions: number;
   /** Unified-diff hunks for this file; absent for binary or oversized files. */
   patch?: string;
+}
+
+/** GitHub's own limit on the files a pull request lists; more are reported as truncated. */
+export const MAX_CHANGED_FILES = 3000;
+
+export interface ChangedFileList {
+  files: ProviderChangedFile[];
+  /** True when the provider had more files than `cap` (very large PR hint). */
+  truncated: boolean;
+}
+
+/** Drains a changed-file stream up to `cap` files; one more file marks the list truncated. */
+export async function collectChangedFiles(
+  stream: AsyncIterable<ProviderChangedFile>,
+  cap = MAX_CHANGED_FILES,
+): Promise<ChangedFileList> {
+  const files: ProviderChangedFile[] = [];
+  for await (const file of stream) {
+    if (files.length >= cap) return { files, truncated: true };
+    files.push(file);
+  }
+  return { files, truncated: false };
 }
 
 export interface ProviderCommit {
@@ -145,6 +169,8 @@ export interface CheckRunRequest {
   summary: string;
   /** Existing check run to update, when known. */
   checkRunId?: string;
+  /** Correlates the check run with our run (`external_id = review_run_id`). */
+  externalId?: string;
 }
 
 export interface ResolveResult {

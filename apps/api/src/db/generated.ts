@@ -69,6 +69,16 @@ export interface CandidateFindings {
   updated_at: Generated<Timestamp>;
 }
 
+export interface CheckRuns {
+  conclusion: string | null;
+  created_at: Generated<Timestamp>;
+  organization_id: string;
+  provider_check_run_id: string;
+  review_run_id: string;
+  title: string | null;
+  updated_at: Generated<Timestamp>;
+}
+
 export interface EdgeKinds {
   id: number;
   name: string;
@@ -198,6 +208,18 @@ export interface ProviderInstallations {
   updated_at: Generated<Timestamp>;
 }
 
+export interface Publications {
+  attempt: Generated<number>;
+  created_at: Generated<Timestamp>;
+  organization_id: string;
+  outcome: string | null;
+  posted_at: Timestamp | null;
+  provider_review_id: string | null;
+  review_run_id: string;
+  state: string;
+  updated_at: Generated<Timestamp>;
+}
+
 export interface PublishedFindings {
   created_at: Generated<Timestamp>;
   end_line: number | null;
@@ -211,8 +233,11 @@ export interface PublishedFindings {
   provider_review_id: string | null;
   published_at: Timestamp;
   pull_request_id: string;
+  resolved_in_run_id: string | null;
   review_run_id: string;
+  side: string | null;
   start_line: number | null;
+  status: Generated<string>;
   updated_at: Generated<Timestamp>;
   verified_finding_id: string;
 }
@@ -229,6 +254,7 @@ export interface PullRequests {
   merge_base_sha: string | null;
   organization_id: string;
   provider_number: number;
+  provider_updated_at: Timestamp | null;
   repository_id: string;
   state: string;
   title: string;
@@ -319,10 +345,12 @@ export interface ReviewRuns {
   completed_at: Timestamp | null;
   created_at: Generated<Timestamp>;
   degraded_reviewers: Generated<string[]>;
+  depth: Generated<string>;
   failure_class: string | null;
   failure_detail: string | null;
   head_sha: string;
   id: Generated<string>;
+  idempotency_key: string | null;
   merge_base_sha: string | null;
   organization_id: string;
   provenance: Generated<Json>;
@@ -330,7 +358,9 @@ export interface ReviewRuns {
   repository_id: string;
   retry_of: string | null;
   state: string;
+  superseded_at: Timestamp | null;
   superseded_by: string | null;
+  superseded_by_head: string | null;
   trace_parent: string | null;
   trigger: string;
   updated_at: Generated<Timestamp>;
@@ -486,6 +516,7 @@ export interface WebhookDeliveries {
 export interface DB {
   audit_log: AuditLog;
   candidate_findings: CandidateFindings;
+  check_runs: CheckRuns;
   edge_kinds: EdgeKinds;
   file_versions: FileVersions;
   finding_feedback: FindingFeedback;
@@ -497,6 +528,7 @@ export interface DB {
   organizations: Organizations;
   provenance_kinds: ProvenanceKinds;
   provider_installations: ProviderInstallations;
+  publications: Publications;
   published_findings: PublishedFindings;
   pull_requests: PullRequests;
   repositories: Repositories;

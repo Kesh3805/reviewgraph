@@ -1,0 +1,20 @@
+[
+  {
+    "sha": "bbcd538c8e72b8c175046e27cc8f907076331401",
+    "filename": "src/billing/invoice.ts",
+    "status": "modified",
+    "additions": 30,
+    "deletions": 10,
+    "changes": 40,
+    "patch": "@@ -10,6 +10,8 @@ export class Invoice {\n   total(): number {\n-    return this.charge();\n+    const amount = this.sum();\n+    return amount;\n   }\n"
+  },
+  {
+    "sha": "f3b2c1d0e9a8b7c6d5e4f3a2b1c0d9e8f7a6b5c4",
+    "filename": "src/billing/charge.ts",
+    "previous_filename": "src/billing/payment.ts",
+    "status": "renamed",
+    "additions": 10,
+    "deletions": 2,
+    "changes": 12
+  }
+]

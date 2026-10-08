@@ -38,6 +38,7 @@ const pullRequestEvent = z.object({
     user,
     head: z.object({ sha: z.string().min(7) }),
     base: z.object({ sha: z.string().min(7), ref: z.string().min(1) }),
+    updated_at: z.string().optional(),
   }),
   requested_reviewer: user.optional(),
 });
@@ -199,6 +200,7 @@ function normalizePullRequest(
     author: actorOf(pr.user),
     draft: pr.draft === true,
     requestedReviewer,
+    ...(pr.updated_at ? { prUpdatedAt: pr.updated_at } : {}),
   };
 }
 

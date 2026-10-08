@@ -27,6 +27,8 @@ export interface PullRequestHeadEvent extends ProviderEventBase {
   author: ProviderActor;
   draft: boolean;
   requestedReviewer?: string;
+  /** `pull_request.updated_at` of the payload; a stale event never moves the head (SUP-001). */
+  prUpdatedAt?: string;
 }
 
 /** The pull request was closed or merged: active runs are cancelled. */

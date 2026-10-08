@@ -18,7 +18,7 @@ const RING = ServiceKeyRing.from([{ kid: 'default', secret: SECRET }]);
 
 @Controller('internal')
 class FakeInternalController {
-  @Post('repositories/:id/clone-credentials')
+  @Post('test/repositories/:id/clone-credentials')
   @ServiceAuth({ scopes: ['clone-credentials'], repoParam: 'id' })
   clone(@Param('id') id: string, @ServiceCaller() caller: ServiceTokenClaims | undefined) {
     return { repo: id, caller: caller?.sub };
@@ -60,7 +60,7 @@ describe('service auth guard (e2e)', () => {
   });
 
   const clone = (id = REPO) =>
-    request(app.getHttpServer()).post(`/internal/repositories/${id}/clone-credentials`);
+    request(app.getHttpServer()).post(`/internal/test/repositories/${id}/clone-credentials`);
 
   it('accepts a valid token and exposes the caller claims', async () => {
     const res = await clone().set('Authorization', `Bearer ${await token()}`);
@@ -77,7 +77,7 @@ describe('service auth guard (e2e)', () => {
     expect(
       counterTotal('service_auth_failures_total', {
         reason: 'expired',
-        route: '/internal/repositories/:id/clone-credentials',
+        route: '/internal/test/repositories/:id/clone-credentials',
       }),
     ).toBe(1);
   });
@@ -94,7 +94,7 @@ describe('service auth guard (e2e)', () => {
     expect(
       counterTotal('service_auth_failures_total', {
         reason: 'replayed',
-        route: '/internal/repositories/:id/clone-credentials',
+        route: '/internal/test/repositories/:id/clone-credentials',
       }),
     ).toBe(1);
   });

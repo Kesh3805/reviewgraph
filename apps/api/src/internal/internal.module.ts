@@ -4,6 +4,7 @@ import { hostname } from 'node:os';
 import type { Redis } from 'ioredis';
 import { REDIS } from '../common/redis.module';
 import { APP_CONFIG, type AppConfig } from '../config/config.module';
+import { CloneCredentialsController } from './clone-credentials.controller';
 import { SERVICE_JTI_STORE, SERVICE_KEY_RING, ServiceAuthGuard } from './service-auth.guard';
 import {
   RedisJtiStore,
@@ -43,6 +44,7 @@ export class ServiceTokenService {
  */
 @Global()
 @Module({
+  controllers: [CloneCredentialsController],
   providers: [
     {
       provide: SERVICE_KEY_RING,
