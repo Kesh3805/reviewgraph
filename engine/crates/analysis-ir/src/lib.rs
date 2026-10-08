@@ -8,6 +8,7 @@ pub mod diagnostic;
 pub mod error;
 pub mod facts;
 pub mod framework;
+pub mod identity;
 pub mod module;
 pub mod reference;
 pub mod registry;

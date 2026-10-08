@@ -102,6 +102,13 @@ impl ModulePath {
         Self(path.module_path().to_owned())
     }
 
+    /// Wraps a module path that [`crate::symbol_id::SymbolIdParts::parse`] or
+    /// [`crate::symbol_id::module_path_for`] has already validated. Everything else must go
+    /// through one of those, so an unchecked module path cannot enter an id.
+    pub(crate) fn from_checked(s: impl Into<String>) -> Self {
+        Self(s.into())
+    }
+
     pub fn as_str(&self) -> &str {
         &self.0
     }
@@ -149,6 +156,73 @@ impl Hash128 {
 
     pub fn is_zero(&self) -> bool {
         self.0 == [0u8; 16]
+    }
+}
+
+/// Size of the bottom-k shingle sketch (TSA-007). Exact while a body has at most this many
+/// distinct shingles.
+pub const SHINGLE_K: usize = 256;
+
+/// Normalized body shingles (TSA-007): a sorted, de-duplicated bottom-k sample of token n-gram
+/// hashes. The matcher compares two bodies through [`ShingleSet::jaccard`].
+///
+/// The type lives here rather than in `analysis-ir` because the rename/move matcher
+/// (`review-core::matcher`) needs it and may not depend on the IR.
+#[derive(
+    Debug, Clone, PartialEq, Eq, Default, Hash, PartialOrd, Ord, Serialize, Deserialize, JsonSchema,
+)]
+pub struct ShingleSet(pub Vec<u32>);
+
+impl ShingleSet {
+    /// Builds a sketch from hashed n-grams: sorted, de-duplicated, capped at [`SHINGLE_K`].
+    pub fn of(hashes: impl IntoIterator<Item = u32>) -> Self {
+        let mut all: Vec<u32> = hashes.into_iter().collect();
+        all.sort_unstable();
+        all.dedup();
+        all.truncate(SHINGLE_K);
+        Self(all)
+    }
+
+    /// Number of distinct shingles kept.
+    pub fn len(&self) -> usize {
+        self.0.len()
+    }
+
+    /// Whether no shingle was kept.
+    pub fn is_empty(&self) -> bool {
+        self.0.is_empty()
+    }
+
+    /// Bottom-k Jaccard estimate of two bodies: merge both sorted sets, take the `SHINGLE_K`
+    /// smallest of the union and report the fraction that appear in both. While both sets are
+    /// exact (at most `SHINGLE_K` distinct shingles) this is the exact Jaccard.
+    pub fn jaccard(&self, other: &Self) -> f32 {
+        let (mut left, mut right) = (0usize, 0usize);
+        let (mut shared, mut taken) = (0usize, 0usize);
+        while taken < SHINGLE_K {
+            let next = match (self.0.get(left), other.0.get(right)) {
+                (Some(&a), Some(&b)) => a.min(b),
+                (Some(&a), None) => a,
+                (None, Some(&b)) => b,
+                (None, None) => break,
+            };
+            let in_left = self.0.get(left) == Some(&next);
+            let in_right = other.0.get(right) == Some(&next);
+            if in_left {
+                left += 1;
+            }
+            if in_right {
+                right += 1;
+            }
+            if in_left && in_right {
+                shared += 1;
+            }
+            taken += 1;
+        }
+        match taken {
+            0 => f32::from(u8::from(self.0.is_empty() && other.0.is_empty())),
+            n => shared as f32 / n as f32,
+        }
     }
 }
 
@@ -256,5 +330,33 @@ mod tests {
         assert!("zz".parse::<Hash128>().is_err());
         let json = serde_json::to_string(&a).unwrap();
         assert_eq!(serde_json::from_str::<Hash128>(&json).unwrap(), a);
+    }
+
+    #[test]
+    fn shingle_set_is_sorted_deduplicated_and_capped() {
+        let set = ShingleSet::of([5, 1, 5, 3, 2]);
+        assert_eq!(set.0, vec![1, 2, 3, 5]);
+        assert_eq!(set.len(), 4);
+        assert!(!set.is_empty());
+        let big = ShingleSet::of((0..SHINGLE_K + 50).map(|i| i as u32));
+        assert_eq!(big.len(), SHINGLE_K);
+        assert_eq!(big.0[0], 0);
+        assert_eq!(big.0[SHINGLE_K - 1], (SHINGLE_K - 1) as u32);
+    }
+
+    #[test]
+    fn shingle_jaccard_bounds() {
+        let a = ShingleSet::of([1, 2, 3, 4]);
+        assert_eq!(a.jaccard(&a), 1.0);
+        assert_eq!(ShingleSet::default().jaccard(&ShingleSet::default()), 1.0);
+        assert_eq!(
+            ShingleSet::default().jaccard(&ShingleSet::of([1, 2])),
+            0.0,
+            "one empty set can share nothing"
+        );
+        // One differing shingle out of five: 4/5.
+        let b = ShingleSet::of([1, 2, 3, 4, 9]);
+        assert!((a.jaccard(&b) - 0.8).abs() < 1e-6);
+        assert!((a.jaccard(&ShingleSet::of([7, 8])) - 0.0).abs() < 1e-6);
     }
 }

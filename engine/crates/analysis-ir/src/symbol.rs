@@ -295,8 +295,9 @@ pub enum AttrValue {
 }
 
 /// Normalized body shingles (TSA-007): a sorted, de-duplicated sample of token n-gram hashes.
-#[derive(Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize, JsonSchema)]
-pub struct ShingleSet(pub Vec<u32>);
+/// Defined in `review-core::symbol` because the rename/move matcher needs it too, and re-exported
+/// here so analyzer code keeps one import.
+pub use review_core::symbol::ShingleSet;
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 pub struct IrSymbol {
