@@ -2500,7 +2500,14 @@ dependencies = [
 name = "impact"
 version = "0.1.0"
 dependencies = [
+ "blake3",
+ "codegraph",
+ "hex",
+ "proptest",
  "review-core",
+ "schemars",
+ "serde",
+ "serde_json",
  "thiserror",
 ]
 
