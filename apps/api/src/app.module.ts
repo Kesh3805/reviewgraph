@@ -7,7 +7,7 @@ import { APP_PIPE } from '@nestjs/core';
 import { ZodValidationPipe } from 'nestjs-zod';
 import { AuditModule } from './audit/audit.service';
 import { DbModule } from './db/db.module';
-import { JobsModule } from './jobs/job-queue.port';
+import { JobsModule } from './jobs/jobs.module';
 import { RepositoriesModule } from './repositories/repositories.module';
 import { AuthModule } from './auth/auth.module';
 import { TenancyModule } from './tenancy/tenancy.module';

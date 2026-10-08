@@ -7,7 +7,6 @@ import { GithubAppAuth, loadPrivateKey } from './app-auth.service';
 import { GithubCommandAcknowledger } from './command-reaction';
 import { GithubEventNormalizer } from './event-normalizer.service';
 import { GITHUB_APP_AUTH } from './github.tokens';
-import { JOB_CANCELLER, NoopJobCanceller } from '../../common/job-canceller';
 import { INSTALLATION_GATE, InstallationService } from './installation.service';
 import { GITHUB_PERMISSIONS_STATUS, GithubPermissionsMonitor } from './permissions-monitor';
 import { ACTOR_PERMISSION_LOOKUP, GithubActorPermissions } from './permissions';
@@ -42,8 +41,6 @@ export function createGithubAppAuth(config: AppConfig, redis: Redis): GithubAppA
     GithubEventNormalizer,
     GithubCommandAcknowledger,
     GithubPermissionsMonitor,
-    // API-007 replaces the no-op with the queue adapter.
-    { provide: JOB_CANCELLER, useClass: NoopJobCanceller },
     InstallationService,
     { provide: INSTALLATION_GATE, useExisting: InstallationService },
     { provide: GITHUB_PERMISSIONS_STATUS, useExisting: GithubPermissionsMonitor },

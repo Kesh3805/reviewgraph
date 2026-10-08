@@ -129,6 +129,26 @@ export interface GraphEdges {
   target_key: Buffer;
 }
 
+export interface Jobs {
+  attempts: Generated<number>;
+  created_at: Generated<Timestamp>;
+  id: Generated<string>;
+  idempotency_key: string;
+  last_error: string | null;
+  locked_by: string | null;
+  locked_until: Timestamp | null;
+  max_attempts: Generated<number>;
+  organization_id: string;
+  payload: Json;
+  priority: Generated<number>;
+  queue: string;
+  rate_limit_requeues: Generated<number>;
+  run_after: Generated<Timestamp>;
+  state: Generated<string>;
+  trace_parent: string | null;
+  updated_at: Generated<Timestamp>;
+}
+
 export interface Memberships {
   created_at: Generated<Timestamp>;
   organization_id: string;
@@ -521,6 +541,7 @@ export interface DB {
   file_versions: FileVersions;
   finding_feedback: FindingFeedback;
   graph_edges: GraphEdges;
+  jobs: Jobs;
   memberships: Memberships;
   model_cache: ModelCache;
   model_calls: ModelCalls;

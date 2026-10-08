@@ -434,7 +434,18 @@ Status: ☑
 ---
 
 ### API-007 — TS JobQueue adapter (same PG jobs table, transactional enqueue)
-Status: ☐
+Status: ◐
+
+> **Implementation note:** The `jobs` table did not exist yet, so this task adds
+> `engine/migrations/20261008100000_jobs.sql` exactly as specified by PIPE-001 (the Rust lane reuses
+> it). The adapter lives in `src/jobs/{job-queue.ts,pg-job-queue.ts,consumer.ts,job-store.ts,payloads.ts,jobs.module.ts}`
+> and also implements the GH-013 `JobCanceller`. Payload schemas are zod schemas in `payloads.ts`
+> (the contracts package exports JSON Schema from Rust types, and the Rust payload structs arrive
+> with PIPE-001). LISTEN uses a dedicated pool client and polling covers lost notifications.
+> Concurrency defaults live in `DEFAULT_CONCURRENCY` (`review-publish: 4`) and can be overridden per
+> `consume` call. `ts_and_rust_claim_interoperate` runs the target-architecture claim statement
+> verbatim on a plain connection; running it through the Rust engine test binary waits for
+> PIPE-001, which is why the task stays ◐.
 
 - **Task ID:** API-007
 - **Title:** TS JobQueue adapter (same PG jobs table, transactional enqueue)
