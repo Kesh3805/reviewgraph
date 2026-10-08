@@ -2870,6 +2870,8 @@ dependencies = [
  "insta",
  "jsonschema",
  "model-gateway",
+ "opentelemetry",
+ "opentelemetry_sdk",
  "proptest",
  "redis",
  "regex",
@@ -2888,6 +2890,7 @@ dependencies = [
  "tokio",
  "tokio-util",
  "tracing",
+ "tracing-subscriber",
  "uuid",
  "wiremock",
 ]

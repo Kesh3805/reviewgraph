@@ -369,7 +369,7 @@ impl ProviderAdapter for Scripted {
             return Err(f());
         }
         Ok(ProviderResponse {
-            output: ModelOutput::Json(json!({"ok": true, "from": self.provider})),
+            output: ModelOutput::Json(json!({"ok": true})),
             usage: Usage::default(),
             finish_reason: FinishReason::Complete,
             model: "m".into(),
@@ -384,6 +384,7 @@ fn two_provider_gateway(anthropic_fail: Option<fn() -> GatewayError>) -> model_g
     let table =
         RoutingTable::default_table(&env_with(&[("OPENAI_REVIEW_MODEL", "oa-model")])).expect("t");
     GatewayBuilder::new()
+        .redactor(Arc::new(model_gateway::DefaultRedactor::new()))
         .adapter(Arc::new(Scripted {
             provider: "anthropic",
             fail: anthropic_fail,

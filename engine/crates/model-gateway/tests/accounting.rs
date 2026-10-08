@@ -217,6 +217,7 @@ fn rig(results: Vec<Result<ProviderResponse, GatewayError>>) -> Rig {
             }],
         );
     let gw = GatewayBuilder::new()
+        .redactor(Arc::new(model_gateway::DefaultRedactor::new()))
         .adapter(Arc::new(Script {
             results: Mutex::new(results.into()),
             calls: calls.clone(),

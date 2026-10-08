@@ -97,6 +97,36 @@ pub fn summarize(validator: &Validator, output: &Value) -> Vec<SchemaErrorSummar
         .collect()
 }
 
+/// Keeps at most [`MAX_ERRORS`] summaries with messages of at most 200 characters (applied to
+/// caller-supplied semantic errors too).
+pub fn cap_errors(errors: Vec<SchemaErrorSummary>) -> Vec<SchemaErrorSummary> {
+    errors
+        .into_iter()
+        .take(MAX_ERRORS)
+        .map(|e| SchemaErrorSummary {
+            instance_path: e.instance_path.chars().take(MAX_MESSAGE_CHARS).collect(),
+            keyword: e.keyword.chars().take(64).collect(),
+            message: e.message.chars().take(MAX_MESSAGE_CHARS).collect(),
+        })
+        .collect()
+}
+
+/// The error list of a repair instruction: paths, keywords and messages only.
+pub fn render_repair_errors(errors: &[SchemaErrorSummary]) -> String {
+    errors
+        .iter()
+        .map(|e| {
+            let path = if e.instance_path.is_empty() {
+                "/"
+            } else {
+                e.instance_path.as_str()
+            };
+            format!("{path} ({}): {}", e.keyword, e.message)
+        })
+        .collect::<Vec<_>>()
+        .join("; ")
+}
+
 #[cfg(test)]
 mod tests {
     use serde_json::json;

@@ -368,6 +368,7 @@ fn gateway(calls: Arc<AtomicUsize>, pricer: Option<u64>) -> model_gateway::Gatew
         }],
     );
     let mut b = GatewayBuilder::new()
+        .redactor(Arc::new(model_gateway::DefaultRedactor::new()))
         .adapter(Arc::new(Counting(calls)))
         .router(Arc::new(router));
     if let Some(p) = pricer {

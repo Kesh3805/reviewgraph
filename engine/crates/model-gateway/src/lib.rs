@@ -18,25 +18,31 @@ pub mod request_hash;
 pub mod retry;
 pub mod router;
 pub mod schema_strict;
+pub mod telemetry;
 #[cfg(any(test, feature = "testing"))]
 pub mod testing;
 pub mod types;
 pub mod validate;
 
+pub use crate::telemetry::GatewayMetrics;
 pub use accounting::{LedgerRecord, LedgerSink, MemoryLedger, PriceTable};
 pub use adapter::{ProviderAdapter, ProviderRequest, ProviderResponse};
 pub use budget::WorstCasePricer;
 pub use builder::{
-    estimate_input_tokens, Gateway, GatewayBuilder, ModelGateway, RouteQuery, RouteSource,
-    StaticRouter,
+    estimate_input_tokens, Gateway, GatewayBuilder, ModelGateway, NeedsRedactor, RouteQuery,
+    RouteSource, StaticRouter,
 };
 pub use cache::{CacheEntry, MemoryCache, ResponseCache};
 pub use error::{BudgetKind, Error, GatewayError, PermanentKind, RateScope, Result, TransientKind};
 pub use ratelimit::{
     limiter_from_lookup, LimitRequest, ModelLimits, NoLimit, RateLimiter, TokenBucketLimiter,
 };
+#[cfg(any(test, feature = "testing"))]
+pub use redact::NoopRedactor;
+pub use redact::{DefaultRedactor, PreSendRedactor, RedactionReport};
 pub use request_hash::request_hash;
 pub use retry::{retry, JitterRng, RetryOutcome, RetryPolicy};
 pub use router::{merge_overrides, route, RoutingFile, RoutingTable, TableRouter};
 pub use schema_strict::check_strict_compatible;
 pub use types::*;
+pub use validate::SchemaValidators;

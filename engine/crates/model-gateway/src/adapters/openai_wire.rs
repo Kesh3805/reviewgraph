@@ -4,7 +4,8 @@ use serde::Deserialize;
 use serde_json::{json, Value};
 
 use super::anthropic_wire::render_section;
-use crate::types::{ModelRequest, ReasoningLevel, RouteCandidate};
+use crate::types::{ModelRequest, ReasoningLevel, RepairTurn, RouteCandidate};
+use crate::validate::render_repair_errors;
 
 #[derive(Debug, Deserialize)]
 pub struct ResponsesResponse {
@@ -100,6 +101,29 @@ fn effort(level: ReasoningLevel) -> Option<&'static str> {
     }
 }
 
+/// The repair turn (GW-009): the previous JSON as an assistant item, then a user item listing
+/// paths, keywords and messages only.
+pub fn repair_items(repair: &RepairTurn) -> [Value; 2] {
+    let previous = serde_jcs::to_string(&repair.previous_output)
+        .unwrap_or_else(|_| repair.previous_output.to_string());
+    [
+        json!({
+            "role": "assistant",
+            "content": [{ "type": "output_text", "text": previous }],
+        }),
+        json!({
+            "role": "user",
+            "content": [{
+                "type": "input_text",
+                "text": format!(
+                    "Validation failed: {}. Return a corrected, complete result.",
+                    render_repair_errors(&repair.errors)
+                ),
+            }],
+        }),
+    ]
+}
+
 /// Builds the Responses API request body. `store: false` is always sent.
 pub fn build_request(req: &ModelRequest, candidate: &RouteCandidate) -> Value {
     // Stable sections come first in the input, so OpenAI's automatic prefix caching can hit.
@@ -110,13 +134,17 @@ pub fn build_request(req: &ModelRequest, candidate: &RouteCandidate) -> Value {
         .map(render_section)
         .collect::<Vec<_>>()
         .join("\n");
+    let mut input = vec![json!({
+        "role": "user",
+        "content": [{ "type": "input_text", "text": text }],
+    })];
+    if let Some(repair) = &req.input.repair {
+        input.extend(repair_items(repair));
+    }
     let mut body = json!({
         "model": candidate.model,
         "instructions": req.input.system.text.as_ref(),
-        "input": [{
-            "role": "user",
-            "content": [{ "type": "input_text", "text": text }],
-        }],
+        "input": input,
         "max_output_tokens": req.max_output_tokens,
         "store": false,
     });
