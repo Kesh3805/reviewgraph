@@ -30,15 +30,15 @@ pub fn spanned_tokens(src: &str) -> Vec<SpannedToken> {
         match byte {
             b' ' | b'\t' | b'\r' | b'\n' => index += 1,
             b'/' if bytes.get(index + 1) == Some(&b'/') => {
-                index = skip_to_newline(bytes, index);
+                index = boundary(src, skip_to_newline(bytes, index));
             }
             b'/' if bytes.get(index + 1) == Some(&b'*') => {
-                index = skip_block_comment(bytes, index);
+                index = boundary(src, skip_block_comment(bytes, index));
             }
             b'\'' | b'"' => {
                 let start = index;
-                let end = scan_quoted(bytes, index, byte);
-                let content = src[start + 1..end.saturating_sub(1).max(start + 1)].to_owned();
+                let end = boundary(src, scan_quoted(bytes, index, byte));
+                let content = slice(src, start + 1, end.saturating_sub(1).max(start + 1));
                 out.push(SpannedToken {
                     start,
                     end,
@@ -48,11 +48,11 @@ pub fn spanned_tokens(src: &str) -> Vec<SpannedToken> {
             }
             b'`' => {
                 let start = index;
-                let end = scan_template(bytes, index);
+                let end = boundary(src, scan_template(bytes, index));
                 out.push(SpannedToken {
                     start,
                     end,
-                    token: Token::new(TokenClass::Template, src[start..end].to_owned()),
+                    token: Token::new(TokenClass::Template, slice(src, start, end)),
                 });
                 index = end;
             }
@@ -61,7 +61,10 @@ pub fn spanned_tokens(src: &str) -> Vec<SpannedToken> {
                 while index < bytes.len() && is_number_byte(bytes[index]) {
                     index += 1;
                 }
-                let text: String = src[start..index].chars().filter(|c| *c != '_').collect();
+                let text: String = slice(src, start, index)
+                    .chars()
+                    .filter(|c| *c != '_')
+                    .collect();
                 out.push(SpannedToken {
                     start,
                     end: index,
@@ -77,16 +80,20 @@ pub fn spanned_tokens(src: &str) -> Vec<SpannedToken> {
                 out.push(SpannedToken {
                     start,
                     end: index,
-                    token: Token::ident(src[start..index].to_owned()),
+                    token: Token::ident(slice(src, start, index)),
                 });
             }
             _ => {
+                // A non-identifier character may be several bytes long (an arrow, a lone
+                // replacement character); step over all of them so every index stays on a
+                // character boundary.
+                let end = boundary(src, index + char_len(src, index));
                 out.push(SpannedToken {
                     start: index,
-                    end: index + 1,
+                    end,
                     token: Token::punct(char_at(src, index).to_string()),
                 });
-                index += 1;
+                index = end;
             }
         }
     }
@@ -205,7 +212,25 @@ fn is_ident_continue(src: &str, index: usize) -> bool {
 }
 
 fn char_at(src: &str, index: usize) -> char {
-    src[index..].chars().next().unwrap_or('\0')
+    src.get(index..)
+        .and_then(|rest| rest.chars().next())
+        .unwrap_or('\0')
+}
+
+/// `index` clamped to the text and moved forward to the next character boundary. Scanners step
+/// over escapes two bytes at a time, which can land inside a multi-byte character or past the
+/// end of an unterminated literal.
+fn boundary(src: &str, index: usize) -> usize {
+    let mut index = index.min(src.len());
+    while !src.is_char_boundary(index) {
+        index += 1;
+    }
+    index
+}
+
+/// `src[start..end]`, or an empty string when the range is not on character boundaries.
+fn slice(src: &str, start: usize, end: usize) -> String {
+    src.get(start..end).unwrap_or_default().to_owned()
 }
 
 fn char_len(src: &str, index: usize) -> usize {
@@ -221,6 +246,22 @@ pub fn child_placeholder(kind: &str, name: &str) -> Token {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn multibyte_and_unterminated_input_never_panics() {
+        for text in [
+            "'\\\u{2192}",
+            "a \u{2192} b",
+            "`x\\\u{fffd}",
+            "\"\\",
+            "1\u{e9}",
+            "/*\u{2192}",
+            "x \u{fffd}\u{fffd} y",
+        ] {
+            let _ = tokens_of(text);
+        }
+        assert_eq!(rendered("a \u{2192} b").len(), 3);
+    }
 
     fn rendered(src: &str) -> Vec<String> {
         spanned_tokens(src)
