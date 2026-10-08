@@ -3850,8 +3850,21 @@ dependencies = [
 name = "reviewers"
 version = "0.1.0"
 dependencies = [
+ "async-trait",
+ "blake3",
+ "globset",
+ "insta",
+ "model-gateway",
+ "regex",
  "review-core",
+ "serde",
+ "serde_json",
+ "serde_yaml",
+ "tempfile",
  "thiserror",
+ "tokio",
+ "tokio-util",
+ "tracing",
 ]
 
 [[package]]

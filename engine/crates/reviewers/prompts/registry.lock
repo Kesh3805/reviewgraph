@@ -1,0 +1,4 @@
+# Prompt registry lock: kind/version blake3(file bytes). A versioned prompt is immutable;
+# any edit needs a new version file and a new line here.
+correctness/v1 472b8c3421e1cec23b51c63ba456574347e2f937c9d47d0e6be9386aad274d65
+security/v1 230337fa6dd1b2a465adc8f02105f2d02fe89b217b27081e62e75a49395a3f77
