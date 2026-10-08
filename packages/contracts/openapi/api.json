@@ -602,6 +602,129 @@
         ]
       }
     },
+    "/api/v1/reviews/{reviewId}/findings": {
+      "get": {
+        "operationId": "FindingsController_list",
+        "parameters": [
+          {
+            "name": "reviewId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "state",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": "all",
+              "type": "string",
+              "enum": [
+                "published",
+                "verified",
+                "suppressed",
+                "all"
+              ]
+            }
+          },
+          {
+            "name": "severity",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "maxLength": 200,
+              "type": "string"
+            }
+          },
+          {
+            "name": "reviewer",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "maxLength": 200,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FindingListDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "findings"
+        ]
+      }
+    },
+    "/api/v1/findings/{findingId}": {
+      "get": {
+        "operationId": "FindingsController_detail",
+        "parameters": [
+          {
+            "name": "findingId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FindingDetailDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "findings"
+        ]
+      }
+    },
+    "/api/v1/findings/{findingId}/trace": {
+      "get": {
+        "operationId": "FindingsController_trace",
+        "parameters": [
+          {
+            "name": "findingId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FindingTraceDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "findings"
+        ]
+      }
+    },
     "/api/v1/health/live": {
       "get": {
         "operationId": "HealthController_live",
@@ -2053,6 +2176,998 @@
           "review_run_id",
           "state",
           "cancelled_jobs"
+        ]
+      },
+      "FindingListDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "candidate_id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "verified_id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                  "nullable": true
+                },
+                "review_run_id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "lifecycle": {
+                  "type": "string",
+                  "enum": [
+                    "published",
+                    "verified",
+                    "suppressed",
+                    "candidate"
+                  ]
+                },
+                "state": {
+                  "type": "string"
+                },
+                "reviewer": {
+                  "type": "string"
+                },
+                "category": {
+                  "type": "string"
+                },
+                "title": {
+                  "type": "string"
+                },
+                "severity": {
+                  "type": "string",
+                  "enum": [
+                    "critical",
+                    "high",
+                    "medium",
+                    "low",
+                    "info"
+                  ]
+                },
+                "confidence": {
+                  "type": [
+                    "number",
+                    "null"
+                  ]
+                },
+                "band": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "anchor": {
+                  "type": "object",
+                  "properties": {
+                    "path": {
+                      "type": "string"
+                    },
+                    "side": {
+                      "type": "string",
+                      "enum": [
+                        "head",
+                        "base"
+                      ]
+                    },
+                    "start_line": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    },
+                    "end_line": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    }
+                  },
+                  "required": [
+                    "path",
+                    "side",
+                    "start_line",
+                    "end_line"
+                  ]
+                },
+                "suppression": {
+                  "type": "object",
+                  "properties": {
+                    "reason": {
+                      "type": "string"
+                    },
+                    "detail": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "stage": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991,
+                      "nullable": true
+                    },
+                    "duplicate_of": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "reason",
+                    "detail",
+                    "stage",
+                    "duplicate_of"
+                  ],
+                  "nullable": true
+                },
+                "published": {
+                  "type": "object",
+                  "properties": {
+                    "placement": {
+                      "type": "string"
+                    },
+                    "published_at": {
+                      "type": "string"
+                    },
+                    "provider_comment_id": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "placement",
+                    "published_at",
+                    "provider_comment_id"
+                  ],
+                  "nullable": true
+                },
+                "created_at": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "candidate_id",
+                "verified_id",
+                "review_run_id",
+                "lifecycle",
+                "state",
+                "reviewer",
+                "category",
+                "title",
+                "severity",
+                "confidence",
+                "band",
+                "anchor",
+                "suppression",
+                "published",
+                "created_at"
+              ]
+            }
+          }
+        },
+        "required": [
+          "items"
+        ]
+      },
+      "FindingDetailDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "candidate_id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "verified_id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+            "nullable": true
+          },
+          "review_run_id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "lifecycle": {
+            "type": "string",
+            "enum": [
+              "published",
+              "verified",
+              "suppressed",
+              "candidate"
+            ]
+          },
+          "state": {
+            "type": "string"
+          },
+          "reviewer": {
+            "type": "string"
+          },
+          "category": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "severity": {
+            "type": "string",
+            "enum": [
+              "critical",
+              "high",
+              "medium",
+              "low",
+              "info"
+            ]
+          },
+          "confidence": {
+            "type": "array",
+            "items": {
+              "type": "number"
+            }
+          },
+          "band": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "anchor": {
+            "type": "object",
+            "properties": {
+              "path": {
+                "type": "string"
+              },
+              "side": {
+                "type": "string",
+                "enum": [
+                  "head",
+                  "base"
+                ]
+              },
+              "start_line": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "end_line": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              }
+            },
+            "required": [
+              "path",
+              "side",
+              "start_line",
+              "end_line"
+            ]
+          },
+          "suppression": {
+            "type": "object",
+            "properties": {
+              "reason": {
+                "type": "string"
+              },
+              "detail": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "stage": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991,
+                "nullable": true
+              },
+              "duplicate_of": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "reason",
+              "detail",
+              "stage",
+              "duplicate_of"
+            ],
+            "nullable": true
+          },
+          "published": {
+            "type": "object",
+            "properties": {
+              "placement": {
+                "type": "string"
+              },
+              "published_at": {
+                "type": "string"
+              },
+              "provider_comment_id": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "placement",
+              "published_at",
+              "provider_comment_id"
+            ],
+            "nullable": true
+          },
+          "created_at": {
+            "type": "string"
+          },
+          "explanation": {
+            "type": "string"
+          },
+          "symbols": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "evidence": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "kind": {
+                  "type": "string"
+                },
+                "claimed_strength": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "origin": {},
+                "verification": {},
+                "claim": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "location": {
+                  "nullable": true
+                },
+                "symbols": {
+                  "type": "array",
+                  "items": {}
+                },
+                "relation": {
+                  "nullable": true
+                }
+              },
+              "required": [
+                "kind",
+                "claimed_strength",
+                "origin",
+                "verification",
+                "claim",
+                "location",
+                "symbols",
+                "relation"
+              ]
+            }
+          },
+          "confidence_detail": {
+            "type": "object",
+            "properties": {
+              "value": {
+                "type": "number"
+              },
+              "components": {
+                "type": "object",
+                "propertyNames": {
+                  "type": "string"
+                },
+                "additionalProperties": {
+                  "type": "number"
+                },
+                "nullable": true
+              }
+            },
+            "required": [
+              "value",
+              "components"
+            ],
+            "nullable": true
+          },
+          "severity_candidate": {
+            "type": "string",
+            "enum": [
+              "critical",
+              "high",
+              "medium",
+              "low",
+              "info"
+            ]
+          },
+          "verification_version": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991,
+            "nullable": true
+          },
+          "publication": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              "placement": {
+                "type": "string",
+                "enum": [
+                  "inline",
+                  "summary"
+                ]
+              },
+              "path": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "start_line": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991,
+                "nullable": true
+              },
+              "end_line": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991,
+                "nullable": true
+              },
+              "head_sha": {
+                "type": "string"
+              },
+              "provider_review_id": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "provider_comment_id": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "published_at": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "placement",
+              "path",
+              "start_line",
+              "end_line",
+              "head_sha",
+              "provider_review_id",
+              "provider_comment_id",
+              "published_at"
+            ],
+            "nullable": true
+          },
+          "repository_id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "pull_request_id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          }
+        },
+        "required": [
+          "id",
+          "candidate_id",
+          "verified_id",
+          "review_run_id",
+          "lifecycle",
+          "state",
+          "reviewer",
+          "category",
+          "title",
+          "severity",
+          "confidence",
+          "band",
+          "anchor",
+          "suppression",
+          "published",
+          "created_at",
+          "explanation",
+          "symbols",
+          "evidence",
+          "confidence_detail",
+          "severity_candidate",
+          "verification_version",
+          "publication",
+          "repository_id",
+          "pull_request_id"
+        ]
+      },
+      "FindingTraceDto": {
+        "type": "object",
+        "properties": {
+          "finding_id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "change": {
+            "type": "object",
+            "properties": {
+              "review_run_id": {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              "pull_request_id": {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              "base_sha": {
+                "type": "string"
+              },
+              "head_sha": {
+                "type": "string"
+              },
+              "anchor": {
+                "type": "object",
+                "properties": {
+                  "path": {
+                    "type": "string"
+                  },
+                  "side": {
+                    "type": "string",
+                    "enum": [
+                      "head",
+                      "base"
+                    ]
+                  },
+                  "start_line": {
+                    "type": "integer",
+                    "minimum": -9007199254740991,
+                    "maximum": 9007199254740991
+                  },
+                  "end_line": {
+                    "type": "integer",
+                    "minimum": -9007199254740991,
+                    "maximum": 9007199254740991
+                  }
+                },
+                "required": [
+                  "path",
+                  "side",
+                  "start_line",
+                  "end_line"
+                ]
+              }
+            },
+            "required": [
+              "review_run_id",
+              "pull_request_id",
+              "base_sha",
+              "head_sha",
+              "anchor"
+            ]
+          },
+          "symbols": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "context_refs": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "path": {
+                  "type": "string"
+                },
+                "start_line": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991,
+                  "nullable": true
+                },
+                "end_line": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991,
+                  "nullable": true
+                },
+                "snapshot_id": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "path",
+                "start_line",
+                "end_line",
+                "snapshot_id"
+              ]
+            }
+          },
+          "symbol_path": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "reviewer": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string"
+              },
+              "version": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "model": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "reviewer_run_id": {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              }
+            },
+            "required": [
+              "type",
+              "version",
+              "model",
+              "reviewer_run_id"
+            ]
+          },
+          "candidate": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              "state": {
+                "type": "string"
+              },
+              "severity": {
+                "type": "string",
+                "enum": [
+                  "critical",
+                  "high",
+                  "medium",
+                  "low",
+                  "info"
+                ]
+              },
+              "fingerprint": {
+                "type": "string"
+              },
+              "created_at": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "state",
+              "severity",
+              "fingerprint",
+              "created_at"
+            ]
+          },
+          "verification": {
+            "type": "object",
+            "properties": {
+              "verified_id": {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              "version": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "stages": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "stage": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    },
+                    "outcome": {
+                      "type": "string",
+                      "enum": [
+                        "pass",
+                        "fail",
+                        "inconclusive"
+                      ]
+                    },
+                    "reason": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "stage",
+                    "outcome",
+                    "reason"
+                  ]
+                }
+              },
+              "evidence": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "kind": {
+                      "type": "string"
+                    },
+                    "claimed_strength": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "origin": {},
+                    "verification": {},
+                    "claim": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "location": {
+                      "nullable": true
+                    },
+                    "symbols": {
+                      "type": "array",
+                      "items": {}
+                    },
+                    "relation": {
+                      "nullable": true
+                    }
+                  },
+                  "required": [
+                    "kind",
+                    "claimed_strength",
+                    "origin",
+                    "verification",
+                    "claim",
+                    "location",
+                    "symbols",
+                    "relation"
+                  ]
+                }
+              },
+              "confidence": {
+                "type": "number"
+              },
+              "severity": {
+                "type": "string",
+                "enum": [
+                  "critical",
+                  "high",
+                  "medium",
+                  "low",
+                  "info"
+                ]
+              }
+            },
+            "required": [
+              "verified_id",
+              "version",
+              "stages",
+              "evidence",
+              "confidence",
+              "severity"
+            ],
+            "nullable": true
+          },
+          "dedup": {
+            "type": "object",
+            "properties": {
+              "merged_into": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "merged_from": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                }
+              }
+            },
+            "required": [
+              "merged_into",
+              "merged_from"
+            ]
+          },
+          "policy": {
+            "type": "object",
+            "properties": {
+              "band": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "suppression": {
+                "type": "object",
+                "properties": {
+                  "reason": {
+                    "type": "string"
+                  },
+                  "detail": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "stage": {
+                    "type": "integer",
+                    "minimum": -9007199254740991,
+                    "maximum": 9007199254740991,
+                    "nullable": true
+                  },
+                  "duplicate_of": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  }
+                },
+                "required": [
+                  "reason",
+                  "detail",
+                  "stage",
+                  "duplicate_of"
+                ],
+                "nullable": true
+              }
+            },
+            "required": [
+              "band",
+              "suppression"
+            ]
+          },
+          "publication": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              "placement": {
+                "type": "string",
+                "enum": [
+                  "inline",
+                  "summary"
+                ]
+              },
+              "path": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "start_line": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991,
+                "nullable": true
+              },
+              "end_line": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991,
+                "nullable": true
+              },
+              "head_sha": {
+                "type": "string"
+              },
+              "provider_review_id": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "provider_comment_id": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "published_at": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "placement",
+              "path",
+              "start_line",
+              "end_line",
+              "head_sha",
+              "provider_review_id",
+              "provider_comment_id",
+              "published_at"
+            ],
+            "nullable": true
+          },
+          "incomplete": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "finding_id",
+          "change",
+          "symbols",
+          "context_refs",
+          "symbol_path",
+          "reviewer",
+          "candidate",
+          "verification",
+          "dedup",
+          "policy",
+          "publication",
+          "incomplete"
         ]
       }
     }

@@ -207,6 +207,110 @@ export async function seedReviewJob(
   return job.id;
 }
 
+export interface SeededFinding {
+  candidateId: string;
+  verifiedId: string | null;
+  publishedId: string | null;
+}
+
+/**
+ * A finding of a review run: a candidate, plus its verified row and its publication when asked.
+ * Suppressed states need a `suppression`.
+ */
+export async function seedFinding(
+  db: Kysely<DB>,
+  org: SeededOrg,
+  reviewRunId: string,
+  reviewerRunId: string,
+  opts: {
+    reviewer?: string;
+    state?: string;
+    severity?: string;
+    title?: string;
+    evidence?: unknown[];
+    suppression?: unknown;
+    stage?: number;
+    verified?: { severity?: string; confidence?: number; stageOutcomes?: unknown; band?: string };
+    published?: boolean;
+  } = {},
+): Promise<SeededFinding> {
+  const evidence = JSON.stringify(opts.evidence ?? []);
+  const candidate = await db
+    .insertInto('candidate_findings')
+    .values({
+      organization_id: org.organizationId,
+      review_run_id: reviewRunId,
+      reviewer_run_id: reviewerRunId,
+      reviewer: opts.reviewer ?? 'security',
+      category: 'security',
+      title: opts.title ?? 'Authorization bypass',
+      description: 'The update path skips the authorization check.',
+      changed_path: 'src/users/user.controller.ts',
+      changed_side: 'head',
+      changed_start_line: 10,
+      changed_end_line: 14,
+      severity_candidate: opts.severity ?? 'high',
+      affected_symbols: ['UserController.update'],
+      evidence,
+      reasoning_artifacts: JSON.stringify([{ kind: 'raw_output', summary: 'SECRET-REASONING' }]),
+      fingerprint: `v1:${randomUUID().replace(/-/g, '')}`,
+      state: opts.state ?? (opts.published ? 'PUBLISHED' : 'VERIFIED'),
+      suppression: opts.suppression === undefined ? null : JSON.stringify(opts.suppression),
+      suppressed_at_stage: opts.stage ?? null,
+    })
+    .returning('id')
+    .executeTakeFirstOrThrow();
+  let verifiedId: string | null = null;
+  let publishedId: string | null = null;
+  if (opts.verified || opts.published) {
+    const v = opts.verified ?? {};
+    const verified = await db
+      .insertInto('verified_findings')
+      .values({
+        organization_id: org.organizationId,
+        candidate_finding_id: candidate.id,
+        review_run_id: reviewRunId,
+        computed_confidence: v.confidence ?? 0.9,
+        severity: v.severity ?? opts.severity ?? 'high',
+        band: v.band ?? 'publish',
+        verification_version: 1,
+        stage_outcomes: JSON.stringify(v.stageOutcomes ?? []),
+        evidence,
+      })
+      .returning('id')
+      .executeTakeFirstOrThrow();
+    verifiedId = verified.id;
+  }
+  if (opts.published && verifiedId) {
+    const run = await db
+      .selectFrom('review_runs')
+      .select(['pull_request_id', 'head_sha'])
+      .where('id', '=', reviewRunId)
+      .executeTakeFirstOrThrow();
+    const published = await db
+      .insertInto('published_findings')
+      .values({
+        organization_id: org.organizationId,
+        verified_finding_id: verifiedId,
+        review_run_id: reviewRunId,
+        pull_request_id: run.pull_request_id,
+        provider: 'github',
+        placement: 'inline',
+        path: 'src/users/user.controller.ts',
+        start_line: 10,
+        end_line: 14,
+        head_sha: run.head_sha,
+        provider_review_id: String(randomInt(1, 2_000_000_000)),
+        provider_comment_id: String(randomInt(1, 2_000_000_000)),
+        published_at: new Date(),
+      })
+      .returning('id')
+      .executeTakeFirstOrThrow();
+    publishedId = published.id;
+  }
+  return { candidateId: candidate.id, verifiedId, publishedId };
+}
+
 /** Deleting the organization cascades to every tenant row. */
 export async function cleanup(
   db: Kysely<DB>,

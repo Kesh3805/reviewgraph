@@ -622,7 +622,18 @@ Status: ☑
 ---
 
 ### API-010 — Findings API
-Status: ☐
+Status: ☑
+
+> **Implementation note:** There is no single `findings` table: a finding is the
+> `candidate_findings` row joined with its `verified_findings` and `published_findings` rows. It is
+> addressed by its verified id, or by its candidate id when it never reached verification
+> (suppressed early); migration `20261008100010_finding_resolution.sql` makes `resolve_org` accept
+> both. Confidence components are read from `verified_findings.stage_outcomes.confidence_components`
+> when VER-009 records them (null until then). `FindingDetail` and `FindingTrace` are zod schemas
+> published through the OpenAPI document (`packages/contracts/openapi/api.json`); evidence is
+> reduced to the typed DOM-007 fields, so `reasoning_artifacts`, prompts and raw output are never
+> selected or returned. The PRD section 86 path is checked against a seeded fixture finding; the
+> end-to-end check against the auth-bypass E2E run belongs to the E2E tasks.
 
 - **Task ID:** API-010
 - **Title:** Findings API

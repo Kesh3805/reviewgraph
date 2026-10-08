@@ -57,4 +57,13 @@ describe('OpenAPI document', () => {
     expect(has('/api/v1/pull-requests/{pullRequestId}/reviews/{reviewId}', 'get')).toBe(true);
     expect(has('/api/v1/reviews/{reviewId}/cancel', 'post')).toBe(true);
   });
+
+  it('lists every findings route (API-010)', () => {
+    const paths = buildOpenApiDocument(app).paths;
+    const has = (path: string, method: string): boolean =>
+      Boolean((paths[path] as Record<string, unknown> | undefined)?.[method]);
+    expect(has('/api/v1/reviews/{reviewId}/findings', 'get')).toBe(true);
+    expect(has('/api/v1/findings/{findingId}', 'get')).toBe(true);
+    expect(has('/api/v1/findings/{findingId}/trace', 'get')).toBe(true);
+  });
 });
