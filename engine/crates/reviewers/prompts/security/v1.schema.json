@@ -1,0 +1,213 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "security.v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["findings", "no_findings_reason"],
+  "properties": {
+    "no_findings_reason": { "type": ["string", "null"], "maxLength": 300 },
+    "findings": {
+      "type": "array",
+      "maxItems": 10,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "category",
+          "title",
+          "claim",
+          "description",
+          "severity",
+          "anchor",
+          "affected_refs",
+          "evidence",
+          "claimed_relations",
+          "predicate",
+          "corrective_direction",
+          "self_confidence",
+          "entry_points",
+          "trust_boundary",
+          "missing_control"
+        ],
+        "allOf": [
+          {
+            "if": { "properties": { "category": { "const": "authz_bypass" } } },
+            "then": { "properties": { "entry_points": { "minItems": 1 } } }
+          }
+        ],
+        "properties": {
+          "category": {
+            "type": "string",
+            "enum": [
+              "authz_bypass",
+              "authn_regression",
+              "input_validation",
+              "injection",
+              "data_exposure",
+              "unsafe_deserialization",
+              "trust_boundary",
+              "credential_handling",
+              "path_traversal",
+              "ssrf",
+              "insecure_config",
+              "privilege_escalation"
+            ]
+          },
+          "title": { "type": "string", "maxLength": 120 },
+          "claim": { "type": "string", "maxLength": 300 },
+          "description": { "type": "string", "maxLength": 2000 },
+          "severity": { "type": "string", "enum": ["critical", "high", "medium", "low", "info"] },
+          "anchor": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["ref", "side", "start_line", "end_line"],
+            "properties": {
+              "ref": { "type": "string", "pattern": "^[SN][0-9]+$" },
+              "side": { "type": "string", "enum": ["head", "base"] },
+              "start_line": { "type": "integer", "minimum": 1 },
+              "end_line": { "type": "integer", "minimum": 1 }
+            }
+          },
+          "affected_refs": {
+            "type": "array",
+            "maxItems": 10,
+            "items": { "type": "string", "pattern": "^[SNTRCD][0-9]+$" }
+          },
+          "evidence": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 8,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["kind", "ref", "side", "start_line", "end_line", "quote", "explanation"],
+              "properties": {
+                "kind": {
+                  "type": "string",
+                  "enum": [
+                    "changed_source",
+                    "caller_path",
+                    "callee_path",
+                    "test_behavior",
+                    "interface_contract",
+                    "configuration",
+                    "database_schema",
+                    "repository_convention",
+                    "deterministic_finding"
+                  ]
+                },
+                "ref": { "type": "string", "pattern": "^[SNTRCD][0-9]+$" },
+                "side": { "type": "string", "enum": ["head", "base"] },
+                "start_line": { "type": ["integer", "null"] },
+                "end_line": { "type": ["integer", "null"] },
+                "quote": { "type": "string", "maxLength": 300 },
+                "explanation": { "type": "string", "maxLength": 400 }
+              }
+            }
+          },
+          "claimed_relations": {
+            "type": "array",
+            "maxItems": 8,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["from", "relation", "to"],
+              "properties": {
+                "from": { "type": "string" },
+                "to": { "type": "string" },
+                "relation": {
+                  "type": "string",
+                  "enum": [
+                    "calls",
+                    "reaches_endpoint",
+                    "implements",
+                    "overrides",
+                    "tests",
+                    "reads_table",
+                    "writes_table",
+                    "enqueues",
+                    "guarded_by",
+                    "in_transaction_of",
+                    "catches_errors_of"
+                  ]
+                }
+              }
+            }
+          },
+          "predicate": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["kind", "subject", "params"],
+            "properties": {
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "call_removed",
+                  "call_added",
+                  "guard_removed",
+                  "null_check_removed",
+                  "await_missing",
+                  "error_swallowed",
+                  "transaction_boundary_changed",
+                  "condition_changed",
+                  "contract_changed",
+                  "state_write_unguarded",
+                  "other"
+                ]
+              },
+              "subject": { "type": "string" },
+              "params": {
+                "type": "array",
+                "maxItems": 6,
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": ["name", "value"],
+                  "properties": {
+                    "name": { "type": "string" },
+                    "value": { "type": "string" }
+                  }
+                }
+              }
+            }
+          },
+          "corrective_direction": { "type": "string", "maxLength": 400 },
+          "self_confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+          "entry_points": {
+            "type": "array",
+            "maxItems": 5,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["endpoint_node_id", "path_symbol_keys"],
+              "properties": {
+                "endpoint_node_id": { "type": "string", "pattern": "^[SN][0-9]+$" },
+                "path_symbol_keys": {
+                  "type": "array",
+                  "maxItems": 8,
+                  "items": { "type": "string", "pattern": "^[SN][0-9]+$" }
+                }
+              }
+            }
+          },
+          "trust_boundary": {
+            "type": ["object", "null"],
+            "additionalProperties": false,
+            "required": ["source", "sink_symbol_key"],
+            "properties": {
+              "source": {
+                "type": "string",
+                "enum": ["http_body", "http_query", "http_header", "queue_payload", "env", "db", "external_api"]
+              },
+              "sink_symbol_key": { "type": "string", "pattern": "^[SN][0-9]+$" }
+            }
+          },
+          "missing_control": {
+            "type": ["string", "null"],
+            "enum": ["guard", "validation_pipe", "parameterization", "encoding", "allowlist", "ownership_check", null]
+          }
+        }
+      }
+    }
+  }
+}
