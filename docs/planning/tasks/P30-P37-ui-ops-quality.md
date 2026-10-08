@@ -506,7 +506,8 @@ Status: ◐
 ---
 
 ### GX-001 — Graph explorer symbol search
-Status: ☐
+Status: ◐
+> **Implementation note:** Built against hand-typed API-011 contracts (`SymbolSearchResponse`, `SymbolDetail` in `apps/web/lib/api/pending.ts`); `kind` is sent as a comma-separated list. Debouncing and cancellation live in `lib/debounced-search.ts` (200 ms, one `AbortController` per request, late results of aborted requests are dropped). The snapshot selector offers "Default branch (latest)" (no `snapshot` parameter, resolved by the API), the snapshots from the intelligence endpoint (WEB-004), and any deep-linked `?snapshot=` (a PR head from Finding Detail). Explorer state is `?mode=&symbol=&snapshot=&review=`. A 502/503 shows "Graph service unavailable" with a retry. Remaining: generated types and the search latency/acceptance checks once API-011/API-013 land.
 
 - **Task ID:** GX-001
 - **Title:** Graph explorer symbol search

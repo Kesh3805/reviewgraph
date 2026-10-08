@@ -6,6 +6,8 @@
  */
 import { api } from '../api-client';
 import type {
+  SymbolDetail,
+  SymbolSearchResponse,
   AuditEntry,
   CreateSuppressionInput,
   GithubIntegration,
@@ -386,6 +388,39 @@ export async function submitFeedback(
 // ---------------------------------------------------------------------------------------------
 // Graph proxy and source (API-011, pending)
 // ---------------------------------------------------------------------------------------------
+
+export async function searchSymbols(
+  repoId: string,
+  query: { q: string; kinds?: string[]; snapshot?: string },
+  opts: Signal = {},
+): Promise<SymbolSearchResponse> {
+  const { data } = await api.GET('/api/v1/repositories/{repoId}/graph/symbols', {
+    params: {
+      path: { repoId },
+      query: {
+        q: query.q,
+        kind: query.kinds && query.kinds.length > 0 ? query.kinds.join(',') : undefined,
+        snapshot: query.snapshot,
+        limit: 50,
+      },
+    },
+    signal: opts.signal,
+  });
+  return required(data, 'symbol search');
+}
+
+export async function getSymbol(
+  repoId: string,
+  key: string,
+  snapshot: string | undefined,
+  opts: Signal = {},
+): Promise<SymbolDetail> {
+  const { data } = await api.GET('/api/v1/repositories/{repoId}/graph/symbols/{key}', {
+    params: { path: { repoId, key }, query: snapshot ? { snapshot } : undefined },
+    signal: opts.signal,
+  });
+  return required(data, 'symbol');
+}
 
 /** Redacted excerpt; the API caps it at 200 lines. */
 export async function getSourceExcerpt(

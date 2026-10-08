@@ -676,6 +676,50 @@ export interface GraphPath {
   min_confidence?: number;
 }
 
+/** Symbol kinds the explorer filters on (GX-001). */
+export type SymbolKindFilter =
+  'class' | 'method' | 'function' | 'endpoint' | 'queue' | 'table' | 'test';
+
+/** `GET /repositories/:id/graph/symbols?q&kind&snapshot` items (API-011 → API-013). */
+export interface SymbolSearchResult {
+  key: string;
+  name: string;
+  qualified_name: string;
+  kind: string;
+  path: string;
+  line: number;
+  in_degree: number;
+  out_degree: number;
+}
+
+export interface SymbolSearchResponse {
+  items: SymbolSearchResult[];
+  snapshot_id: string;
+  truncated: boolean;
+}
+
+/** `GET /repositories/:id/graph/symbols/:key` — the CLI-007 `review graph symbol` fields. */
+export interface SymbolDetail {
+  key: string;
+  id: string;
+  name: string;
+  qualified_name: string;
+  kind: string;
+  path: string;
+  start_line: number;
+  end_line: number;
+  signature: string | null;
+  visibility: string | null;
+  framework_facts: { name: string; value: string }[];
+  /** Earlier keys of the same symbol (renames and moves, SID lineage). */
+  lineage: { key: string; snapshot_id: string; change: string }[];
+  edges_in: Record<string, number>;
+  edges_out: Record<string, number>;
+  /** 10 buckets of incident edge confidence. */
+  confidence_histogram: number[];
+  snapshot_id: string;
+}
+
 /** `GET /repositories/:id/source` — redacted and capped at 200 lines. */
 export interface SourceExcerpt {
   path: string;
@@ -783,6 +827,22 @@ export interface PendingPaths {
   '/api/v1/findings/{findingId}/feedback': {
     get: GetOp<FindingFeedback, PathParams<'findingId'>>;
     post: BodyOp<FindingFeedback, FeedbackInput, PathParams<'findingId'>>;
+  };
+  /** API-011: symbol search (ranked exact > prefix > substring, limit 50). */
+  '/api/v1/repositories/{repoId}/graph/symbols': {
+    get: GetOp<
+      SymbolSearchResponse,
+      {
+        path: { repoId: string };
+        query: { q: string; kind?: string; snapshot?: string; limit?: number };
+      }
+    >;
+  };
+  '/api/v1/repositories/{repoId}/graph/symbols/{key}': {
+    get: GetOp<
+      SymbolDetail,
+      { path: { repoId: string; key: string }; query?: { snapshot?: string } }
+    >;
   };
   /** API-011. */
   '/api/v1/repositories/{repoId}/source': {

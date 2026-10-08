@@ -48,6 +48,8 @@ export const keys = {
   usage: (orgId: string, query: object) => ['organization', orgId, 'usage', query] as const,
   orgSettings: (orgId: string) => ['organization', orgId, 'settings'] as const,
   members: (orgId: string) => ['organization', orgId, 'members'] as const,
+  symbol: (repoId: string, key: string, snapshot?: string) =>
+    ['graph', repoId, snapshot ?? 'default', 'symbol', key] as const,
 };
 
 export function repositoriesQuery(orgId: string) {
@@ -240,6 +242,16 @@ export function membersQuery(orgId: string) {
   return queryOptions({
     queryKey: keys.members(orgId),
     queryFn: ({ signal }) => endpoints.listMembers(orgId, { signal }),
+    throwOnError: false,
+  });
+}
+
+export function symbolQuery(repoId: string, key: string, snapshot?: string) {
+  return queryOptions({
+    queryKey: keys.symbol(repoId, key, snapshot),
+    queryFn: ({ signal }) => endpoints.getSymbol(repoId, key, snapshot, { signal }),
+    // Snapshots are immutable.
+    staleTime: Infinity,
     throwOnError: false,
   });
 }
