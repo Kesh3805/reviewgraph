@@ -312,7 +312,8 @@ Status: ◐
 ---
 
 ### WEB-006 — Review Detail
-Status: ☐
+Status: ◐
+> **Implementation note:** Web side only, built against hand-typed API-009/API-010 contracts in `apps/web/lib/api/pending.ts` (`ReviewDetail` with `completeness`, `stages`, `reviewer_runs`, `risk`, `change_summary`, `coverage`, `degraded_reasons`, `failure {stage, error_class}`, `trace_id`; `FindingSummary` with `relocated` and `suppression_reason`). The page is `/reviews/[reviewId]`, so it assumes a `GET /reviews/:id` alias of `GET /pull-requests/:id/reviews/:reviewId` (the change model and risk are expected inside that detail rather than as separate endpoints). `TraceLink` reads `NEXT_PUBLIC_OPENOBSERVE_UI_URL`. Suppressed findings are grouped by their `SUPPRESSED_*` state (plus `INVALIDATED`) with the per-finding reason; the Files section lists published findings only. The 200-finding time-to-interactive check needs Playwright and is deferred. Remaining: generated types and the E2E-001 acceptance check once API-009/API-010 land.
 
 - **Task ID:** WEB-006
 - **Title:** Review Detail (PR summary, change summary, risk summary, findings, changed files, evidence)

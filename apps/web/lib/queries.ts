@@ -32,6 +32,9 @@ export const keys = {
   repositoryActivity: (orgId: string) => ['repository-activity', orgId] as const,
   riskAreas: (repoId: string) => ['repository', repoId, 'risk-areas'] as const,
   pullRequests: (query: PullRequestListQuery) => ['pull-requests', query] as const,
+  review: (reviewId: string) => ['review', reviewId] as const,
+  reviewFindings: (reviewId: string) => ['review', reviewId, 'findings'] as const,
+  reviewHistory: (prId: string) => ['pull-request', prId, 'reviews'] as const,
 };
 
 export function repositoriesQuery(orgId: string) {
@@ -90,6 +93,33 @@ export function pullRequestsQuery(query: PullRequestListQuery) {
     queryKey: keys.pullRequests(query),
     queryFn: ({ signal }) => endpoints.listPullRequests(query, { signal }),
     refetchInterval: (q) => pullsRefetchInterval(q.state.data),
+    throwOnError: false,
+  });
+}
+
+/** Review detail polls while the run is non-terminal (WEB-006). */
+export function reviewQuery(reviewId: string) {
+  return queryOptions({
+    queryKey: keys.review(reviewId),
+    queryFn: ({ signal }) => endpoints.getReview(reviewId, { signal }),
+    refetchInterval: (q) =>
+      q.state.data && !isTerminalReview(q.state.data.state) ? RUN_POLL_MS : false,
+  });
+}
+
+export function reviewFindingsQuery(reviewId: string, live = false) {
+  return queryOptions({
+    queryKey: keys.reviewFindings(reviewId),
+    queryFn: ({ signal }) => endpoints.listReviewFindings(reviewId, 'all', { signal }),
+    refetchInterval: live ? RUN_POLL_MS : false,
+    throwOnError: false,
+  });
+}
+
+export function reviewHistoryQuery(prId: string) {
+  return queryOptions({
+    queryKey: keys.reviewHistory(prId),
+    queryFn: ({ signal }) => endpoints.listReviewHistory(prId, { signal }),
     throwOnError: false,
   });
 }

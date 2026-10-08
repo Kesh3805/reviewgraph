@@ -177,6 +177,162 @@ export interface ManualReviewResponse {
   created: boolean;
 }
 
+export type ReviewerType =
+  'correctness' | 'security' | 'test' | 'architecture' | 'performance' | 'maintainability';
+export type ReviewerRunState =
+  'pending' | 'running' | 'succeeded' | 'failed' | 'skipped' | 'timed_out';
+
+/** `GET /pull-requests/:id/reviews` items (the history selector). */
+export interface ReviewRunSummary extends RunRef {
+  head_sha: string;
+  trigger: 'webhook' | 'manual' | 'reconciler';
+  finished_at: string | null;
+  superseded_by: string | null;
+}
+
+export interface StageTiming {
+  name: string;
+  state: 'pending' | 'running' | 'succeeded' | 'failed' | 'skipped';
+  started_at: string | null;
+  finished_at: string | null;
+  duration_ms: number | null;
+}
+
+export interface ReviewerRun {
+  reviewer: ReviewerType;
+  version: string;
+  state: ReviewerRunState;
+  prompt_version: string;
+  model: string | null;
+  duration_ms: number | null;
+  error_class: ErrorClass | null;
+  findings: number;
+}
+
+/** INV-013: computed from `reviewer_runs` rows, never self-reported. */
+export interface Completeness {
+  reviewers_planned: ReviewerType[];
+  reviewers_succeeded: ReviewerType[];
+  reviewers_failed: { reviewer: ReviewerType; reason: string }[];
+  /** Checks that did not run (INV-014), each with the reason. */
+  not_executed: { check: string; reason: string }[];
+}
+
+/** The CHG change model summary (a `stage_outputs` JSON contract). */
+export interface ChangeSummary {
+  files: {
+    path: string;
+    status: 'added' | 'modified' | 'deleted' | 'renamed';
+    old_path: string | null;
+    additions: number;
+    deletions: number;
+  }[];
+  behavioral_symbols: {
+    key: string;
+    name: string;
+    kind: string;
+    path: string;
+    change: 'added' | 'modified' | 'removed' | 'signature_changed';
+  }[];
+  api_contracts: { name: string; change: string }[];
+  dependencies: { name: string; from: string | null; to: string | null }[];
+  schemas: { name: string; change: string }[];
+}
+
+/** The RISK assessment (a `stage_outputs` JSON contract). */
+export interface RiskAssessment {
+  level: 'low' | 'medium' | 'high' | 'critical';
+  /** 0..1 */
+  score: number;
+  signals: { name: string; weight: number; detail: string | null }[];
+  effects: {
+    reviewers: ReviewerType[];
+    depth: string;
+    token_budget: number | null;
+    model_call_budget: number | null;
+  };
+}
+
+/** `GET /reviews/:id` (assumed alias of `GET /pull-requests/:id/reviews/:reviewId`). */
+export interface ReviewDetail extends RunRef {
+  pull_request: {
+    id: string;
+    number: number;
+    title: string;
+    author: string;
+    url: string | null;
+    repository_id: string;
+    repository_full_name: string;
+    base_ref: string;
+    head_ref: string;
+    base_sha: string;
+    head_sha: string;
+  };
+  trigger: ReviewRunSummary['trigger'];
+  finished_at: string | null;
+  degraded_reasons: string[];
+  /** Set when the run failed: the stage and error class only, never a stack trace. */
+  failure: { stage: string; error_class: ErrorClass } | null;
+  stages: StageTiming[];
+  reviewer_runs: ReviewerRun[];
+  completeness: Completeness;
+  risk: RiskAssessment | null;
+  change_summary: ChangeSummary | null;
+  coverage: {
+    reviewed_clusters: number;
+    unreviewed_clusters: { id: string; reason: string; files: string[] }[];
+  } | null;
+  counts_by_state: Partial<Record<FindingState, number>>;
+  trace_id: string | null;
+}
+
+// ---------------------------------------------------------------------------------------------
+// API-010: findings
+// ---------------------------------------------------------------------------------------------
+
+export type FindingState =
+  | 'GENERATED'
+  | 'EVIDENCE_COLLECTED'
+  | 'VERIFIED'
+  | 'DEDUPLICATED'
+  | 'PRIORITIZED'
+  | 'PUBLISHED'
+  | 'SUPPRESSED_LOW_CONFIDENCE'
+  | 'SUPPRESSED_DUPLICATE'
+  | 'SUPPRESSED_PREEXISTING'
+  | 'SUPPRESSED_NOT_ACTIONABLE'
+  | 'SUPPRESSED_POLICY'
+  | 'INVALIDATED';
+
+export interface FindingAnchor {
+  path: string;
+  start_line: number;
+  end_line: number;
+  symbol_key: string | null;
+}
+
+export interface FindingSummary {
+  id: string;
+  review_id: string;
+  title: string;
+  severity: Severity;
+  category: string;
+  reviewer: ReviewerType;
+  reviewer_version: string;
+  state: FindingState;
+  /** 0..1 */
+  confidence: number;
+  anchor: FindingAnchor;
+  /** Anchored outside the diff (relocated to the summary). */
+  relocated: boolean;
+  /** Set for suppressed findings. */
+  suppression_reason: string | null;
+  evidence_summary: string | null;
+  evidence_count: number;
+}
+
+export type FindingStateFilter = 'published' | 'verified' | 'suppressed' | 'all';
+
 // ---------------------------------------------------------------------------------------------
 // Paths
 // ---------------------------------------------------------------------------------------------
@@ -212,5 +368,21 @@ export interface PendingPaths {
   /** API-009: manual review at the current head (maintainer). */
   '/api/v1/pull-requests/{prId}/review': {
     post: BodyOp<ManualReviewResponse, never, PathParams<'prId'>>;
+  };
+  /** API-009: review history of a pull request. */
+  '/api/v1/pull-requests/{prId}/reviews': {
+    get: GetOp<{ items: ReviewRunSummary[] }, PathParams<'prId'>>;
+  };
+  /** API-009 (assumed alias): review detail by run id. */
+  '/api/v1/reviews/{reviewId}': { get: GetOp<ReviewDetail, PathParams<'reviewId'>> };
+  /** API-010. */
+  '/api/v1/reviews/{reviewId}/findings': {
+    get: GetOp<
+      { items: FindingSummary[] },
+      {
+        path: { reviewId: string };
+        query?: { state?: FindingStateFilter; severity?: Severity; reviewer?: string };
+      }
+    >;
   };
 }

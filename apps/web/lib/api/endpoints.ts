@@ -6,6 +6,10 @@
  */
 import { api } from '../api-client';
 import type {
+  FindingStateFilter,
+  FindingSummary,
+  ReviewDetail,
+  ReviewRunSummary,
   IndexRequest,
   InstallationRepository,
   ManualReviewResponse,
@@ -145,6 +149,41 @@ export async function triggerManualReview(prId: string): Promise<ManualReviewRes
     params: { path: { prId } },
   });
   return required(data, 'manual review');
+}
+
+export async function getReview(reviewId: string, opts: Signal = {}): Promise<ReviewDetail> {
+  const { data } = await api.GET('/api/v1/reviews/{reviewId}', {
+    params: { path: { reviewId } },
+    signal: opts.signal,
+  });
+  return required(data, 'review');
+}
+
+export async function listReviewHistory(
+  prId: string,
+  opts: Signal = {},
+): Promise<ReviewRunSummary[]> {
+  const { data } = await api.GET('/api/v1/pull-requests/{prId}/reviews', {
+    params: { path: { prId } },
+    signal: opts.signal,
+  });
+  return required(data, 'review history').items;
+}
+
+// ---------------------------------------------------------------------------------------------
+// Findings (API-010, pending)
+// ---------------------------------------------------------------------------------------------
+
+export async function listReviewFindings(
+  reviewId: string,
+  state: FindingStateFilter = 'all',
+  opts: Signal = {},
+): Promise<FindingSummary[]> {
+  const { data } = await api.GET('/api/v1/reviews/{reviewId}/findings', {
+    params: { path: { reviewId }, query: { state } },
+    signal: opts.signal,
+  });
+  return required(data, 'findings').items;
 }
 
 /** PENDING (API-009, assumed route): last review and open PR counts per repository. */
