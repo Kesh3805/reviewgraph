@@ -1,0 +1,165 @@
+name: rust
+
+on:
+  push:
+    paths:
+      - 'engine/**'
+      - 'fixtures/**'
+      - 'packages/contracts/**'
+      - '.github/workflows/rust.yml'
+      - 'scripts/ci/**'
+  pull_request:
+    paths:
+      - 'engine/**'
+      - 'fixtures/**'
+      - 'packages/contracts/**'
+      - '.github/workflows/rust.yml'
+      - 'scripts/ci/**'
+  workflow_dispatch:
+    inputs:
+      packages:
+        description: 'Space-separated crate names to test (empty = whole workspace)'
+        required: false
+        default: ''
+
+permissions:
+  contents: read
+
+concurrency:
+  group: rust-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+env:
+  CARGO_TERM_COLOR: always
+  CARGO_INCREMENTAL: '0'
+  INSTA_UPDATE: 'no'
+  PROPTEST_CASES: '256'
+
+defaults:
+  run:
+    working-directory: engine
+
+jobs:
+  fmt:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install pinned toolchain
+        run: |
+          channel=$(sed -n 's/^channel *= *"\(.*\)"/\1/p' rust-toolchain.toml)
+          rustup toolchain install "$channel" --profile minimal --component rustfmt,clippy
+          rustup default "$channel"
+      - name: Toolchain parity
+        working-directory: .
+        run: bash scripts/ci/check-toolchain-parity.sh
+      - run: cargo fmt --all --check
+
+  clippy:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install pinned toolchain
+        run: |
+          channel=$(sed -n 's/^channel *= *"\(.*\)"/\1/p' rust-toolchain.toml)
+          rustup toolchain install "$channel" --profile minimal --component rustfmt,clippy
+          rustup default "$channel"
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: engine
+          shared-key: clippy
+      - run: cargo clippy --workspace --all-targets --all-features --locked -- -D warnings
+
+  test:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install pinned toolchain
+        run: |
+          channel=$(sed -n 's/^channel *= *"\(.*\)"/\1/p' rust-toolchain.toml)
+          rustup toolchain install "$channel" --profile minimal
+          rustup default "$channel"
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: engine
+          shared-key: test
+      - name: Build fixture repositories
+        working-directory: .
+        run: |
+          git config --global user.email ci@reviewgraph.local
+          git config --global user.name ci
+          bash fixtures/build.sh --all
+      - name: cargo test
+        run: |
+          pkgs="${{ github.event.inputs.packages }}"
+          if [ -n "$pkgs" ]; then
+            args=""; for p in $pkgs; do args="$args -p $p"; done
+            cargo test --locked $args 2>&1 | tee /tmp/test.log
+          else
+            cargo test --workspace --locked 2>&1 | tee /tmp/test.log
+          fi
+          exit ${PIPESTATUS[0]}
+      - name: Test summary
+        if: always()
+        run: |
+          {
+            echo '### cargo test'
+            grep -E '^test result:' /tmp/test.log | awk '{p+=$4; f+=$6; i+=$8} END {printf "passed %d, failed %d, ignored %d\n", p, f, i}'
+            grep -E '^(failures:|    [a-z_:0-9]+$|test .* FAILED)' /tmp/test.log | head -50 || true
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  integration:
+    runs-on: ubuntu-24.04
+    services:
+      postgres:
+        image: postgres:16.15-alpine
+        env:
+          POSTGRES_USER: reviewgraph
+          POSTGRES_PASSWORD: reviewgraph-test
+          POSTGRES_DB: reviewgraph
+        ports: ['35432:5432']
+        options: >-
+          --health-cmd "pg_isready -U reviewgraph -d reviewgraph"
+          --health-interval 2s --health-timeout 3s --health-retries 60
+      redis:
+        image: redis:7.4.9-alpine
+        ports: ['36379:6379']
+        options: >-
+          --health-cmd "redis-cli ping" --health-interval 2s --health-timeout 3s --health-retries 60
+      qdrant:
+        image: qdrant/qdrant:v1.19.1
+        ports: ['36333:6333']
+    env:
+      TEST_DATABASE_URL: postgres://reviewgraph:reviewgraph-test@127.0.0.1:35432/reviewgraph
+      DATABASE_URL: postgres://reviewgraph:reviewgraph-test@127.0.0.1:35432/reviewgraph
+      REDIS_URL: redis://127.0.0.1:36379
+      QDRANT_URL: http://127.0.0.1:36333
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install pinned toolchain
+        run: |
+          channel=$(sed -n 's/^channel *= *"\(.*\)"/\1/p' rust-toolchain.toml)
+          rustup toolchain install "$channel" --profile minimal
+          rustup default "$channel"
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: engine
+          shared-key: integration
+      - name: Wait for Qdrant
+        run: timeout 120 bash -c 'until curl -sf http://127.0.0.1:36333/readyz; do sleep 2; done'
+      - name: Build fixture repositories
+        working-directory: .
+        run: |
+          git config --global user.email ci@reviewgraph.local
+          git config --global user.name ci
+          bash fixtures/build.sh --all
+      - name: cargo test (integration)
+        run: cargo test --workspace --locked --features integration -- --test-threads=4
+
+  deny:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: EmbarkStudios/cargo-deny-action@v2
+        with:
+          manifest-path: engine/Cargo.toml
+          command: check bans licenses sources advisories
