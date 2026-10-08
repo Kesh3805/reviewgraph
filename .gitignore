@@ -26,3 +26,4 @@ coverage/
 Thumbs.db
 /packages/contracts/.tmp/
 /fixtures/.build/
+.gradle/
