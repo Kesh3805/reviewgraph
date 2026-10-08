@@ -170,12 +170,23 @@ export class PgJobQueue implements JobQueue, JobStore, JobCanceller, BeforeAppli
 
   // --- JobStore (worker side) ---
 
+  /**
+   * A worker transaction: no tenant, plus the transaction-local `app.job_worker` opt-in that the
+   * `jobs` RLS policy requires for cross-tenant claims (SEC-001). Request paths never set it.
+   */
+  private workerTx<T>(fn: (trx: Tx) => Promise<T>): Promise<T> {
+    return this.dbs.withTx(null, async (trx) => {
+      await sql`select set_config('app.job_worker', 'on', true)`.execute(trx);
+      return fn(trx);
+    });
+  }
+
   async claim(
     queues: readonly JobQueueName[],
     workerId: string,
     leaseMs: number,
   ): Promise<ClaimedJob | null> {
-    const { rows } = await this.dbs.withTx(null, (trx) =>
+    const { rows } = await this.workerTx((trx) =>
       // The claim statement of target-architecture section 5 (shared with the Rust worker).
       sql<{
         id: string;
@@ -216,7 +227,7 @@ export class PgJobQueue implements JobQueue, JobStore, JobCanceller, BeforeAppli
   }
 
   async heartbeat(job: ClaimedJob, leaseMs: number): Promise<boolean> {
-    const result = await this.dbs.withTx(null, (trx) =>
+    const result = await this.workerTx((trx) =>
       trx
         .updateTable('jobs')
         .set({ locked_until: sql<Date>`now() + ${leaseMs}::float8 * interval '1 millisecond'` })
@@ -230,7 +241,7 @@ export class PgJobQueue implements JobQueue, JobStore, JobCanceller, BeforeAppli
   }
 
   async complete(job: ClaimedJob): Promise<boolean> {
-    const result = await this.dbs.withTx(null, (trx) =>
+    const result = await this.workerTx((trx) =>
       trx
         .updateTable('jobs')
         .set({ state: 'succeeded', locked_by: null, locked_until: null, last_error: null })
@@ -245,7 +256,7 @@ export class PgJobQueue implements JobQueue, JobStore, JobCanceller, BeforeAppli
 
   /** Records a failure; returns the resulting state, or null when the lease was lost. */
   async fail(job: ClaimedJob, failure: FailKind): Promise<'queued' | 'dead' | null> {
-    const { rows } = await this.dbs.withTx(null, (trx) => {
+    const { rows } = await this.workerTx((trx) => {
       if (failure.kind === 'rate_limited') {
         // The attempt is refunded: a rate limit says nothing about the job itself.
         return sql<{ state: 'queued' | 'dead' }>`
@@ -284,7 +295,7 @@ export class PgJobQueue implements JobQueue, JobStore, JobCanceller, BeforeAppli
   /** Returns this worker's running jobs to `queued`, refunding the attempt. */
   async release(workerId: string, jobIds?: string[]): Promise<number> {
     if (jobIds?.length === 0) return 0;
-    const result = await this.dbs.withTx(null, (trx) => {
+    const result = await this.workerTx((trx) => {
       let q = trx
         .updateTable('jobs')
         .set({
@@ -307,7 +318,7 @@ export class PgJobQueue implements JobQueue, JobStore, JobCanceller, BeforeAppli
     const now = Date.now();
     if (!force && now - this.lastDepthSample < 30_000) return;
     this.lastDepthSample = now;
-    const rows = await this.dbs.withTx(null, (trx) =>
+    const rows = await this.workerTx((trx) =>
       trx
         .selectFrom('jobs')
         .select(['queue', (eb) => eb.fn.countAll<string>().as('n')])

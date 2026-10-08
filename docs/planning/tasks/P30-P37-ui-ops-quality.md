@@ -1050,7 +1050,22 @@ Status: ☐
 ---
 
 ### SEC-001 — Tenant isolation tests (API + RLS)
-Status: ☐
+Status: ◐
+
+> **Implementation note (apps/api side):** The matrix lives in `apps/api/test/security/isolation-matrix.ts`
+> and the coverage guard (`test/security/coverage-guard.spec.ts`) reads the OpenAPI document. The
+> database-backed suites need Postgres, so they run in the integration job:
+> `apps/api/integration/security/{tenancy.fixture.ts,routes-isolation.int.spec.ts,rls-tables.int.spec.ts}`.
+> The fixture is seeded by the test superuser login (not `rg_ops`) with random ids, and the checks
+> run as `rg_api` and `rg_engine` (asserted non-superuser, no BYPASSRLS). Migration
+> `20261008100040_jobs_rls.sql` adds the RLS that PIPE-001 deferred to this task: request paths
+> see only their tenant's jobs, and queue workers opt in per transaction with
+> `set_config('app.job_worker', 'on', true)` (the TS adapter does; the Rust worker of PIPE-001/002
+> must do the same). Cursors are not signed: they only carry `(created_at, id)` and every query is
+> scoped by the route's resource and RLS, which the foreign-cursor test proves. Still open: the
+> engine-side role test `engine/crates/graph-storage/tests/rls_engine_role.rs` (needs the
+> snapshot tables, GS-005) and the internal-route checks once `/internal/**` routes exist.
+> See `docs/security/tenant-isolation-test-plan.md`.
 
 - **Task ID:** SEC-001
 - **Title:** Two-organization isolation suite covering every API route and every RLS-protected table
