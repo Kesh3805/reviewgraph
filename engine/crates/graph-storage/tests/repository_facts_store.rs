@@ -22,6 +22,29 @@ use uuid::Uuid;
 
 static MIGRATOR: Migrator = sqlx::migrate!("../../migrations");
 
+/// Key of the advisory lock that serializes migrations across the test databases.
+const MIGRATION_LOCK_KEY: i64 = 0x5247_4d49_4752;
+
+/// Applies the migrations while holding a cluster-wide advisory lock on the admin connection.
+/// `20261002000006_db_roles` creates cluster-wide roles, so two throwaway databases migrating at
+/// the same time race on `CREATE ROLE` (a duplicate key in `pg_authid`); every test of this
+/// binary migrates through here, one database at a time.
+async fn migrate(admin: &PgPool, pool: &PgPool) {
+    let mut conn = admin.acquire().await.unwrap();
+    sqlx::query("SELECT pg_advisory_lock($1)")
+        .bind(MIGRATION_LOCK_KEY)
+        .execute(&mut *conn)
+        .await
+        .unwrap();
+    let result = MIGRATOR.run(pool).await;
+    sqlx::query("SELECT pg_advisory_unlock($1)")
+        .bind(MIGRATION_LOCK_KEY)
+        .execute(&mut *conn)
+        .await
+        .unwrap();
+    result.unwrap();
+}
+
 struct TestDb {
     pool: PgPool,
     admin: PgPool,
@@ -50,7 +73,7 @@ impl TestDb {
             .await
             .unwrap();
         if apply_migrations {
-            MIGRATOR.run(&pool).await.unwrap();
+            migrate(&admin, &pool).await;
         }
         Self { pool, admin, name }
     }
@@ -234,8 +257,8 @@ async fn concurrent_identical_saves_single_row() {
 #[tokio::test]
 async fn migration_applies_on_empty_db_and_is_idempotent() {
     let db = TestDb::new(false).await;
-    MIGRATOR.run(&db.pool).await.unwrap();
-    MIGRATOR.run(&db.pool).await.unwrap();
+    migrate(&db.admin, &db.pool).await;
+    migrate(&db.admin, &db.pool).await;
     let rls: bool = sqlx::query_scalar(
         "SELECT relrowsecurity AND relforcerowsecurity FROM pg_class WHERE relname = 'repository_init_facts'",
     )
