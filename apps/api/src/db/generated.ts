@@ -84,6 +84,19 @@ export interface EdgeKinds {
   name: string;
 }
 
+export interface Feedback {
+  comment: string | null;
+  created_at: Generated<Timestamp>;
+  finding_id: string;
+  id: Generated<string>;
+  organization_id: string;
+  repository_id: string;
+  source: string;
+  updated_at: Generated<Timestamp>;
+  user_id: string | null;
+  verdict: string;
+}
+
 export interface FileVersions {
   analyzer_version: string;
   content_hash: Buffer;
@@ -538,6 +551,7 @@ export interface DB {
   candidate_findings: CandidateFindings;
   check_runs: CheckRuns;
   edge_kinds: EdgeKinds;
+  feedback: Feedback;
   file_versions: FileVersions;
   finding_feedback: FindingFeedback;
   graph_edges: GraphEdges;

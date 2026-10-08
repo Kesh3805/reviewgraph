@@ -65,5 +65,8 @@ describe('OpenAPI document', () => {
     expect(has('/api/v1/reviews/{reviewId}/findings', 'get')).toBe(true);
     expect(has('/api/v1/findings/{findingId}', 'get')).toBe(true);
     expect(has('/api/v1/findings/{findingId}/trace', 'get')).toBe(true);
+    expect(has('/api/v1/findings/{findingId}/feedback', 'post')).toBe(true);
+    expect(has('/api/v1/findings/{findingId}/feedback', 'get')).toBe(true);
+    expect(has('/api/v1/repositories/{repoId}/feedback/summary', 'get')).toBe(true);
   });
 });

@@ -721,7 +721,17 @@ Status: ☐
 ---
 
 ### API-012 — Feedback API
-Status: ☐
+Status: ◐
+
+> **Implementation note:** Migration `20261008100020_feedback.sql` adds `feedback` as specified,
+> with `finding_id` referencing `verified_findings` (the finding id of API-010), RLS and an
+> `updated_at` trigger. The older DOM-009 `finding_feedback` table is left untouched and unused.
+> Feedback, list, summary (`acceptance_rate = useful / total`, `false_positive_rate =
+> false_positive / total`, overall and per reviewer) and `recordProviderSignal` (the GH-011 path,
+> `source='provider'`) are done. Suppression creation goes through the `SuppressionWriter` port:
+> role and verdict checks, the transaction and the audit rows are in place, but the default
+> writer answers 503 until POL-006 adds the `suppressions` table, so the acceptance check
+> "the suppression created is matched on the next run" waits for POL-006.
 
 - **Task ID:** API-012
 - **Title:** Feedback API
