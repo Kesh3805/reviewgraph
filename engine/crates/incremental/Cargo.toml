@@ -11,4 +11,22 @@ workspace = true
 
 [dependencies]
 review-core.workspace = true
+analysis-ir.workspace = true
+serde.workspace = true
 thiserror.workspace = true
+uuid.workspace = true
+
+[dev-dependencies]
+lang-typescript.workspace = true
+proptest.workspace = true
+serde_json.workspace = true
+criterion.workspace = true
+review-test-support.workspace = true
+
+[[bench]]
+name = "symbol_diff"
+harness = false
+
+[[bench]]
+name = "matcher"
+harness = false
