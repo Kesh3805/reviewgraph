@@ -95,13 +95,13 @@ Linker confidences (`import` 0.95, `this_member` 0.95, `di_constructor` 0.85, `t
 
 | ID | Title | Depends on | Status |
 |---|---|---|---|
-| INIT-001 | Repository discovery & git state via gix | FND-001, DOM-001 | ☐ |
-| INIT-002 | File walker with ignore rules | INIT-001 | ☐ |
-| INIT-003 | Language detection + per-language stats | INIT-002 | ☐ |
-| INIT-004 | Package manager, manifest & build-system detection | INIT-002 | ☐ |
-| INIT-005 | Monorepo/workspace detection | INIT-004 | ☐ |
-| INIT-006 | Framework detection from manifests | INIT-004, INIT-005 | ☐ |
-| INIT-007 | Source/test roots, tsconfig discovery, lint/compiler/CI | INIT-002, INIT-005 | ☐ |
+| INIT-001 | Repository discovery & git state via gix | FND-001, DOM-001 | ☑ |
+| INIT-002 | File walker with ignore rules | INIT-001 | ☑ |
+| INIT-003 | Language detection + per-language stats | INIT-002 | ☑ |
+| INIT-004 | Package manager, manifest & build-system detection | INIT-002 | ☑ |
+| INIT-005 | Monorepo/workspace detection | INIT-004 | ☑ |
+| INIT-006 | Framework detection from manifests | INIT-004, INIT-005 | ☑ |
+| INIT-007 | Source/test roots, tsconfig discovery, lint/compiler/CI | INIT-002, INIT-005 | ☑ |
 | INIT-008 | Generated code detection | INIT-002, INIT-007 | ☐ |
 | INIT-009 | Entrypoints, migrations, infra, env files (names only) | INIT-004, INIT-007 | ☐ |
 | INIT-010 | Rule-doc & architecture metadata discovery | INIT-002 | ☐ |
