@@ -498,7 +498,7 @@ Status: ☑
 ---
 
 ### CHG-001 — ChangedSymbol with base/head versions, change kind, ranges
-Status: ☐
+Status: ◐
 
 - **Task ID:** CHG-001
 - **Title:** `diff_engine::change::symbols` — build the `ChangedSymbol` set by joining the hunk→symbol map (where) with the hash-based symbol diff (what), carrying base and head versions, change kind and ranges.

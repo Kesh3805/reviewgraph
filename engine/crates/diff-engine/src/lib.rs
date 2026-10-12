@@ -5,6 +5,7 @@
 //! * [`disposition`] — binary, large, generated, vendored, minified and lockfile files.
 
 pub mod anchor;
+pub mod change;
 pub mod disposition;
 pub mod error;
 pub mod files;
