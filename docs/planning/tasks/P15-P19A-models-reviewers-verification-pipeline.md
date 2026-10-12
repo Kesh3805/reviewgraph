@@ -3335,7 +3335,7 @@ CREATE TABLE verification_cache (
 ---
 
 ### DED-001 — Root-cause fingerprint (symbol + category + normalized claim)
-Status: ☐
+Status: ☑
 
 - **Task ID:** DED-001
 - **Title:** Root-cause fingerprint v2: `symbol + category + normalized claim`, excluding severity, line numbers and reviewer
@@ -3391,7 +3391,7 @@ Status: ☐
 ---
 
 ### DED-002 — Cross-reviewer merge with persisted merge record
-Status: ☐
+Status: ☑
 
 - **Task ID:** DED-002
 - **Title:** Cross-reviewer merge: group duplicate verified findings, keep the strongest explanation, persist a merge record
@@ -3444,7 +3444,7 @@ Status: ☐
 ---
 
 ### DED-003 — Cross-run identity via symbol lineage
-Status: ☐
+Status: ☑
 
 - **Task ID:** DED-003
 - **Title:** Cross-run finding identity through `symbol_lineage` (re-review classification: persisting / fixed / new); dedup applied after the verdict
@@ -3494,7 +3494,7 @@ Status: ☐
 ---
 
 ### DED-004 — Prioritization score
-Status: ☐
+Status: ☑
 
 - **Task ID:** DED-004
 - **Title:** Finding prioritization score (PRD §57) with a bounded, non-inflating blast-radius term
@@ -3546,7 +3546,7 @@ Status: ☐
 ---
 
 ### PIPE-001 — `jobs` table migration and Rust JobQueue
-Status: ☐
+Status: ☑
 
 - **Task ID:** PIPE-001
 - **Title:** `jobs` table migration and the Rust `JobQueue` (enqueue, claim with SKIP LOCKED, heartbeat, complete, fail with backoff, dead)
@@ -3841,7 +3841,7 @@ Status: ☐
 ---
 
 ### PIPE-006 — Budget manager
-Status: ☐
+Status: ◐
 
 - **Task ID:** PIPE-006
 - **Title:** Review budget manager (PRD §90): symbols, graph expansion, tokens, candidates, model calls, latency
