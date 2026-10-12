@@ -2241,7 +2241,7 @@ Status: ☐
 ---
 
 ### VER-001 — Finding lifecycle persistence
-Status: ◐ (migration + store trait + edge validation done; PG impl and REJECTED_INVALID enum variant pending)
+Status: ☑ (migration, store trait, Postgres store, REJECTED_INVALID, lifecycle doc and metrics; CI green. Not done: the 500-candidate insert benchmark)
 
 **Task ID:** VER-001
 
@@ -2364,7 +2364,7 @@ CREATE TABLE verified_findings (
 ---
 
 ### VER-002 — VerificationContext and evidence collection framework
-Status: ☐
+Status: ◐ (not started; no code landed in this lane)
 
 **Task ID:** VER-002
 
@@ -2472,7 +2472,7 @@ pub struct SignalVector { pub anchor: f64, pub deterministic: f64, pub graph: f6
 ---
 
 ### VER-003 — Stage 1 structural gate (port of the legacy adjudicator)
-Status: ☐
+Status: ◐ (not started; no code landed in this lane)
 
 **Task ID:** VER-003
 
@@ -2565,7 +2565,7 @@ Status: ☐
 ---
 
 ### VER-004 — Stage 2 changed-code anchor
-Status: ☐
+Status: ◐ (not started; no code landed in this lane)
 
 **Task ID:** VER-004
 
@@ -2635,7 +2635,7 @@ Status: ☐
 ---
 
 ### VER-005 — Stages 3/4: graph and repository evidence, plus deterministic tool evidence
-Status: ☐
+Status: ◐ (not started; no code landed in this lane)
 
 **Task ID:** VER-005
 
@@ -2730,7 +2730,7 @@ Status: ☐
 ---
 
 ### VER-006 — Stage 5 base/head comparison
-Status: ☐
+Status: ◐ (not started; no code landed in this lane)
 
 **Task ID:** VER-006
 
@@ -2831,7 +2831,7 @@ pub trait PredicateEvaluator: Send + Sync {
 ---
 
 ### VER-007 — Stage 6a deterministic contradiction checks
-Status: ☐
+Status: ◐ (not started; no code landed in this lane)
 
 **Task ID:** VER-007
 
@@ -2911,7 +2911,7 @@ Status: ☐
 ---
 
 ### VER-008 — Stage 6b VERIFIER adjudication
-Status: ☐
+Status: ◐ (not started; no code landed in this lane)
 
 **Task ID:** VER-008
 
@@ -3010,7 +3010,7 @@ Status: ☐
 ---
 
 ### VER-009 — Confidence computation
-Status: ☐
+Status: ◐ (not started; no code landed in this lane)
 
 **Task ID:** VER-009
 
@@ -3101,7 +3101,7 @@ inference_uncertainty = -0.15
 ---
 
 ### VER-010 — Thresholds and publication eligibility
-Status: ☐
+Status: ◐ (not started; no code landed in this lane)
 
 **Task ID:** VER-010
 
@@ -3180,7 +3180,7 @@ pub enum Eligibility { Publish, Internal, Suppress }
 ---
 
 ### VER-011 — Actionability and suppression policies
-Status: ☐
+Status: ◐ (not started; no code landed in this lane)
 
 **Task ID:** VER-011
 
@@ -3262,7 +3262,7 @@ Status: ☐
 ---
 
 ### VER-012 — Verification cache and versioning
-Status: ☐
+Status: ◐ (not started; no code landed in this lane)
 
 **Task ID:** VER-012
 
