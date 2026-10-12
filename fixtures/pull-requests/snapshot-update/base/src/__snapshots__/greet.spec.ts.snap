@@ -1,0 +1,3 @@
+// Snapshot v1
+
+exports[`greet says hello 1`] = `"Hello, Ada"`;

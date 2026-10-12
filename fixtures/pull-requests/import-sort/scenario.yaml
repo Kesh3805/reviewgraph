@@ -1,0 +1,16 @@
+name: import-sort
+description: >-
+  RISK-006: the two imports of src/app.ts swap places. Both import bindings, so the
+  multiset of specifiers is unchanged and no side-effect import moves.
+base_ref: base
+head_ref: head
+provider:
+  name: generic
+  pr_number: 1
+  base_sha: <base>
+  head_sha: <head>
+files:
+  base: base/
+  patch: patch.diff
+expected:
+  low_risk: expected/low-risk.json

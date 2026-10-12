@@ -1,0 +1,16 @@
+name: constant-in-auth
+description: >-
+  RISK-006 override: MAX_ATTEMPTS changes from 3 to 5. A literal constant is normally
+  low-risk, but canRetry() in src/auth/guard.ts reads it in an authorization decision.
+base_ref: base
+head_ref: head
+provider:
+  name: generic
+  pr_number: 1
+  base_sha: <base>
+  head_sha: <head>
+files:
+  base: base/
+  patch: patch.diff
+expected:
+  low_risk: expected/low-risk.json

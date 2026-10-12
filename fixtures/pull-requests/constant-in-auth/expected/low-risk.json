@@ -1,0 +1,14 @@
+{
+  "scenario": "constant-in-auth",
+  "symbols": [
+    {
+      "file": "src/auth/limits.ts",
+      "name": "MAX_ATTEMPTS",
+      "verdict": {
+        "kind": "simple_constant",
+        "overridden_by": "sensitive_constant_reader"
+      }
+    }
+  ],
+  "files": []
+}
