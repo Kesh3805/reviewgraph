@@ -114,7 +114,7 @@ Status: ☑
 ---
 
 ### REV-S-002 — Security reviewer with trust-boundary context selection
-Status: ◐
+Status: ◐ registered; trust_boundary generator in reviewers crate; missing: context-engine security weight profile, real impact-signal bridge, golden package
 
 - **Task ID:** REV-S-002
 - **Title:** Security reviewer with trust-boundary context selection
@@ -182,7 +182,7 @@ Status: ◐
 ---
 
 ### REV-S-003 — Security-specific verification checks
-Status: ☐
+Status: ◐ not started
 
 - **Task ID:** REV-S-003
 - **Title:** Security-specific verification checks (authorization on all entry paths, validation pipes, injection sinks)
@@ -252,7 +252,7 @@ Status: ☐
 ---
 
 ### REV-T-001 — Test reviewer
-Status: ◐
+Status: ◐ tests.v1 schema, v2 prompt, evidence gate, stale-mock hint, registered; missing: TS contract, replay tests, docs/reviewers/tests.md
 
 - **Task ID:** REV-T-001
 - **Title:** Test reviewer (changed behavior without tests, stale mocks, missing negative tests)
@@ -313,7 +313,7 @@ Status: ◐
 ---
 
 ### REV-T-002 — Deterministic pre-check: changed public symbol with zero TESTS edges
-Status: ◐
+Status: ◐ unchanged this round; pipeline wiring and fixtures still missing
 
 - **Task ID:** REV-T-002
 - **Title:** Deterministic pre-check (changed public symbol with zero TESTS edges)
@@ -358,7 +358,7 @@ Status: ◐
 ---
 
 ### REV-A-001 — Architecture reviewer using profile and rules
-Status: ◐
+Status: ◐ architecture.v1 schema with basis, gate enforces basis and convention floors, registered; missing: TS contract, replay tests, docs
 
 - **Task ID:** REV-A-001
 - **Title:** Architecture reviewer using profile and rules
@@ -422,7 +422,7 @@ Status: ◐
 ---
 
 ### REV-A-002 — Deterministic boundary-violation and cycle detector
-Status: ◐
+Status: ◐ unchanged this round; pipeline wiring and fixtures still missing
 
 - **Task ID:** REV-A-002
 - **Title:** Deterministic boundary-violation and cycle detector
@@ -469,7 +469,7 @@ Status: ◐
 ---
 
 ### REV-P-001 — Performance reviewer (concrete execution path required)
-Status: ◐
+Status: ◐ performance.v1 schema with execution_path and cost_driver, path-hop gate, registered; missing: TS contract, replay tests, docs
 
 - **Task ID:** REV-P-001
 - **Title:** Performance reviewer (concrete execution path required)
@@ -517,7 +517,7 @@ Status: ◐
 ---
 
 ### REV-P-002 — Deterministic N+1 and IO-in-loop detector
-Status: ◐
+Status: ◐ unchanged this round; pipeline wiring and fixtures still missing
 
 - **Task ID:** REV-P-002
 - **Title:** Deterministic N+1 / IO-in-loop detector
@@ -562,7 +562,7 @@ Status: ◐
 ---
 
 ### REV-M-001 — Maintainability reviewer (high threshold ≥ 0.9)
-Status: ◐
+Status: ◐ maintainability.v1 schema, seed gate, 25/150/5 limits, no model call without seed; missing: publish-threshold wiring into plan, TS contract, docs
 
 - **Task ID:** REV-M-001
 - **Title:** Maintainability reviewer (high threshold ≥0.9)

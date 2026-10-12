@@ -5,15 +5,20 @@ use std::collections::BTreeMap;
 use analysis_ir::{
     AttrValue, DiagCode, DiagSeverity, FrameworkFactKind, IrExpr, IrFrameworkFact, Modifiers,
 };
+use review_core::location::SourceRange;
 use review_core::symbol::SymbolKind;
 
 use super::{ADAPTER, COMMON};
+use crate::frameworks::util::{name_of, nodes_of_kinds, s};
 use crate::frameworks::FrameworkCtx;
+use crate::kinds::kind;
+use crate::visit::expr::to_ir_expr;
 
 const LISTS: [&str; 4] = ["imports", "providers", "controllers", "exports"];
 
 pub fn collect(ctx: &mut FrameworkCtx<'_>) {
     let symbols = ctx.symbols;
+    let returns = nodes_of_kinds(ctx.root, &[kind::RETURN_STATEMENT]);
     for class in symbols.iter().filter(|s| s.kind == SymbolKind::Class) {
         let Some((decorator, confidence)) = class
             .decorators
@@ -26,18 +31,44 @@ pub fn collect(ctx: &mut FrameworkCtx<'_>) {
             .decorators
             .iter()
             .any(|d| ctx.decorator_origin(d, COMMON, "Global").is_some());
-        let dynamic = symbols.iter().any(|s| {
+        // `static forRoot(...) { return { module: X, providers: [...] }; }`
+        let mut dynamic_returns: Vec<(String, IrExpr, SourceRange)> = Vec::new();
+        for method in symbols.iter().filter(|s| {
             s.parent == Some(class.local_id)
                 && s.kind == SymbolKind::Method
                 && s.modifiers.contains(Modifiers::STATIC)
-        });
+        }) {
+            for ret in &returns {
+                let range = ctx.src.range(*ret);
+                if ctx.owner(range.start) != method.local_id {
+                    continue;
+                }
+                let Some(value) = ret.named_child(0) else {
+                    continue;
+                };
+                if value.kind() != kind::OBJECT {
+                    continue;
+                }
+                let expr = to_ir_expr(value, ctx.src);
+                let has_module = match &expr {
+                    IrExpr::Object(pairs) => pairs.iter().any(|(k, _)| k == "module"),
+                    _ => false,
+                };
+                if has_module {
+                    dynamic_returns.push((method.name.clone(), expr, range));
+                }
+            }
+        }
         let mut attrs = BTreeMap::new();
         attrs.insert("module_name".to_owned(), AttrValue::Str(class.name.clone()));
         attrs.insert("global".to_owned(), AttrValue::Bool(global));
-        attrs.insert("dynamic".to_owned(), AttrValue::Bool(dynamic));
+        attrs.insert(
+            "dynamic".to_owned(),
+            AttrValue::Bool(!dynamic_returns.is_empty()),
+        );
         let mut uncertain = false;
         let metadata = match decorator.args.first() {
-            Some(IrExpr::Object(pairs)) => Some(pairs),
+            Some(IrExpr::Object(pairs)) => Some(pairs.as_slice()),
             Some(other) => {
                 attrs.insert("metadata_ref".to_owned(), AttrValue::Expr(other.clone()));
                 ctx.sink.note(
@@ -50,19 +81,8 @@ pub fn collect(ctx: &mut FrameworkCtx<'_>) {
             }
             None => None,
         };
-        for key in LISTS {
-            let found = metadata.and_then(|pairs| pairs.iter().find(|(k, _)| k == key));
-            let entries: Vec<AttrValue> = match found.map(|(_, v)| v) {
-                Some(IrExpr::Array(items)) => items
-                    .iter()
-                    .map(|item| entry(ctx, item, &mut uncertain))
-                    .collect(),
-                Some(other) => vec![entry(ctx, other, &mut uncertain)],
-                None => Vec::new(),
-            };
-            attrs.insert(key.to_owned(), AttrValue::List(entries));
-        }
-        let confidence = if uncertain {
+        fill_lists(ctx, metadata, &mut attrs, &mut uncertain);
+        let fact_confidence = if uncertain {
             confidence.min(0.7)
         } else {
             confidence
@@ -73,17 +93,63 @@ pub fn collect(ctx: &mut FrameworkCtx<'_>) {
             symbol: Some(class.local_id),
             attrs,
             range: decorator.range,
-            confidence,
+            confidence: fact_confidence,
         });
+        for (method, expr, range) in dynamic_returns {
+            let IrExpr::Object(pairs) = &expr else {
+                continue;
+            };
+            let mut dyn_attrs = BTreeMap::new();
+            dyn_attrs.insert("module_name".to_owned(), AttrValue::Str(class.name.clone()));
+            dyn_attrs.insert("global".to_owned(), AttrValue::Bool(global));
+            dyn_attrs.insert("dynamic".to_owned(), AttrValue::Bool(true));
+            dyn_attrs.insert("dynamic_method".to_owned(), AttrValue::Str(method));
+            let mut dyn_uncertain = false;
+            fill_lists(
+                ctx,
+                Some(pairs.as_slice()),
+                &mut dyn_attrs,
+                &mut dyn_uncertain,
+            );
+            ctx.facts.push(IrFrameworkFact {
+                adapter: ADAPTER.to_owned(),
+                kind: FrameworkFactKind::ModuleDeclaration,
+                symbol: Some(class.local_id),
+                attrs: dyn_attrs,
+                range,
+                confidence: if dyn_uncertain {
+                    confidence.min(0.7)
+                } else {
+                    confidence
+                },
+            });
+        }
     }
 }
 
-fn s(text: &str) -> AttrValue {
-    AttrValue::Str(text.to_owned())
+/// Fills `imports`, `providers`, `controllers` and `exports` from the metadata pairs.
+fn fill_lists(
+    ctx: &FrameworkCtx<'_>,
+    metadata: Option<&[(String, IrExpr)]>,
+    attrs: &mut BTreeMap<String, AttrValue>,
+    uncertain: &mut bool,
+) {
+    for key in LISTS {
+        let found = metadata.and_then(|pairs| pairs.iter().find(|(k, _)| k == key));
+        let entries: Vec<AttrValue> = match found.map(|(_, v)| v) {
+            Some(IrExpr::Array(items)) => items
+                .iter()
+                .map(|item| entry(ctx, item, uncertain))
+                .collect(),
+            Some(other) => vec![entry(ctx, other, uncertain)],
+            None => Vec::new(),
+        };
+        attrs.insert(key.to_owned(), AttrValue::List(entries));
+    }
 }
 
 /// One `{ name, form, import_specifier?, imported?, args? }` entry.
-fn entry(ctx: &FrameworkCtx<'_>, expr: &IrExpr, uncertain: &mut bool) -> AttrValue {
+pub fn entry(ctx: &FrameworkCtx<'_>, expr: &IrExpr, uncertain: &mut bool) -> AttrValue {
     let mut m = BTreeMap::new();
     let (name, form): (String, &str) = match expr {
         IrExpr::Ident(n) => (n.clone(), "class"),
@@ -101,7 +167,7 @@ fn entry(ctx: &FrameworkCtx<'_>, expr: &IrExpr, uncertain: &mut bool) -> AttrVal
                 Some("forRootAsync") => "for_root_async",
                 Some("forFeature") => "for_feature",
                 Some("register" | "registerAsync") => "register",
-                Some("registerQueue") => "register_queue",
+                Some("registerQueue" | "registerQueueAsync") => "register_queue",
                 _ => {
                     *uncertain = true;
                     "dynamic_expr"
@@ -126,21 +192,13 @@ fn entry(ctx: &FrameworkCtx<'_>, expr: &IrExpr, uncertain: &mut bool) -> AttrVal
             (String::new(), "dynamic_expr")
         }
     };
-    if let Some(binding) = ctx.bindings.get(name.split('.').next().unwrap_or("")) {
+    if let Some(binding) = ctx.binding(name.split('.').next().unwrap_or("")) {
         m.insert("import_specifier".to_owned(), s(&binding.specifier));
         m.insert("imported".to_owned(), s(&binding.imported));
     }
     m.insert("name".to_owned(), AttrValue::Str(name));
     m.insert("form".to_owned(), s(form));
     AttrValue::Map(m)
-}
-
-fn name_of(expr: &IrExpr) -> String {
-    match expr {
-        IrExpr::Ident(n) => n.clone(),
-        IrExpr::Member(parts) => parts.join("."),
-        _ => String::new(),
-    }
 }
 
 /// `{ provide, useClass | useExisting | useFactory | useValue, inject, scope }`. `useValue`

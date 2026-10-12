@@ -114,7 +114,7 @@ pub fn collect<'a, 't>(
     walker.table
 }
 
-fn is_secret_name(name: &str) -> bool {
+pub(crate) fn is_secret_name(name: &str) -> bool {
     let lower = name.to_ascii_lowercase();
     [
         "secret",

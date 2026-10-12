@@ -1,0 +1,14 @@
+{
+  "scenario": "exported-rename",
+  "symbols": [
+    {
+      "file": "src/util/names.ts",
+      "name": "formatFullName",
+      "verdict": {
+        "kind": "pure_rename",
+        "overridden_by": "public_contract"
+      }
+    }
+  ],
+  "files": []
+}

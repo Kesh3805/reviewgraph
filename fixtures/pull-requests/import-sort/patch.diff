@@ -1,0 +1,9 @@
+diff --git a/src/app.ts b/src/app.ts
+--- a/src/app.ts
++++ b/src/app.ts
+@@ -1,4 +1,4 @@
+-import { b } from './b';
+ import { a } from './a';
++import { b } from './b';
+
+ export const total = a() + b();

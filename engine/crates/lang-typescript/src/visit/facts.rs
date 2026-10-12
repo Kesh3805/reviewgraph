@@ -236,6 +236,7 @@ impl Walker<'_, '_> {
         match node.kind() {
             kind::CALL_EXPRESSION => return self.call(node, in_tx),
             kind::NEW_EXPRESSION => self.new_expr(node, in_tx),
+            kind::BINARY_EXPRESSION => self.expression_condition(node, in_tx),
             kind::IF_STATEMENT => self.condition(node, "if", in_tx),
             kind::TERNARY_EXPRESSION => self.condition(node, "ternary", in_tx),
             kind::SWITCH_STATEMENT => self.switch(node, in_tx),
@@ -411,6 +412,33 @@ impl Walker<'_, '_> {
             ),
         );
         let key = format!("{label}:{}", h8(inner, self.src));
+        self.push(node, FactKind::Condition, key, detail, in_tx);
+    }
+
+    /// A comparison or logical expression outside any statement condition (`return a === b`,
+    /// `const ok = x && y`): the outermost one becomes a `Condition` fact, so a returned
+    /// predicate is visible to the change classifier like an `if` is.
+    fn expression_condition(&mut self, node: Node<'_>, in_tx: bool) {
+        if !is_expression_condition(node, self.src) {
+            return;
+        }
+        let mut detail = BTreeMap::new();
+        detail.insert("expression".to_owned(), AttrValue::Bool(true));
+        detail.insert(
+            "compares_null".to_owned(),
+            AttrValue::Bool(compares_null(node, self.src)),
+        );
+        detail.insert("negated".to_owned(), AttrValue::Bool(false));
+        detail.insert(
+            "idents".to_owned(),
+            AttrValue::List(
+                idents(node, self.src)
+                    .into_iter()
+                    .map(AttrValue::Str)
+                    .collect(),
+            ),
+        );
+        let key = format!("expr:{}", h8(node, self.src));
         self.push(node, FactKind::Condition, key, detail, in_tx);
     }
 
@@ -720,6 +748,55 @@ fn is_process_env(node: Node<'_>, src: &Source<'_>) -> bool {
             .is_some_and(|chain| chain.len() == 2 && chain[0] == "process" && chain[1] == "env")
 }
 
+/// Comparison and logical operators whose expression counts as a condition.
+fn is_condition_operator(op: &str) -> bool {
+    matches!(
+        op,
+        "===" | "!==" | "==" | "!=" | "<" | ">" | "<=" | ">=" | "&&" | "||"
+    )
+}
+
+fn has_condition_operator(node: Node<'_>, src: &Source<'_>) -> bool {
+    node.kind() == kind::BINARY_EXPRESSION
+        && node
+            .child_by_field_name(field::OPERATOR)
+            .is_some_and(|op| is_condition_operator(&src.text(op)))
+}
+
+/// Whether `node` is the outermost comparison or logical expression of a value position, i.e.
+/// not an operand of another one and not the condition of an `if`, loop or ternary (those have
+/// their own facts).
+fn is_expression_condition(node: Node<'_>, src: &Source<'_>) -> bool {
+    if !has_condition_operator(node, src) {
+        return false;
+    }
+    let mut current = node;
+    for _ in 0..32 {
+        let Some(parent) = current.parent() else {
+            return true;
+        };
+        match parent.kind() {
+            kind::PARENTHESIZED_EXPRESSION
+            | kind::UNARY_EXPRESSION
+            | kind::EXPRESSION_STATEMENT => {
+                current = parent;
+            }
+            kind::BINARY_EXPRESSION => return !has_condition_operator(parent, src),
+            kind::IF_STATEMENT
+            | kind::WHILE_STATEMENT
+            | kind::DO_STATEMENT
+            | kind::FOR_STATEMENT
+            | kind::TERNARY_EXPRESSION => {
+                return parent
+                    .child_by_field_name(field::CONDITION)
+                    .is_none_or(|c| c.id() != current.id());
+            }
+            _ => return true,
+        }
+    }
+    true
+}
+
 fn unwrap_parens(node: Node<'_>) -> Node<'_> {
     let mut current = node;
     for _ in 0..16 {
@@ -836,7 +913,7 @@ fn is_validation(callee: &Callee) -> bool {
     false
 }
 
-fn is_transaction(callee: &Callee) -> bool {
+pub(crate) fn is_transaction(callee: &Callee) -> bool {
     matches!(
         callee.name.as_str(),
         "transaction"

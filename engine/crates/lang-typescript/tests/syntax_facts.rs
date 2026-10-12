@@ -499,3 +499,22 @@ fn every_fixture_unit_validates_with_facts() {
         analysis_ir::validate(&unit).unwrap();
     }
 }
+
+#[test]
+fn returned_comparison_is_a_condition_fact_once() {
+    let src = "export class A {\n  ok(user: U) {\n    return user.role === 'admin';\n  }\n  both(a: number, b: number) {\n    const x = a > 1 && b < 2;\n    if (a === b) {\n      return x;\n    }\n    return a !== b ? 1 : 2;\n  }\n}\n";
+    let unit = analyze("src/a.ts", src);
+    let ok = facts_of(&unit, "A.ok");
+    let conditions = keys(&ok, FactKind::Condition);
+    assert_eq!(conditions.len(), 1, "{conditions:?}");
+    assert!(conditions[0].starts_with("expr:"));
+    let both = facts_of(&unit, "A.both");
+    let conditions = keys(&both, FactKind::Condition);
+    // `a > 1 && b < 2` once (the outermost), the `if` once and the ternary once; the operands
+    // and the `if`/ternary conditions add nothing.
+    assert_eq!(conditions.len(), 3, "{conditions:?}");
+    assert_eq!(
+        conditions.iter().filter(|k| k.starts_with("expr:")).count(),
+        1
+    );
+}

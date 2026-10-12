@@ -665,3 +665,84 @@ pub fn auth_bypass() -> AuthBypass {
         keys,
     }
 }
+
+// ---------------------------------------------------------------------------------------------
+// The whole risk pipeline over a scenario: impact, signals, low-risk, clusters, risk, plan.
+// ---------------------------------------------------------------------------------------------
+
+use std::collections::BTreeSet;
+
+use codegraph::GraphQuery;
+use impact::cluster::{
+    cluster_changes, plan_review, ClusterInputs, Clustering, PlanConfig, PlanInputs, ReviewPlan,
+};
+use impact::risk::low_risk::{detect_low_risk, LowRiskContext, LowRiskReport};
+use impact::risk::{
+    assess_risk, detect_all, EffectsConfig, RiskAssessment, RiskDetection, RiskInputs, RiskPolicy,
+};
+
+pub struct Pipeline {
+    pub impact: ImpactGraph,
+    pub detection: RiskDetection,
+    pub low_risk: LowRiskReport,
+    pub clustering: Clustering,
+    pub assessment: RiskAssessment,
+    pub plan: ReviewPlan,
+}
+
+pub fn run_pipeline(
+    change: &ChangeSet,
+    head: &Graph,
+    base: Option<&Graph>,
+    policy: &RiskPolicy,
+    plan_config: &PlanConfig,
+) -> Pipeline {
+    let impact = impact_of(change, head, base);
+    let detection = detect_all(change, Some(&impact), policy);
+    let context = LowRiskContext::derive(change, Some(&impact), policy, &detection.signals);
+    let low_risk = detect_low_risk(change, &context);
+    let low_symbols: BTreeSet<SymbolKey> = low_risk
+        .per_symbol
+        .iter()
+        .filter(|(_, verdict)| verdict.is_low_risk())
+        .map(|(key, _)| *key)
+        .collect();
+    let low_files: BTreeSet<RepoPath> = low_risk
+        .per_file
+        .iter()
+        .filter(|(_, verdict)| verdict.is_low_risk())
+        .map(|(file, _)| file.clone())
+        .collect();
+    let clustering = cluster_changes(&ClusterInputs {
+        change,
+        head: Some(head as &dyn GraphQuery),
+        impact: Some(&impact),
+        low_risk_symbols: &low_symbols,
+        low_risk_files: &low_files,
+    });
+    let effects_config = EffectsConfig::default();
+    let assessment = assess_risk(RiskInputs {
+        changes: change,
+        impact: Some(&impact),
+        clustering: Some(&clustering),
+        policy,
+        effects: &effects_config,
+        low_risk: &low_risk,
+        signals: detection.signals.clone(),
+    });
+    let plan = plan_review(&PlanInputs {
+        change,
+        clustering: &clustering,
+        assessment: &assessment,
+        low_risk: Some(&low_risk),
+        config: plan_config,
+    });
+    Pipeline {
+        impact,
+        detection,
+        low_risk,
+        clustering,
+        assessment,
+        plan,
+    }
+}

@@ -1,0 +1,22 @@
+# IMP-008: labelled expectations for the impact graph of the auth-bypass pull request (PRD §151).
+# `must_include`: an element with this relation (and distance, when given) and exactly this
+# node id exists in some changed symbol's impact. `must_exclude`: no element's node id contains
+# this text.
+must_include:
+  - relation: caller
+    node: "ts:src/admin/admin.service#AdminService.updateUser/method"
+    distance: 1
+  - relation: caller
+    node: "ts:src/users/user.controller#UserController.update/method"
+    distance: 2
+  - relation: endpoint
+    node: "http:PUT /users/{}"
+  - relation: interface
+    node: "ts:src/auth/auth-provider.interface#AuthProvider.authorize/method"
+  - relation: removed_callee
+    node: "ts:src/auth/permission.service#PermissionService.check/method"
+  - relation: test
+    node: "test:src/auth/authorize.spec.ts#AuthService › denies without permission"
+must_exclude:
+  - node: "ts:src/reports/report.service#ReportService"
+  - node: "ts:src/util/format#authorizeHeader"

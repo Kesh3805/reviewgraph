@@ -103,6 +103,10 @@ pub(crate) fn apply_route(ctx: &mut Mapping<'_>) {
 
 /// `http_global_config` → a [`GlobalFact::GlobalPrefix`] the snapshot-wide id owner applies.
 pub(crate) fn apply_global_prefix(ctx: &mut Mapping<'_>) {
+    // Versioning configuration is not a path prefix; it is recorded on the fact only.
+    if matches!(ctx.fact.attrs.get("kind"), Some(AttrValue::Str(kind)) if kind == "versioning") {
+        return;
+    }
     let mut issues = Vec::new();
     let Some(prefix) = contract::require_str(
         ctx.fact,

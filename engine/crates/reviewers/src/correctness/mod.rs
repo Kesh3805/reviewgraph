@@ -156,6 +156,7 @@ impl Reviewer for CorrectnessReviewer {
             no_findings_reason,
             model_response_meta: ModelResponseMeta::of(&resp),
             ref_table: refs,
+            gated: Vec::new(),
         })
     }
 }

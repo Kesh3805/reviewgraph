@@ -34,6 +34,7 @@ pub const NON_BEHAVIOURAL: &[&str] = &[
     "comment_only",
     "docs_only",
     "rename_pure",
+    "low_risk_only",
 ];
 pub const AUTH_SIGNALS: &[&str] = &[
     "authorization_logic_changed",
@@ -136,9 +137,10 @@ impl ReviewerRegistry {
         }
     }
 
-    /// The reviewers implemented today.
+    /// Every shipped reviewer (see [`crate::registry::build_reviewers`]); maintainability is still
+    /// off unless the base configuration enables it.
     pub fn current() -> Self {
-        Self::new([ReviewerKind::Correctness])
+        Self::new(ReviewerKind::ALL)
     }
 
     pub fn is_implemented(&self, kind: ReviewerKind) -> bool {

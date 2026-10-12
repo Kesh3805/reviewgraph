@@ -1,0 +1,13 @@
+{
+  "scenario": "import-sort",
+  "symbols": [],
+  "files": [
+    {
+      "path": "src/app.ts",
+      "verdict": {
+        "kind": "import_sort",
+        "overridden_by": null
+      }
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "scenario": "snapshot-update",
+  "symbols": [],
+  "files": [
+    {
+      "path": "src/__snapshots__/greet.spec.ts.snap",
+      "verdict": {
+        "kind": "snapshot_update",
+        "overridden_by": null
+      }
+    }
+  ]
+}

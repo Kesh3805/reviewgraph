@@ -1,0 +1,208 @@
+{
+  "schema_version": 1,
+  "symbols": [
+    {
+      "seed": "97ac70ec2191e38555c6678614fc4699",
+      "seed_id": "ts:src/auth/auth.service#AuthService.authorize/method",
+      "side": "head",
+      "untested": false,
+      "elements": [
+        {
+          "node": "cf62d786005dcb9d57390bde2872fc78",
+          "node_id": "ts:src/admin/admin.service#AdminService.updateUser/method",
+          "kind": "Method",
+          "relation": "caller",
+          "distance": 1,
+          "path": [
+            {
+              "from": "cf62d786005dcb9d57390bde2872fc78",
+              "edge": "CALLS",
+              "to": "97ac70ec2191e38555c6678614fc4699",
+              "confidence": 850,
+              "graph": "head"
+            }
+          ],
+          "min_confidence": 850,
+          "alt_paths": 0,
+          "weak": false,
+          "touches": [
+            "db:public.users"
+          ]
+        },
+        {
+          "node": "27c8f81202a995979be342bceb1bfc25",
+          "node_id": "ts:src/users/user.controller#UserController.update/method",
+          "kind": "Handler",
+          "relation": "caller",
+          "distance": 2,
+          "path": [
+            {
+              "from": "cf62d786005dcb9d57390bde2872fc78",
+              "edge": "CALLS",
+              "to": "97ac70ec2191e38555c6678614fc4699",
+              "confidence": 850,
+              "graph": "head"
+            },
+            {
+              "from": "27c8f81202a995979be342bceb1bfc25",
+              "edge": "CALLS",
+              "to": "cf62d786005dcb9d57390bde2872fc78",
+              "confidence": 850,
+              "graph": "head"
+            }
+          ],
+          "min_confidence": 850,
+          "alt_paths": 0,
+          "weak": false
+        },
+        {
+          "node": "67ceb82e4e326b475124462968394bd4",
+          "node_id": "ts:src/auth/permission.service#PermissionService.check/method",
+          "kind": "Method",
+          "relation": "removed_callee",
+          "distance": 1,
+          "path": [
+            {
+              "from": "97ac70ec2191e38555c6678614fc4699",
+              "edge": "CALLS",
+              "to": "67ceb82e4e326b475124462968394bd4",
+              "confidence": 850,
+              "graph": "base"
+            }
+          ],
+          "min_confidence": 850,
+          "alt_paths": 0,
+          "weak": false
+        },
+        {
+          "node": "bd15a7bd234725c988ee8a6c0e039551",
+          "node_id": "ts:src/auth/auth-provider.interface#AuthProvider.authorize/method",
+          "kind": "Method",
+          "relation": "interface",
+          "distance": 1,
+          "path": [
+            {
+              "from": "97ac70ec2191e38555c6678614fc4699",
+              "edge": "OVERRIDES",
+              "to": "bd15a7bd234725c988ee8a6c0e039551",
+              "confidence": 1000,
+              "graph": "head"
+            }
+          ],
+          "min_confidence": 1000,
+          "alt_paths": 0,
+          "weak": false
+        },
+        {
+          "node": "7fbfdf2a92bfc96271d8969068d1097d",
+          "node_id": "http:PUT /users/{}",
+          "kind": "ApiEndpoint",
+          "relation": "endpoint",
+          "distance": 3,
+          "path": [
+            {
+              "from": "cf62d786005dcb9d57390bde2872fc78",
+              "edge": "CALLS",
+              "to": "97ac70ec2191e38555c6678614fc4699",
+              "confidence": 850,
+              "graph": "head"
+            },
+            {
+              "from": "27c8f81202a995979be342bceb1bfc25",
+              "edge": "CALLS",
+              "to": "cf62d786005dcb9d57390bde2872fc78",
+              "confidence": 850,
+              "graph": "head"
+            },
+            {
+              "from": "7fbfdf2a92bfc96271d8969068d1097d",
+              "edge": "HANDLED_BY",
+              "to": "27c8f81202a995979be342bceb1bfc25",
+              "confidence": 900,
+              "graph": "head"
+            }
+          ],
+          "min_confidence": 850,
+          "alt_paths": 0,
+          "weak": false,
+          "endpoint": {
+            "entry_kind": "http",
+            "method": "PUT",
+            "path": "/users/:id",
+            "guards": []
+          }
+        },
+        {
+          "node": "70035f5251a9e436ee30ef464e247ee2",
+          "node_id": "test:src/auth/authorize.spec.ts#AuthService › denies without permission",
+          "kind": "TestCase",
+          "relation": "test",
+          "distance": 1,
+          "path": [
+            {
+              "from": "70035f5251a9e436ee30ef464e247ee2",
+              "edge": "TESTS",
+              "to": "97ac70ec2191e38555c6678614fc4699",
+              "confidence": 900,
+              "graph": "head"
+            }
+          ],
+          "min_confidence": 900,
+          "alt_paths": 0,
+          "weak": false,
+          "test": {
+            "score": 1.0,
+            "signals": {
+              "invocation": 1.0,
+              "tests_edge": 1.0,
+              "import": 0.8,
+              "naming": 0.6,
+              "path": 0.4,
+              "mock": 0.0
+            },
+            "mocked": false
+          }
+        }
+      ],
+      "truncation": []
+    }
+  ],
+  "budget": {
+    "max_caller_depth": 2,
+    "max_callers": 50,
+    "max_callees": 30,
+    "max_type_relations": 30,
+    "max_endpoints": 10,
+    "max_endpoint_depth": 6,
+    "max_endpoint_visits": 2000,
+    "max_tests": 20,
+    "max_resources": 30,
+    "max_resource_other_side": 5,
+    "max_total_elements_per_symbol": 200,
+    "max_total_elements_pr": 5000,
+    "min_confidence": 500
+  },
+  "stats": {
+    "seeds": 1,
+    "total_elements": 6,
+    "elements_by_relation": {
+      "caller": 2,
+      "removed_callee": 1,
+      "interface": 1,
+      "endpoint": 1,
+      "test": 1
+    },
+    "truncations": [],
+    "seeds_without_graph": 0,
+    "weak_elements": 0,
+    "transitive_pass_ran": false,
+    "endpoint_search_visits": 3
+  },
+  "flags": {
+    "test_mapping_degraded": false,
+    "resource_facts_available": true,
+    "base_graph_missing": false
+  },
+  "test_targets": [],
+  "input_hash": "7162c33ea07aefb1da9447540543e8423ea13a4d992f5772f3c5d27aaf0328fc"
+}

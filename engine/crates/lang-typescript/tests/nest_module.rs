@@ -116,3 +116,178 @@ fn enabled_adapters_filter_disables_nestjs() {
     let unit = analyze_with("src/app.module.ts", BASIC.as_bytes(), &cfg);
     assert!(unit.framework.is_empty());
 }
+
+fn form(entry: &AttrValue) -> String {
+    match field(entry, "form") {
+        Some(AttrValue::Str(s)) => s.clone(),
+        other => panic!("entry without form: {other:?}"),
+    }
+}
+
+fn name(entry: &AttrValue) -> String {
+    match field(entry, "name") {
+        Some(AttrValue::Str(s)) => s.clone(),
+        other => panic!("entry without name: {other:?}"),
+    }
+}
+
+#[test]
+fn for_root_for_feature_register_args_preserved() {
+    let facts = modules(
+        "import { Module } from '@nestjs/common';\n\
+         import { TypeOrmModule } from '@nestjs/typeorm';\n\
+         import { BullModule } from '@nestjs/bullmq';\n\
+         @Module({ imports: [TypeOrmModule.forRoot({ type: 'postgres' }), \
+         TypeOrmModule.forFeature([User]), BullModule.registerQueue({ name: 'mail' })] })\n\
+         class A {}\n",
+    );
+    let imports = list(&facts[0], "imports");
+    let forms: Vec<String> = imports.iter().map(form).collect();
+    assert_eq!(forms, vec!["for_root", "for_feature", "register_queue"]);
+    assert_eq!(name(&imports[0]), "TypeOrmModule");
+    for entry in imports {
+        match field(entry, "args") {
+            Some(AttrValue::List(args)) => assert_eq!(args.len(), 1),
+            other => panic!("args not preserved: {other:?}"),
+        }
+    }
+}
+
+#[test]
+fn provider_object_use_class_use_existing_use_factory() {
+    let facts = modules(
+        "import { Module } from '@nestjs/common';\n\
+         @Module({ providers: [\n\
+           { provide: 'A', useClass: AImpl },\n\
+           { provide: B, useExisting: AImpl },\n\
+           { provide: C, useFactory: () => 1, inject: [D, E] },\n\
+         ] })\n\
+         class M {}\n",
+    );
+    let providers = list(&facts[0], "providers");
+    assert_eq!(providers.len(), 3);
+    assert_eq!(
+        field(&providers[0], "use_class"),
+        Some(&AttrValue::Str("AImpl".to_owned()))
+    );
+    assert_eq!(
+        field(&providers[1], "use_existing"),
+        Some(&AttrValue::Str("AImpl".to_owned()))
+    );
+    assert!(field(&providers[2], "use_factory").is_some());
+    match field(&providers[2], "inject") {
+        Some(AttrValue::List(names)) => assert_eq!(names.len(), 2),
+        other => panic!("inject missing: {other:?}"),
+    }
+}
+
+#[test]
+fn provide_token_string_and_symbol_constants() {
+    let facts = modules(
+        "import { Module } from '@nestjs/common';\n\
+         @Module({ providers: [\n\
+           { provide: 'STR_TOKEN', useValue: 1 },\n\
+           { provide: APP_GUARD, useClass: Guard },\n\
+         ] })\n\
+         class M {}\n",
+    );
+    let providers = list(&facts[0], "providers");
+    assert_eq!(
+        field(&providers[0], "provide"),
+        Some(&AttrValue::Expr(analysis_ir::IrExpr::Str(
+            "STR_TOKEN".to_owned()
+        )))
+    );
+    assert_eq!(
+        field(&providers[1], "provide"),
+        Some(&AttrValue::Expr(analysis_ir::IrExpr::Ident(
+            "APP_GUARD".to_owned()
+        )))
+    );
+}
+
+#[test]
+fn global_decorator_sets_flag() {
+    let plain = modules("import { Module } from '@nestjs/common';\n@Module({})\nclass A {}\n");
+    assert_eq!(plain[0].attrs.get("global"), Some(&AttrValue::Bool(false)));
+    let global = modules(
+        "import { Module, Global } from '@nestjs/common';\n@Global()\n@Module({})\nclass A {}\n",
+    );
+    assert_eq!(global[0].attrs.get("global"), Some(&AttrValue::Bool(true)));
+}
+
+#[test]
+fn dynamic_module_static_for_root() {
+    let facts = modules(
+        "import { Module } from '@nestjs/common';\n\
+         @Module({})\n\
+         export class ConfigModule {\n\
+           static forRoot(opts: Options) {\n\
+             return { module: ConfigModule, providers: [ConfigService], exports: [ConfigService] };\n\
+           }\n\
+         }\n",
+    );
+    assert_eq!(facts.len(), 2);
+    assert_eq!(facts[0].attrs.get("dynamic"), Some(&AttrValue::Bool(true)));
+    assert_eq!(
+        facts[1].attrs.get("dynamic_method"),
+        Some(&AttrValue::Str("forRoot".to_owned()))
+    );
+    assert_eq!(list(&facts[1], "providers").len(), 1);
+    assert_eq!(list(&facts[1], "exports").len(), 1);
+}
+
+#[test]
+fn non_literal_metadata_diagnostic() {
+    let unit = analyze(
+        "src/app.module.ts",
+        "import { Module } from '@nestjs/common';\nconst META = { providers: [] };\n@Module(META)\nclass A {}\n",
+    );
+    let fact = unit
+        .framework
+        .iter()
+        .find(|f| f.kind == FrameworkFactKind::ModuleDeclaration)
+        .unwrap();
+    assert!(fact.attrs.contains_key("metadata_ref"));
+    assert!(list(fact, "providers").is_empty());
+    assert!(unit
+        .diagnostics
+        .iter()
+        .any(|d| d.code == analysis_ir::DiagCode::UnsupportedConstruct));
+}
+
+#[test]
+fn forward_ref_entries() {
+    let facts = modules(
+        "import { Module, forwardRef } from '@nestjs/common';\n\
+         @Module({ imports: [forwardRef(() => OtherModule)] })\nclass A {}\n",
+    );
+    let entry = &list(&facts[0], "imports")[0];
+    assert_eq!(form(entry), "forward_ref");
+    assert_eq!(name(entry), "OtherModule");
+}
+
+#[test]
+fn detect_false_without_nest_signals() {
+    let facts = modules("@Module({ imports: [A] })\nclass X {}\n");
+    assert!(facts.is_empty());
+}
+
+#[test]
+fn detect_true_from_framework_signals() {
+    let mut cfg = AnalyzerConfig::default();
+    cfg.frameworks.frameworks.insert(
+        "nestjs".to_owned(),
+        analysis_ir::FrameworkPresence {
+            scope_dirs: vec![String::new()],
+            major: Some(10),
+            confidence: 0.9,
+        },
+    );
+    let unit = analyze_with(
+        "src/app.module.ts",
+        b"@Module({ imports: [A] })\nclass X {}\n",
+        &cfg,
+    );
+    assert_eq!(unit.framework.len(), 1);
+}

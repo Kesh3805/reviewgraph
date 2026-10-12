@@ -4,6 +4,7 @@
 
 pub mod categories;
 pub mod reviewer;
+pub mod trust_boundary;
 
 use std::sync::LazyLock;
 
@@ -13,7 +14,8 @@ use serde_json::{json, Value};
 
 pub use categories::{MissingControl, SecurityCategory, TrustSource};
 pub use reviewer::{
-    security_applies, security_budget, security_reviewer, SECURITY_REVIEWER_VERSION,
+    security_applies, security_budget, security_context_budget, security_reviewer,
+    SecurityContextBudget, SECURITY_REVIEWER_VERSION,
 };
 
 use crate::context::ReviewContext;
