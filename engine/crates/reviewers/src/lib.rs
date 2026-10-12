@@ -20,6 +20,7 @@ pub mod focus;
 pub mod input;
 pub mod normalize;
 pub mod output;
+pub mod performance;
 pub mod prechecks;
 pub mod prompts;
 pub mod refs;

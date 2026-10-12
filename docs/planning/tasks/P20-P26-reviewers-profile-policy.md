@@ -469,7 +469,7 @@ Status: ◐
 ---
 
 ### REV-P-001 — Performance reviewer (concrete execution path required)
-Status: ☐
+Status: ◐
 
 - **Task ID:** REV-P-001
 - **Title:** Performance reviewer (concrete execution path required)
