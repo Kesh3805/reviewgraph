@@ -2066,10 +2066,12 @@ dependencies = [
 name = "graph-storage"
 version = "0.1.0"
 dependencies = [
+ "analysis-ir",
  "async-trait",
  "bincode",
  "blake3",
  "chrono",
+ "codegraph",
  "criterion",
  "fs2",
  "futures",
@@ -3216,10 +3218,19 @@ dependencies = [
  "analysis-ir",
  "async-trait",
  "blake3",
+ "codegraph",
  "graph-storage",
+ "lang-typescript",
+ "rayon",
+ "repository",
  "review-core",
+ "serde",
+ "serde_json",
+ "tempfile",
  "thiserror",
  "tokio",
+ "tokio-util",
+ "tracing",
 ]
 
 [[package]]
@@ -3877,7 +3888,11 @@ name = "review-worker"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "blake3",
  "clap",
+ "graph-storage",
+ "pipeline",
+ "repository",
  "review-core",
  "serde_json",
  "sqlx",
