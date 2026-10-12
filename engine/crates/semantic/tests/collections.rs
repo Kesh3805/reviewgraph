@@ -366,6 +366,8 @@ mod pg {
         let third =
             tokio::time::timeout(Duration::from_secs(5), registry.lock("semantic_bootstrap")).await;
         assert!(third.is_ok());
+        // `pool.close()` waits for checked-out connections; release the lock first.
+        drop(third);
         db.finish().await;
     }
 
