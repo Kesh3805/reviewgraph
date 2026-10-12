@@ -1353,7 +1353,7 @@ budgets: { max_model_calls: 40, max_model_tokens: 400000 }
 ---
 
 ### EVAL-004 — Metrics
-Status: ☐
+Status: ☑
 
 **Task ID:** EVAL-004
 
