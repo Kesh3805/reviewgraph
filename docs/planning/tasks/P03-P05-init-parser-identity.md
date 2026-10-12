@@ -113,7 +113,7 @@ Linker confidences (`import` 0.95, `this_member` 0.95, `di_constructor` 0.85, `t
 | TSA-003 | Declaration extraction | TSA-002, SID-002 (naming module, developed in lockstep) | ☐ |
 | TSA-004 | Import/export extraction (ESM + CJS) | TSA-002 | ☐ |
 | TSA-005 | Reference extraction with receiver hints | TSA-003, TSA-004 | ☐ |
-| TSA-006 | Per-symbol SyntaxFacts | TSA-005 | ☐ |
+| TSA-006 | Per-symbol SyntaxFacts | TSA-005 | ☑ |
 | TSA-007 | Normalized body/signature/attribute hashes + shingles | TSA-003 | ☐ |
 | TSA-008 | Golden IR test suite | TSA-003..007 | ☐ |
 | TSA-009 | Module resolver | TSA-004, INIT-005, INIT-007 | ☐ |
@@ -1897,7 +1897,7 @@ Status: ☐
 
 ### TSA-006 — Per-symbol SyntaxFacts for change classification
 
-Status: ☐
+Status: ☑
 
 - **Task ID:** TSA-006
 - **Title:** Per-symbol SyntaxFacts: calls made, conditions, loops, throws, try/catch, awaits, returns, DB-write-like calls, transaction wrappers (plus guard decorators, config reads, validation calls) for deterministic change classification

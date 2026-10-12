@@ -51,7 +51,7 @@ Status markers: ☐ todo · ◐ in progress · ☑ done (acceptance criteria exe
 ---
 
 ### REV-S-001 — Security prompt v1 and output schema
-Status: ☐
+Status: ☑
 
 - **Task ID:** REV-S-001
 - **Title:** Security prompt v1 and output schema
@@ -983,7 +983,7 @@ Status: ☐
 ---
 
 ### POL-001 — `.review/config.yaml` schema, parser and validation
-Status: ☐
+Status: ☑
 
 - **Task ID:** POL-001
 - **Title:** .review/config.yaml schema (PRD §122 + §66) + parser + validation
@@ -1073,7 +1073,7 @@ Status: ☐
 ---
 
 ### POL-002 — Config sync at snapshot time and `config_hash`
-Status: ☐
+Status: ☑
 
 - **Task ID:** POL-002
 - **Title:** Config sync at snapshot + config_hash

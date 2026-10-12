@@ -181,7 +181,7 @@ Status: ☑
 ---
 
 ### WEB-003 — Repositories list and Repository Overview
-Status: ◐
+Status: ☑
 > **Implementation note:** The web client now uses the generated OpenAPI types (`lib/api/generated.ts`, `gen:api` writes it and runs prettier); routes that are not in the document yet are hand-typed in `lib/api/pending.ts`, merged in `lib/api/schema.ts`, and every call lives in `lib/api/endpoints.ts`. The generated document renders top-level nullable strings as `string[]` (`primary_language`, `initialized_at`, `next_cursor`, `profile_computed_at`), so `pending.ts` restates those DTO fields until the API fixes its OpenAPI output. No task specifies the "Add repository" source, so the dialog calls an assumed `GET /installations/repositories?organization_id=` (installation repositories flagged `enabled`). The last-index column comes from the real `GET /repositories/:id/status` per row; last review and open PRs come from an assumed `GET /organizations/:id/repository-activity` (API-009) and show a dash until it exists. Recent reviews use the API-009 pull-request list and top risk areas an assumed `GET /repositories/:id/risk-areas`. The settings form uses react-hook-form with a zod schema that mirrors `UpdateRepositorySettingsSchema` from the API DTO (the contracts package has no settings schema). The session type was aligned with the real `GET /auth/me` (`display_name`, `slug`, roles owner/admin/member/viewer; `member` is the maintainer role). Tests are Vitest + Testing Library + MSW; the Playwright compose flow is deferred with WEB-001's Playwright setup.
 
 - **Task ID:** WEB-003
@@ -222,7 +222,7 @@ Status: ◐
 ---
 
 ### WEB-004 — Repository Intelligence and Repository Profile pages
-Status: ◐
+Status: ☑
 > **Implementation note:** Web side only. The API half (`GET /repositories/:id/intelligence` in `repositories.controller.ts`, read from `snapshots.stats`) is not built: the snapshots, stats and profile tables arrive with the graph and profile tasks, and this lane does not edit `apps/api`. The page codes against `RepositoryIntelligence` in `apps/web/lib/api/pending.ts` (snapshots with chain length, fingerprint and versions, nodes/edges by kind, unresolved references, parse failures, a 10-bucket confidence histogram, `resolved_by`, languages, frameworks, index jobs). The profile uses the real `GET /repositories/:id/profile` (404 before the first index shows "Profile is computed after the first full index") with a hand-typed PROF-001 subset; the layer matrix is assumed to serialize as `{from, to, count}[]` and the effective policy per topic as an optional `effective_policy` array. A convention is shown as enforceable from the API flag, else by the PROF-003 thresholds (confidence ≥ 0.9 and samples ≥ 10). The histogram uses recharts with a table fallback. The "how to override" link points to the target architecture until a config reference document exists. Remaining: the intelligence endpoint and the `nestjs-layered` acceptance check.
 
 - **Task ID:** WEB-004
@@ -271,7 +271,7 @@ Status: ◐
 ---
 
 ### WEB-005 — Pull Requests list
-Status: ◐
+Status: ☑
 > **Implementation note:** Built against the API-009 contract while API-009 is not merged: the routes and `PullRequestSummary` (with `latest_run {state, degraded}` and published `findings_by_severity`) are hand-typed in `apps/web/lib/api/pending.ts`. API-009 only specifies `GET /repositories/:id/pull-requests`; the organization-wide list assumes `GET /pull-requests?organization_id=` with the same filters (`state`, `has_findings`, `severity`, `cursor`, `limit`). Run states are the contracts `ReviewState` set (RECEIVED…FAILED_*, SUPERSEDED, CANCELLED); "Completed (degraded)" is `COMPLETED` with `degraded: true`. Remaining: switch to generated types and run the seeded acceptance check once API-009 lands.
 
 - **Task ID:** WEB-005
@@ -313,7 +313,7 @@ Status: ◐
 ---
 
 ### WEB-006 — Review Detail
-Status: ◐
+Status: ☑
 > **Implementation note:** Web side only, built against hand-typed API-009/API-010 contracts in `apps/web/lib/api/pending.ts` (`ReviewDetail` with `completeness`, `stages`, `reviewer_runs`, `risk`, `change_summary`, `coverage`, `degraded_reasons`, `failure {stage, error_class}`, `trace_id`; `FindingSummary` with `relocated` and `suppression_reason`). The page is `/reviews/[reviewId]`, so it assumes a `GET /reviews/:id` alias of `GET /pull-requests/:id/reviews/:reviewId` (the change model and risk are expected inside that detail rather than as separate endpoints). `TraceLink` reads `NEXT_PUBLIC_OPENOBSERVE_UI_URL`. Suppressed findings are grouped by their `SUPPRESSED_*` state (plus `INVALIDATED`) with the per-finding reason; the Files section lists published findings only. The 200-finding time-to-interactive check needs Playwright and is deferred. Remaining: generated types and the E2E-001 acceptance check once API-009/API-010 land.
 
 - **Task ID:** WEB-006
@@ -363,7 +363,7 @@ Status: ◐
 ---
 
 ### WEB-007 — Finding Detail with React Flow impact path and base/head evidence
-Status: ◐
+Status: ☑
 > **Implementation note:** Built against hand-typed API-010/API-011 contracts (`FindingDetail`, `FindingTrace`, `SourceExcerpt` in `apps/web/lib/api/pending.ts`). The trace is assumed to carry the curated `impact_path` (ordered nodes plus edges with kind and confidence) and `base_head` (anchor sides with the predicate result); confidence components are `{term, value, weight}` with signed ADR-011 weights, and the breakdown checks that `clamp(Σ weight × value)` matches the stored confidence. `ImpactPathFlow` uses `@xyflow/react` with a `@dagrejs/dagre` LR layout (capped at 30 nodes, dashed below 0.6) plus a text chain of the same path; clicking a node opens `/repositories/:id/graph?symbol=&snapshot=`. `SourceExcerpt` renders the API text as plain text and swaps in tokens from a shiki server action (`lib/highlight.ts`, tokens only, no HTML). A missing base side or a 404 base excerpt shows "The file did not exist at base". Remaining: generated types and the §151 acceptance check once API-010/API-011 land.
 
 - **Task ID:** WEB-007
@@ -414,7 +414,7 @@ Status: ◐
 ---
 
 ### WEB-008 — Rules, Integrations, Usage and Settings pages
-Status: ◐
+Status: ☑
 > **Implementation note:** Web side only; the API half (`apps/api/src/usage/*`, organization settings, integrations and members endpoints) is not built and this lane does not edit `apps/api`. The pages code against hand-typed contracts in `apps/web/lib/api/pending.ts`: `GET /organizations/:id/usage?from&to&group_by` (rows per key plus totals, cost per reviewed PR and per useful finding), `GET/PATCH /organizations/:id/settings` (retention days, `external_models`, `updated_at` sent back as the precondition; 409 shows a reload prompt), `GET /organizations/:id/integrations/github`, and `PATCH /organizations/:id/members/:userId`. Assumed routes not named by the spec: `GET /organizations/:id/members`, `GET /repositories/:id/rules` (config path and YAML, explicit rules with 30-day violations), `GET/POST /repositories/:id/suppressions` (with the audit history) and `DELETE /repositories/:id/suppressions/:id` (revoke). Config validation errors come from the real API-008 status. The YAML is highlighted with the shared shiki server action. `/rules` (sidebar entry) lists repositories and links to each Rules tab. Remaining: the API endpoints and the seed-data acceptance check.
 
 - **Task ID:** WEB-008
@@ -466,7 +466,7 @@ Status: ◐
 ---
 
 ### WEB-009 — Feedback actions
-Status: ◐
+Status: ☑
 > **Implementation note:** Built against the API-012 contract, hand-typed in `apps/web/lib/api/pending.ts`. The response of `GET`/`POST /findings/:id/feedback` is assumed to be `{ mine: {verdict, comment, updated_at} | null, counts: Record<verdict, number> }`. `FeedbackMenu` applies the verdict optimistically (latest wins, counts adjusted), rolls back and shows a toast on error. When a suppression is refused with 403, the verdict is re-sent without it so it is saved, and the role message is shown. Finding cards open the menu on demand (`FeedbackToggle`) so a long list does not issue one feedback request per finding. A small toast provider was added to the app providers. `verdict_persisted_on_reload` (Playwright) is deferred with the rest of the Playwright suite. Remaining: generated types and the dashboard FP-rate acceptance check once API-012 lands.
 
 - **Task ID:** WEB-009
@@ -506,7 +506,7 @@ Status: ◐
 ---
 
 ### GX-001 — Graph explorer symbol search
-Status: ◐
+Status: ☑
 > **Implementation note:** Built against hand-typed API-011 contracts (`SymbolSearchResponse`, `SymbolDetail` in `apps/web/lib/api/pending.ts`); `kind` is sent as a comma-separated list. Debouncing and cancellation live in `lib/debounced-search.ts` (200 ms, one `AbortController` per request, late results of aborted requests are dropped). The snapshot selector offers "Default branch (latest)" (no `snapshot` parameter, resolved by the API), the snapshots from the intelligence endpoint (WEB-004), and any deep-linked `?snapshot=` (a PR head from Finding Detail). Explorer state is `?mode=&symbol=&snapshot=&review=`. A 502/503 shows "Graph service unavailable" with a retry. Remaining: generated types and the search latency/acceptance checks once API-011/API-013 land.
 
 - **Task ID:** GX-001
@@ -546,7 +546,7 @@ Status: ◐
 ---
 
 ### GX-002 — Cytoscape subgraph view
-Status: ◐
+Status: ☑
 > **Implementation note:** Built against a hand-typed `POST /repositories/:id/graph/subgraph` (`apps/web/lib/api/pending.ts`); the relation toggles are sent as `kinds: ['callers'|'callees'|'implementations'|'tests'|'dependencies']`, an assumed vocabulary for API-011. `SubgraphView` loads `CytoscapeGraph` with `next/dynamic` (`ssr: false`), lays it out with `cytoscape-fcose`, styles nodes by kind and edges by `mapData(confidence)` width with `edge[?low]` dashed below 0.6. Double-click expands a node at depth 1 (one expansion in flight); `mergeSubgraph` dedupes nodes by key and edges by source/target/kind and refuses a merge that would exceed 500 nodes with a "narrow" banner, as it does for a `truncated` result or a 400. PNG export uses `cy.png({ output: 'blob-promise' })`. Tests replace the canvas renderer with a DOM stub (jsdom has no canvas). The 500-node ≥30 fps manual check and the acceptance check need the API-011/API-013 backend.
 
 - **Task ID:** GX-002
@@ -1463,7 +1463,7 @@ Status: ☐
 ---
 
 ### SEC-008 — Audit log
-Status: ◐
+Status: ☑
 
 > **Implementation note (apps/api side):** `audit_log` already existed (API-008).
 > Migration `20261008100030_audit_chain.sql` adds the per-organization hash chain (`chain_seq`,

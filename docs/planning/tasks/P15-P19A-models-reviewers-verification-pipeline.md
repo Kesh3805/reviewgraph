@@ -885,7 +885,7 @@ ALTER TABLE model_calls ENABLE ROW LEVEL SECURITY; ALTER TABLE model_cache ENABL
 ---
 
 ### GW-009 — Output JSON-schema validation and one repair retry
-Status: ☐
+Status: ☑
 
 **Task ID:** GW-009
 
@@ -969,7 +969,7 @@ pub struct RepairTurn { pub previous_output: serde_json::Value, pub errors: Vec<
 ---
 
 ### GW-010 — Gateway telemetry and pre-send redaction hook
-Status: ☐
+Status: ☑
 
 **Task ID:** GW-010
 
@@ -1632,7 +1632,7 @@ Status: ☐
 ---
 
 ### REV-001 — Reviewer trait, structured model input, output schema, prompt versioning
-Status: ☐
+Status: ☑
 
 **Task ID:** REV-001
 
@@ -1804,7 +1804,7 @@ CREATE TABLE reviewer_runs (
 ---
 
 ### REV-002 — Reviewer routing
-Status: ☐
+Status: ☑
 
 **Task ID:** REV-002
 
@@ -1902,7 +1902,7 @@ pub fn plan_reviewers(change: &ChangeModel, risk: &RiskAssessment, clusters: &[C
 ---
 
 ### REV-C-001 — Correctness prompt v1 and schema binding
-Status: ☐
+Status: ☑
 
 **Task ID:** REV-C-001
 
@@ -2082,7 +2082,7 @@ pub async fn run_reviewer_over_clusters(r: Arc<dyn Reviewer>, jobs: Vec<ClusterJ
 ---
 
 ### REV-C-003 — Candidate normalization
-Status: ☐
+Status: ☑
 
 **Task ID:** REV-C-003
 

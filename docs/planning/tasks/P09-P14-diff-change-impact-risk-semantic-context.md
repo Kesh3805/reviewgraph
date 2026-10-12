@@ -256,7 +256,7 @@ Status: ☑
 ---
 
 ### DIFF-003 — Hunk computation with imara-diff (old/new ranges), independent of user git config
-Status: ☐
+Status: ☑
 
 - **Task ID:** DIFF-003
 - **Title:** `diff_engine::hunks` — line-level diff of old/new blob content with imara-diff (histogram), producing unified-style `DiffHunk`s, zero-context changed ranges and line statistics.
@@ -302,7 +302,7 @@ Status: ☐
 ---
 
 ### DIFF-004 — Binary/large/generated/vendored file handling
-Status: ☐
+Status: ☑
 
 - **Task ID:** DIFF-004
 - **Title:** `diff_engine::disposition` — classify every changed file (`Analyze`, `Binary`, `TooLarge`, `Generated`, `Vendored`, `Minified`, `LockfileSummary`) before hunk computation and attach that disposition to `FileDiff`.
@@ -357,7 +357,7 @@ Status: ☐
 ---
 
 ### DIFF-005 — Provider diff reconciliation + anchorable-line sets per side (for comment placement)
-Status: ☐
+Status: ☑
 
 - **Task ID:** DIFF-005
 - **Title:** `diff_engine::anchor` — reconcile the locally computed `DiffModel` with the provider's reported changed files/patches and produce, per file and per side, the exact set of lines on which an inline review comment can be anchored.
@@ -403,7 +403,7 @@ Status: ☐
 ---
 
 ### DIFF-006 — Hunk→symbol mapping (new side head IR innermost symbol; deletions via base IR)
-Status: ☐
+Status: ☑
 
 - **Task ID:** DIFF-006
 - **Title:** `diff_engine::symbol_map` — map each changed line range to the innermost enclosing symbol on the head side, and each deleted/old-side range to the innermost symbol of the base side, producing a `SymbolMap`.
@@ -448,7 +448,7 @@ Status: ☐
 ---
 
 ### DIFF-007 — Golden diff tests (base+patch → changed files/hunks/symbols)
-Status: ☐
+Status: ☑
 
 - **Task ID:** DIFF-007
 - **Title:** Create the `fixtures/pull-requests/auth-bypass` scenario (PRD §151) and a set of edge-case scenarios, a deterministic fixture builder, and insta golden tests covering files, hunks, dispositions, anchors and symbol mapping.
@@ -939,7 +939,7 @@ Status: ☐
 ---
 
 ### IMP-001 — ImpactGraph model
-Status: ☐
+Status: ☑
 
 - **Task ID:** IMP-001
 - **Title:** `ImpactGraph` model: elements with relation, distance, path and min-confidence
@@ -983,7 +983,7 @@ Status: ☐
 ---
 
 ### IMP-002 — Callers and callees bounded expansion
-Status: ☐
+Status: ☑
 
 - **Task ID:** IMP-002
 - **Title:** Caller (≤2, transitive if budget) and callee (1) expansion per changed symbol
@@ -1016,7 +1016,7 @@ Status: ☐
 ---
 
 ### IMP-003 — Type hierarchy relations
-Status: ☐
+Status: ☑
 
 - **Task ID:** IMP-003
 - **Title:** Implementations, interfaces, overrides, sub/supertypes and related types
@@ -1046,7 +1046,7 @@ Status: ☐
 ---
 
 ### IMP-004 — API entrypoint reachability
-Status: ☐
+Status: ☑
 
 - **Task ID:** IMP-004
 - **Title:** Reverse reachability from a changed symbol to `APIEndpoint` nodes (bounded)
@@ -1076,7 +1076,7 @@ Status: ☐
 ---
 
 ### IMP-005 — Test mapping
-Status: ☐
+Status: ☑
 
 - **Task ID:** IMP-005
 - **Title:** Map tests to production symbols: `TESTS` edges, imports from test files, naming/path conventions, mock references
@@ -1114,7 +1114,7 @@ Status: ☐
 ---
 
 ### IMP-006 — Config, DB, queue and external API relations
-Status: ☐
+Status: ☑
 
 - **Task ID:** IMP-006
 - **Title:** Resource relations: config/env, DB tables/entities, queue producers/consumers, external APIs
@@ -1144,7 +1144,7 @@ Status: ☐
 ---
 
 ### IMP-007 — Impact budgets and truncation reporting
-Status: ☐
+Status: ☑
 
 - **Task ID:** IMP-007
 - **Title:** Configurable impact budgets, risk-scaled, with complete truncation reporting
@@ -1204,7 +1204,7 @@ Status: ☐
 ---
 
 ### IMP-009 — Change clustering
-Status: ☐
+Status: ☑
 
 - **Task ID:** IMP-009
 - **Title:** Cluster changed symbols into review units (module + connected components over call/type edges; API/entity grouping)
@@ -1280,7 +1280,7 @@ Status: ☐
 ---
 
 ### RISK-001 — RiskSignal model + rule table (18 PRD §37 categories)
-Status: ☐
+Status: ☑
 
 - **Task ID:** RISK-001
 - **Title:** `RiskSignal` model and a versioned rule table covering the 18 PRD §37 categories
@@ -1530,7 +1530,7 @@ Status: ☐
 ---
 
 ### SEM-001 — `EmbeddingProvider` trait + `EmbeddingSpace` identity
-Status: ☐
+Status: ☑
 
 - **Task ID:** SEM-001
 - **Title:** `EmbeddingProvider` port and `EmbeddingSpace` identity (provider, model, dims, version)
@@ -1574,7 +1574,7 @@ Status: ☐
 ---
 
 ### SEM-002 — Providers: openai, voyage, hash
-Status: ☐
+Status: ☑
 
 - **Task ID:** SEM-002
 - **Title:** Embedding adapters: OpenAI, Voyage, and a deterministic offline `hash` provider (feature hashing)
@@ -1607,7 +1607,7 @@ Status: ☐
 ---
 
 ### SEM-003 — Qdrant REST client via reqwest
-Status: ☐
+Status: ☑
 
 - **Task ID:** SEM-003
 - **Title:** Minimal typed Qdrant REST client: collections, payload indexes, upsert, delete-by-filter, search, scroll
@@ -1654,7 +1654,7 @@ Status: ☐
 ---
 
 ### SEM-004 — Collection bootstrap and versioning
-Status: ☐
+Status: ☑
 
 - **Task ID:** SEM-004
 - **Title:** Collection bootstrap (`rg_{space}_v{n}`), payload indexes, version registry and cut-over
@@ -1693,7 +1693,7 @@ Status: ☐
 ---
 
 ### SEM-005 — TenantScope-enforced search API
-Status: ☐
+Status: ☑
 
 - **Task ID:** SEM-005
 - **Title:** Tenant-scoped search and write API; a test proves no query can omit the tenant filter
@@ -1736,7 +1736,7 @@ Status: ☐
 ---
 
 ### SEM-006 — Embedding unit builders
-Status: ☐
+Status: ☑
 
 - **Task ID:** SEM-006
 - **Title:** Build embedding units: symbol summary text, code chunk, doc, convention
@@ -1777,7 +1777,7 @@ Status: ☐
 ---
 
 ### SEM-007 — Incremental embedding sync
-Status: ☐
+Status: ☑
 
 - **Task ID:** SEM-007
 - **Title:** Incremental embedding sync: content-hash check before embedding, lineage re-key, obsolete deletion
@@ -1813,7 +1813,7 @@ Status: ☐
 ---
 
 ### SEM-008 — Integration with INC-008 invalidations
-Status: ☐
+Status: ☑
 
 - **Task ID:** SEM-008
 - **Title:** Drive embedding sync from incremental invalidation sets
@@ -1843,7 +1843,7 @@ Status: ☐
 ---
 
 ### SEM-009 — Retrieval quality and latency benchmark
-Status: ☐
+Status: ☑
 
 - **Task ID:** SEM-009
 - **Title:** Filtered recall and p95 latency benchmark for Qdrant retrieval

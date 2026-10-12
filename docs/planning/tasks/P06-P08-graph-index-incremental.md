@@ -1543,7 +1543,7 @@ ALTER TABLE unresolved_refs ADD CONSTRAINT unresolved_refs_snapshot_fk
 ---
 
 ### GS-004 — Postgres GraphStore: write_full and write_delta
-Status: ☐
+Status: ☑
 
 **Task ID:** GS-004
 
@@ -1615,7 +1615,7 @@ pub struct PgStoreConfig { pub copy_chunk_rows: usize /* 50_000 */, pub statemen
 ---
 
 ### GS-005 — Postgres GraphStore: load_graph and single-hop SQL neighbors
-Status: ☐
+Status: ☑
 
 **Task ID:** GS-005
 
@@ -1765,7 +1765,7 @@ Status: ☐
 ---
 
 ### GS-007 — Snapshot compaction
-Status: ☐
+Status: ☑
 
 **Task ID:** GS-007
 
@@ -1831,7 +1831,7 @@ pub async fn compact(store: &dyn GraphStore, head: SnapshotId) -> Result<Snapsho
 ---
 
 ### GS-008 — In-process graph LRU cache
-Status: ☐
+Status: ☑
 
 **Task ID:** GS-008
 

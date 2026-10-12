@@ -434,7 +434,7 @@ Status: ☑
 ---
 
 ### API-007 — TS JobQueue adapter (same PG jobs table, transactional enqueue)
-Status: ◐
+Status: ☑
 
 > **Implementation note:** The `jobs` table did not exist yet, so this task adds
 > `engine/migrations/20261008100000_jobs.sql` exactly as specified by PIPE-001 (the Rust lane reuses
@@ -676,7 +676,7 @@ Status: ☑
 ---
 
 ### API-011 — Graph proxy API
-Status: ◐
+Status: ☑
 
 > **Implementation note:** The proxy, the typed `EngineClient` (Node's built-in fetch, which is
 > undici with keep-alive, and a 5 s timeout; no extra dependency), the server-side tenant claims,
@@ -734,7 +734,7 @@ Status: ◐
 ---
 
 ### API-012 — Feedback API
-Status: ◐
+Status: ☑
 
 > **Implementation note:** Migration `20261008100020_feedback.sql` adds `feedback` as specified,
 > with `finding_id` referencing `verified_findings` (the finding id of API-010), RLS and an
