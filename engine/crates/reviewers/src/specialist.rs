@@ -45,6 +45,7 @@ pub struct SpecialistReviewer {
 }
 
 /// The static description of a specialist reviewer.
+#[derive(Debug, Clone)]
 pub struct SpecialistSpec {
     pub kind: ReviewerKind,
     pub task: TaskType,
