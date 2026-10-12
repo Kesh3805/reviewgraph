@@ -51,13 +51,13 @@ impl Classifier for ControlFlowClassifier {
         let base: Vec<SyntaxFact> = facts
             .base()
             .iter()
-            .filter(|f| is_branch_point(f))
+            .filter(|f| KINDS.contains(&f.kind) && is_branch_point(f))
             .cloned()
             .collect();
         let head: Vec<SyntaxFact> = facts
             .head()
             .iter()
-            .filter(|f| is_branch_point(f))
+            .filter(|f| KINDS.contains(&f.kind) && is_branch_point(f))
             .cloned()
             .collect();
         let diff = diff_facts(&base, &head, &KINDS);

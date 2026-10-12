@@ -498,7 +498,7 @@ Status: ☑
 ---
 
 ### CHG-001 — ChangedSymbol with base/head versions, change kind, ranges
-Status: ◐
+Status: ◐ (SymbolRecord wrapper carries base/head/flags/delta seeds; review-core ChangedSymbol not extended, no bench)
 
 - **Task ID:** CHG-001
 - **Title:** `diff_engine::change::symbols` — build the `ChangedSymbol` set by joining the hunk→symbol map (where) with the hash-based symbol diff (what), carrying base and head versions, change kind and ranges.
@@ -544,7 +544,7 @@ Status: ◐
 ---
 
 ### CHG-002 — control_flow_changed / condition_changed / loop_changed / return changes
-Status: ☐
+Status: ◐ (implemented in diff-engine; missing classify bench and ChangeClass JSON schema in contracts)
 
 - **Task ID:** CHG-002
 - **Title:** `diff_engine::change::classify` foundation and structural classes: fact-diff infrastructure plus `ControlFlowChanged`, `ConditionChanged`, `LoopChanged`, `ReturnChanged`.
@@ -588,7 +588,7 @@ Status: ☐
 ---
 
 ### CHG-003 — call_added / call_removed / dependency_added / dependency_removed
-Status: ☐
+Status: ☐ (not started)
 
 - **Task ID:** CHG-003
 - **Title:** Classifiers for added/removed calls (with resolved targets on the correct graph side) and symbol-level dependency additions/removals.
@@ -643,7 +643,7 @@ Status: ☐
 ---
 
 ### CHG-004 — exception_handling_changed / async_behavior_changed
-Status: ☐
+Status: ☐ (not started)
 
 - **Task ID:** CHG-004
 - **Title:** Classifiers for error-handling semantics (try/catch/throw/finally) and asynchronous behaviour (await, async modifier, floating promises, concurrency shape).
@@ -695,7 +695,7 @@ Status: ☐
 ---
 
 ### CHG-005 — authorization_changed / validation_removed / database_write_changed / transaction_boundary_changed / api_contract_changed / return_type_changed
-Status: ☐
+Status: ☐ (not started)
 
 - **Task ID:** CHG-005
 - **Title:** Domain-aware classifiers built on fact diffs, bound calls and framework edges: authorization, validation, database writes, transaction boundaries, API contract and return type.
@@ -740,7 +740,7 @@ Status: ☐
 ---
 
 ### CHG-006 — ChangedAPI, ChangedDependency (manifest/lockfile diff), ChangedSchema (migrations/entities), ChangedConfiguration, ChangedTest
-Status: ☐
+Status: ☐ (not started)
 
 - **Task ID:** CHG-006
 - **Title:** The five aggregate change collectors of the `PullRequestChangeModel`: APIs, dependencies, schemas, configuration, tests.
@@ -786,7 +786,7 @@ Status: ☐
 ---
 
 ### CHG-007 — PullRequestChangeModel assembly (PRD §26)
-Status: ☐
+Status: ☐ (not started)
 
 - **Task ID:** CHG-007
 - **Title:** `build_change_model` — orchestrate diff, symbol mapping, symbol/class classification and aggregate collectors into one immutable, versioned, hashable `PullRequestChangeModel` (alias `ChangeModel`).
@@ -836,7 +836,7 @@ Status: ☐
 ---
 
 ### CHG-008 — Change-model golden tests
-Status: ☐
+Status: ☐ (not started)
 
 - **Task ID:** CHG-008
 - **Title:** Golden/insta test suite for the change model over the auth-bypass scenario and a catalogue of focused scenarios, one per change class and collector.
@@ -894,7 +894,7 @@ Status: ☐
 ---
 
 ### CHG-009 — Intent classification (11 PRD §29 classes; deterministic signals + optional CLASSIFIER tier; never overrides risk)
-Status: ☐
+Status: ☐ (not started; stopped at wrap-up)
 
 - **Task ID:** CHG-009
 - **Title:** `diff_engine::intent` — a deterministic weighted-signal classifier over the change model into the 11 PRD §29 intents, with an optional model refinement behind a trait, producing an advisory `IntentAssessment` that can never lower risk.
