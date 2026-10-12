@@ -886,7 +886,7 @@ Status: ☐
 ---
 
 ### PROF-006 — Profile versioning and cache
-Status: ☐
+Status: ☑
 
 - **Task ID:** PROF-006
 - **Title:** Profile versioning & cache

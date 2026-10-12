@@ -4,6 +4,7 @@
 //! * [`config`] — `.review/config.yaml` schema v1, safe parsing, validation, normalization and
 //!   the snapshot-time sync that binds the policy to a commit (POL-001, POL-002).
 
+pub mod cache;
 pub mod config;
 pub mod conventions;
 pub mod error;
@@ -12,5 +13,6 @@ pub mod model;
 #[cfg(feature = "pg")]
 pub mod pg;
 pub mod store;
+pub mod version;
 
 pub use error::{Error, Result};
