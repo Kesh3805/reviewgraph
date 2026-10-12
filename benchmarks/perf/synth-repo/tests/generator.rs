@@ -162,6 +162,21 @@ fn churn_modifies_exactly_n_files() {
 }
 
 #[test]
+fn bench_sample_selection_deterministic() {
+    let plan = plan_s(42);
+    let a = synth_repo::sample_files(&plan, 200, 1);
+    let b = synth_repo::sample_files(&plan, 200, 1);
+    let paths = |v: &[synth_repo::FileOut]| v.iter().map(|f| f.path.clone()).collect::<Vec<_>>();
+    assert_eq!(a.len(), 200);
+    assert_eq!(paths(&a), paths(&b));
+    let other = synth_repo::sample_files(&plan, 200, 2);
+    assert_ne!(paths(&a), paths(&other));
+    for suffix in [".controller.ts", ".service.ts", ".entity.ts", ".spec.ts"] {
+        assert!(a.iter().any(|f| f.path.ends_with(suffix)), "no {suffix}");
+    }
+}
+
+#[test]
 fn churn_larger_than_feature_count_is_rejected() {
     let dir = tempfile::tempdir().unwrap();
     let out = dir.path().join("tree");

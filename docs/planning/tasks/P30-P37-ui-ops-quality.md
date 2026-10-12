@@ -1687,7 +1687,7 @@ Status: ☐
 ---
 
 ### PERF-002 — Parse throughput benchmark
-Status: ☐
+Status: ◐ (not started in lane r3-17: needs perf-harness crate on top of synth-repo and lang-typescript criterion groups)
 
 - **Task ID:** PERF-002
 - **Title:** Parse throughput benchmark (files/s, MB/s) for the TypeScript analyzer

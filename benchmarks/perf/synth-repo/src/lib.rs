@@ -19,7 +19,7 @@ use rayon::prelude::*;
 
 pub use manifest::{Counts, Manifest, GENERATOR_VERSION};
 pub use profile::{Profile, ProfileSpec};
-pub use templates::{ident, Plan};
+pub use templates::{ident, FileOut, Plan};
 
 use rng::Rng;
 use templates::{generate_module, generate_shared};
@@ -347,6 +347,25 @@ pub fn commit_head(plan: &Plan, out: &Path, n: usize) -> Result<(String, Vec<Chu
     run_git(out, &["add", "-A", "--", "src"])?;
     run_git(out, &["commit", "-q", "-m", "head"])?;
     Ok((run_git(out, &["rev-parse", "HEAD"])?, changed))
+}
+
+/// Generates the whole tree in memory and picks `n` files by a seeded shuffle: the fixed sample
+/// the parse benchmarks use (mixed controllers, services, entities, DTOs and specs).
+pub fn sample_files(plan: &Plan, n: usize, sample_seed: u64) -> Vec<FileOut> {
+    let mut all: Vec<FileOut> = Vec::new();
+    for mi in 0..plan.spec.modules {
+        all.extend(generate_module(plan, mi).files);
+    }
+    all.extend(generate_shared(plan).files);
+    let mut rng = Rng::seeded(plan.seed, "sample", sample_seed);
+    let take = n.min(all.len());
+    for i in 0..take {
+        let j = i + rng.below((all.len() - i) as u64) as usize;
+        all.swap(i, j);
+    }
+    all.truncate(take);
+    all.sort_by(|a, b| a.path.cmp(&b.path));
+    all
 }
 
 /// Paths changed between two commits, with rename detection (a rename counts once).
