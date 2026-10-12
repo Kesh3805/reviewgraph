@@ -2534,7 +2534,7 @@ Status: ☐
 ---
 
 ### CI-007 — Benchmark smoke
-Status: ☐
+Status: ☑
 
 - **Task ID:** CI-007
 - **Title:** Fast benchmark smoke on pull requests (criterion compile and quick run, 5-case quality subset under replay) and a nightly full benchmark with regression thresholds

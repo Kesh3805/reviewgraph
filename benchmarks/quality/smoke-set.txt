@@ -1,0 +1,6 @@
+# Five labeled PR case ids used by the PR smoke run (replay adapter). Corpus is expanded by QB-001.
+case-001
+case-002
+case-003
+case-004
+case-005
