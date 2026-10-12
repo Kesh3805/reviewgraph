@@ -16,7 +16,8 @@ use super::Mapping;
 pub(crate) fn apply_suite(ctx: &mut Mapping<'_>) {
     let mut issues = Vec::new();
     let suite_path =
-        contract::require_str(ctx.fact, ctx.category, ctx.path, "suite_path", &mut issues);
+        contract::optional_str(ctx.fact, ctx.category, ctx.path, "suite_path", &mut issues)
+            .or_else(|| Some(String::new()));
     let name = contract::require_str(ctx.fact, ctx.category, ctx.path, "name", &mut issues);
     for issue in issues {
         ctx.out.issues.push(issue);
@@ -49,7 +50,8 @@ pub(crate) fn apply_suite(ctx: &mut Mapping<'_>) {
 pub(crate) fn apply_case(ctx: &mut Mapping<'_>) {
     let mut issues = Vec::new();
     let suite_path =
-        contract::require_str(ctx.fact, ctx.category, ctx.path, "suite_path", &mut issues);
+        contract::optional_str(ctx.fact, ctx.category, ctx.path, "suite_path", &mut issues)
+            .or_else(|| Some(String::new()));
     let name = contract::require_str(ctx.fact, ctx.category, ctx.path, "name", &mut issues);
     let range = contract::range_attr(ctx.fact.attrs.get("range"));
     for issue in issues {

@@ -109,3 +109,80 @@ Guard decorators default to `^(UseGuards|Roles?|Permissions?|Public|Auth\w*|Auth
 on the last name segment; `AnalyzerConfig.guard_decorator_names` replaces the pattern with an exact
 list. `analysis_ir::facts::compare_keys(base, head)` returns the multiset difference by
 `(kind, key)` that the change classifier consumes.
+
+## Framework adapters (NEST-001..007)
+
+Adapters live in `src/frameworks/` and run inside the analyzer after declarations and imports
+(`frameworks::run`). They share `FrameworkCtx`: the syntax tree, the symbol table, the import list
+and the module `BindingTable` (`crate::bindings`), with decorator-origin resolution
+(`decorator_origin`, `name_origin`, `nest_origin`). Each adapter is gated by
+`AnalyzerConfig.enabled_adapters` and by its own `detect`. The attribute contract of every fact is
+in `docs/graph-schema/framework-facts.md`.
+
+| Adapter | Task | Facts |
+|---|---|---|
+| `nestjs` / modules | NEST-001 | `ModuleDeclaration` (including `static forRoot` dynamic modules) |
+| `nestjs` / routes | NEST-002 | `Controller`, `HttpRoute`, `HttpGlobalConfig` |
+| `nestjs` / di | NEST-003 | `DiInjection` |
+| `nestjs` / middleware | NEST-004 | `Middleware`, `MiddlewareBinding`, `GlobalProvider`, `MetadataDecoratorDefinition`, `RouteMetadata` |
+| `typeorm` | NEST-005 | `OrmEntity`, `OrmColumn`, `OrmRelation`, `OrmAccess` |
+| `bullmq` | NEST-006 | `QueueRegistration`, `QueueConsumer`, `QueueJobHandler`, `QueueProducer` |
+| `jest`, `config` | NEST-007 | `TestSuite`, `TestCase`, `TestMock`, `ConfigRead` |
+
+Only names, kinds and flags are recorded: `useValue` literals, mock values, raw SQL, redirect URLs,
+job payloads and config defaults never appear in a fact.
+
+## References and receiver hints (TSA-005)
+
+`ParsedUnit.references` lists every call, `new`, type reference, heritage entry, decorator, JSX
+element and read of an imported binding, in source order. A reference belongs to the innermost
+symbol whose range contains it; callbacks fold into the enclosing symbol with
+`attrs.in_callback = true` and module-level statements belong to the module symbol. Occurrences are
+never merged: the linker aggregates them. The range of a reference is the range of its terminal
+name (`save` in `this.repo.save()`), which is the position the semantic helper receives.
+
+| Callee shape | `name` | `ReceiverHint` |
+| --- | --- | --- |
+| `x()` | `x` | `None`; `import_binding` set when `x` is imported and not shadowed |
+| `this.p()` | `p` | `This` |
+| `super.p()` / `super()` | `p` / `super` | `Super` (`attrs.super_ctor` on the constructor call) |
+| `this.f.p()` | `p` | `ThisField{field, declared_type}` from the class's typed fields, constructor parameter properties and `= new T()` initializers |
+| `o.p()`, `o` a namespace / default / CommonJS import | `p` | `ImportedNamespace{binding}` |
+| `o.p()`, `o` a local or parameter | `p` | `Identifier{name, declared_type}` from parameter annotations, `const x: T`, `const x = new T()`; inner scopes shadow outer ones, an untyped redeclaration clears the type |
+| `O.p()`, `O` capitalized and not local | `p` | `Identifier{name: O, declared_type: None}` plus `attrs.static_candidate` |
+| `a.b.c.p()` | `p` | `Chain{root, segments: [b, c]}` (`this.a.b.c()` has root `This`) |
+| `g(...).p()` | `p` | `CallResult{callee}` (code text only, at most 120 characters, no literals) |
+| `a[k]()` and other shapes | `<computed>` / `<unknown>` | `Computed` / `Unknown` |
+
+Parentheses, `!`, `as`, `satisfies` and `<T>x` are peeled before classification; `a?.b()` sets
+`attrs.optional`. A known receiver type is also written as `attrs.declared_head` and
+`attrs.declared_args`. Types: every `type_identifier`, predefined type and `A.B` path is a
+`TypeRef`, except in `extends` / `implements` clauses (`Extends` / `Implements`; `extends
+mixin(Base)` is an `Extends` with `attrs.extends_call`). Generic arguments are `TypeRef`s with
+`attrs.type_arg_of` naming the head; type parameters in scope are not references. Decorators are
+`Decorator` references named by the last callee segment and owned by the decorated symbol. Value
+reads (`ValueRead`) are identifiers in expression position that name an import and are not a
+callee or a receiver root. `in_test_block` is true inside the callbacks of `describe`, `it`,
+`test` and `suite` calls. At most 50,000 references are kept per file.
+
+## Hash normalization (TSA-007)
+
+`body_hash`, `signature_hash` and `attr_hash` are BLAKE3 digests (first 16 bytes) over a normalized
+token stream with a domain prefix per family (`rg.body.v1`, `rg.sig.v1`, `rg.attr.v1`); each token
+is framed as `class byte || length u32 le || bytes`. The analyzer fills them for every symbol.
+
+* Whitespace and comments are dropped. Quote style is irrelevant (string tokens hold their
+  content, escapes kept). Numbers are lowercased with separators removed. A trailing `;` and a
+  comma or `;` before a closing bracket are dropped. Template chunks are kept verbatim.
+  Identifiers are kept, so renaming a local changes the body hash (documented limitation).
+* Body hash: the tokens of the body (callables), the initializer (properties, constants) or the
+  aliased type. Containers (module, class, interface, enum, namespace) replace every member's
+  range with a placeholder token, so editing a method body leaves the class hash alone while
+  adding, removing or renaming a member changes it.
+* Signature hash: kind, modifiers, visibility, type parameters, parameters (name, type, optional,
+  rest), return type, declared type, heritage and overload signatures. The symbol's own name and
+  default-value expressions are excluded.
+* Attribute hash: decorators (name and arguments) and the export / declare / override flags.
+* `body_shingles` is a bottom-k sketch (k = 256) of hashed token 3-grams used for similarity.
+* An empty stream hashes to a stable non-zero value. Symbols with errors still hash the tokens
+  that parsed.

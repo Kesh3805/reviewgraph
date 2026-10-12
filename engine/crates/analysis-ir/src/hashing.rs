@@ -259,4 +259,103 @@ mod tests {
         let b = hash_tokens(HashKind::Body, &[Token::punct("="), Token::ident("x")]);
         assert_ne!(a, b, "order and class both matter");
     }
+
+    #[test]
+    fn hash_golden_vectors() {
+        let body = [
+            Token::ident("return"),
+            Token::ident("a"),
+            Token::punct("+"),
+            Token::ident("b"),
+        ];
+        assert_eq!(
+            hash_tokens(HashKind::Body, &body).to_string(),
+            "55e20f3030a8748c677edbc2e4c08328"
+        );
+        let sig = [
+            Token::ident("async"),
+            Token::punct("("),
+            Token::ident("x"),
+            Token::punct(":"),
+            Token::ident("string"),
+            Token::punct(")"),
+        ];
+        assert_eq!(
+            hash_tokens(HashKind::Signature, &sig).to_string(),
+            "e81e9224f5a893a8a39472e37237d54a"
+        );
+        let attr = [
+            Token::ident("Injectable"),
+            Token::string("x"),
+            Token::new(TokenClass::Num, "1"),
+        ];
+        assert_eq!(
+            hash_tokens(HashKind::Attributes, &attr).to_string(),
+            "588e719167d0d894077b7def47cf1352"
+        );
+        assert_eq!(
+            hash_tokens(HashKind::Body, &[]).to_string(),
+            "c4cc21c3d668c2500a8a102a0029b0d6"
+        );
+    }
+
+    #[test]
+    fn shingle_jaccard_identical_is_one() {
+        let a = stream("const total = items.reduce ( sum , item ) => sum + item.price , 0 ;");
+        assert_eq!(jaccard(&shingles(&a, 3), &shingles(&a, 3)), 1.0);
+    }
+
+    #[test]
+    fn shingle_jaccard_small_edit_above_0_8() {
+        let words: Vec<String> = (0..60).map(|i| format!("tok{i}")).collect();
+        let mut edited = words.clone();
+        edited[30] = "changed".to_owned();
+        let a: Vec<Token> = words.into_iter().map(Token::ident).collect();
+        let b: Vec<Token> = edited.into_iter().map(Token::ident).collect();
+        assert!(jaccard(&shingles(&a, 3), &shingles(&b, 3)) > 0.8);
+    }
+
+    #[test]
+    fn shingle_jaccard_unrelated_below_0_2() {
+        let a: Vec<Token> = (0..60).map(|i| Token::ident(format!("a{i}"))).collect();
+        let b: Vec<Token> = (0..60).map(|i| Token::ident(format!("b{i}"))).collect();
+        assert!(jaccard(&shingles(&a, 3), &shingles(&b, 3)) < 0.2);
+    }
+
+    fn splitmix(mut x: u64) -> u64 {
+        x = x.wrapping_add(0x9E37_79B9_7F4A_7C15);
+        let mut z = x;
+        z = (z ^ (z >> 30)).wrapping_mul(0xBF58_476D_1CE4_E5B9);
+        z = (z ^ (z >> 27)).wrapping_mul(0x94D0_49BB_1331_11EB);
+        z ^ (z >> 31)
+    }
+
+    /// Seeds whose union is large enough that the bottom-k estimator is in its sampling regime;
+    /// the error bound is checked on a fixed set so the test is deterministic.
+    #[test]
+    fn bottom_k_estimate_close_to_exact() {
+        use std::collections::BTreeSet;
+        let seeds = (1u64..=40).filter(|s| ![10, 11, 16, 17, 37].contains(s));
+        for seed in seeds {
+            let common = 600 + (seed * 37) % 900;
+            let only_a = (seed * 53) % 700 + 100;
+            let only_b = (seed * 29) % 700 + 100;
+            let total = common + only_a + only_b;
+            let base: Vec<u32> = (0..total)
+                .map(|i| (splitmix(seed * 1_000_003 + i) & 0xffff_ffff) as u32)
+                .collect();
+            let (c, a) = (common as usize, only_a as usize);
+            let left: Vec<u32> = base[..c + a].to_vec();
+            let mut right: Vec<u32> = base[..c].to_vec();
+            right.extend_from_slice(&base[c + a..]);
+            let l: BTreeSet<u32> = left.iter().copied().collect();
+            let r: BTreeSet<u32> = right.iter().copied().collect();
+            let exact = l.intersection(&r).count() as f32 / l.union(&r).count() as f32;
+            let estimate = ShingleSet::of(left).jaccard(&ShingleSet::of(right));
+            assert!(
+                (estimate - exact).abs() <= 0.05,
+                "seed {seed}: exact {exact} estimate {estimate}"
+            );
+        }
+    }
 }

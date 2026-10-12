@@ -913,7 +913,7 @@ fn is_validation(callee: &Callee) -> bool {
     false
 }
 
-fn is_transaction(callee: &Callee) -> bool {
+pub(crate) fn is_transaction(callee: &Callee) -> bool {
     matches!(
         callee.name.as_str(),
         "transaction"

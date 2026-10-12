@@ -219,6 +219,7 @@ impl LanguageAnalyzer for TypeScriptAnalyzer {
         let ctx = VisitCtx {
             source,
             module_name: module_name(input),
+            file_path: input.path.as_str(),
             error_ranges: &scan.ranges,
             cfg,
         };
