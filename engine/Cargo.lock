@@ -2513,15 +2513,22 @@ name = "incremental"
 version = "0.1.0"
 dependencies = [
  "analysis-ir",
+ "blake3",
  "codegraph",
  "criterion",
+ "diff-engine",
+ "gix",
+ "graph-storage",
  "lang-typescript",
  "proptest",
+ "rayon",
+ "repository",
  "review-core",
  "review-test-support",
  "serde",
  "serde_json",
  "thiserror",
+ "tracing",
  "uuid",
 ]
 
