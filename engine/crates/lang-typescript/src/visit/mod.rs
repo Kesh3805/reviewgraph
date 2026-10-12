@@ -80,8 +80,10 @@ pub fn run(
     };
     let module_facts = modules::collect(root, &ctx.source, &table, sink);
     let framework = crate::frameworks::run(root, &ctx.source, &table.symbols, ctx.cfg, sink);
+    let mut symbols = table.symbols;
+    crate::hashing::assign_hashes(&mut symbols, &ctx.source);
     Collected {
-        symbols: table.symbols,
+        symbols,
         facts,
         imports: module_facts.imports,
         exports: module_facts.exports,

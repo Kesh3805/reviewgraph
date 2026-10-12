@@ -109,3 +109,25 @@ Guard decorators default to `^(UseGuards|Roles?|Permissions?|Public|Auth\w*|Auth
 on the last name segment; `AnalyzerConfig.guard_decorator_names` replaces the pattern with an exact
 list. `analysis_ir::facts::compare_keys(base, head)` returns the multiset difference by
 `(kind, key)` that the change classifier consumes.
+
+## Hash normalization (TSA-007)
+
+`body_hash`, `signature_hash` and `attr_hash` are BLAKE3 digests (first 16 bytes) over a normalized
+token stream with a domain prefix per family (`rg.body.v1`, `rg.sig.v1`, `rg.attr.v1`); each token
+is framed as `class byte || length u32 le || bytes`. The analyzer fills them for every symbol.
+
+* Whitespace and comments are dropped. Quote style is irrelevant (string tokens hold their
+  content, escapes kept). Numbers are lowercased with separators removed. A trailing `;` and a
+  comma or `;` before a closing bracket are dropped. Template chunks are kept verbatim.
+  Identifiers are kept, so renaming a local changes the body hash (documented limitation).
+* Body hash: the tokens of the body (callables), the initializer (properties, constants) or the
+  aliased type. Containers (module, class, interface, enum, namespace) replace every member's
+  range with a placeholder token, so editing a method body leaves the class hash alone while
+  adding, removing or renaming a member changes it.
+* Signature hash: kind, modifiers, visibility, type parameters, parameters (name, type, optional,
+  rest), return type, declared type, heritage and overload signatures. The symbol's own name and
+  default-value expressions are excluded.
+* Attribute hash: decorators (name and arguments) and the export / declare / override flags.
+* `body_shingles` is a bottom-k sketch (k = 256) of hashed token 3-grams used for similarity.
+* An empty stream hashes to a stable non-zero value. Symbols with errors still hash the tokens
+  that parsed.
