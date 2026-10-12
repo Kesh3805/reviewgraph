@@ -548,10 +548,17 @@ name = "context-engine"
 version = "0.1.0"
 dependencies = [
  "blake3",
+ "chrono",
+ "codegraph",
+ "globset",
  "hex",
+ "impact",
+ "profile",
+ "proptest",
  "review-core",
  "serde",
  "serde_json",
+ "serde_yaml",
  "thiserror",
 ]
 
@@ -3216,10 +3223,16 @@ dependencies = [
  "analysis-ir",
  "async-trait",
  "blake3",
+ "context-engine",
  "graph-storage",
+ "repository",
  "review-core",
+ "serde_json",
+ "sqlx",
  "thiserror",
  "tokio",
+ "uuid",
+ "zstd",
 ]
 
 [[package]]

@@ -9,13 +9,26 @@ publish.workspace = true
 [lints]
 workspace = true
 
+[features]
+# PostgreSQL adapters (the context cache over `stage_outputs`).
+pg = ["dep:sqlx"]
+# Database-backed tests; need TEST_DATABASE_URL (or DATABASE_URL). Plain `cargo test` never
+# touches a database.
+integration = ["pg"]
+
 [dependencies]
 review-core.workspace = true
 analysis-ir.workspace = true
 graph-storage.workspace = true
+repository.workspace = true
+context-engine.workspace = true
 async-trait = "0.1"
 blake3.workspace = true
 thiserror.workspace = true
+serde_json.workspace = true
+uuid.workspace = true
+zstd.workspace = true
+sqlx = { workspace = true, optional = true }
 
 [dev-dependencies]
 tokio.workspace = true
