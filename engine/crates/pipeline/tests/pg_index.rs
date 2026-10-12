@@ -200,7 +200,7 @@ async fn pre_cancelled_run_leaves_no_run_row() {
     let runs = PgIndexRuns::new(db.pool.clone());
     let sink = PgProgressSink::new(runs.clone(), scope, None);
     let store: Arc<dyn GraphStore> = Arc::new(PgGraphStore::new(db.pool.clone()));
-    let mut req = request(scope, repo.path());
+    let req = request(scope, repo.path());
     req.cancel.cancel();
     // A pre-cancelled run stops before any snapshot exists, so the run row is absent.
     assert!(indexer(Arc::clone(&store)).run(req, &sink).await.is_err());
