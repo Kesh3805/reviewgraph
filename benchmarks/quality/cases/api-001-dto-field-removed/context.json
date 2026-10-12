@@ -1,0 +1,91 @@
+{
+  "change_summary": {
+    "files_changed": 2,
+    "intent": "refactor",
+    "change_classes": [
+      "api_contract_changed"
+    ]
+  },
+  "changed_symbols": [
+    {
+      "symbol_id": "ts:src/profile/profile.dto#ProfileResponseDto/class",
+      "kind": "class",
+      "path": "src/profile/profile.dto.ts",
+      "range": [
+        1,
+        5
+      ],
+      "base_range": [
+        1,
+        6
+      ],
+      "file_lines": 5,
+      "change_classes": [
+        "api_contract_changed"
+      ],
+      "signature_base": "export class ProfileResponseDto",
+      "signature_head": "export class ProfileResponseDto",
+      "body_base": "export class ProfileResponseDto {\n  id!: string;\n  displayName!: string;\n  email!: string;\n  timezone!: string;\n}",
+      "body_head": "export class ProfileResponseDto {\n  id!: string;\n  displayName!: string;\n  email!: string;\n}",
+      "hunks": [
+        {
+          "old": [
+            5,
+            5
+          ],
+          "new": [
+            4,
+            4
+          ]
+        }
+      ],
+      "generated": false
+    },
+    {
+      "symbol_id": "ts:src/profile/profile.controller#ProfileController.me/method",
+      "kind": "method",
+      "path": "src/profile/profile.controller.ts",
+      "range": [
+        8,
+        15
+      ],
+      "base_range": [
+        8,
+        16
+      ],
+      "file_lines": 16,
+      "change_classes": [
+        "api_contract_changed"
+      ],
+      "signature_base": "me(@Req() req: { user: User & { timezone: string } }): ProfileResponseDto",
+      "signature_head": "me(@Req() req: { user: User & { timezone: string } }): ProfileResponseDto",
+      "body_base": "  me(@Req() req: { user: User & { timezone: string } }): ProfileResponseDto {\n    const u = req.user;\n    return {\n      id: u.id,\n      displayName: `${u.firstName} ${u.lastName}`,\n      email: u.email,\n      timezone: u.timezone,\n    };\n  }",
+      "body_head": "  me(@Req() req: { user: User & { timezone: string } }): ProfileResponseDto {\n    const u = req.user;\n    return {\n      id: u.id,\n      displayName: `${u.firstName} ${u.lastName}`,\n      email: u.email,\n    };\n  }",
+      "hunks": [
+        {
+          "old": [
+            14,
+            14
+          ],
+          "new": [
+            13,
+            13
+          ]
+        }
+      ],
+      "generated": false
+    }
+  ],
+  "nodes": [],
+  "edges": [],
+  "tests": [],
+  "rules": [],
+  "diagnostics": [],
+  "config_items": [],
+  "risk_signals": [
+    {
+      "signal": "dto_changed",
+      "weight": 0.7
+    }
+  ]
+}

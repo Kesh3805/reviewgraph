@@ -1,0 +1,53 @@
+{
+  "change_summary": {
+    "files_changed": 1,
+    "intent": "docs",
+    "change_classes": [
+      "comment_only",
+      "formatting"
+    ]
+  },
+  "changed_symbols": [
+    {
+      "symbol_id": "ts:src/billing/discount.service#DiscountService.rate/method",
+      "kind": "method",
+      "path": "src/billing/discount.service.ts",
+      "range": [
+        11,
+        19
+      ],
+      "base_range": [
+        10,
+        18
+      ],
+      "file_lines": 24,
+      "change_classes": [
+        "comment_only"
+      ],
+      "signature_base": "rate(cart: Cart): number",
+      "signature_head": "rate(cart: Cart): number",
+      "body_base": "  rate(cart: Cart): number {\n    if (cart.loyaltyYears >= 5) {\n      return 0.1;\n    }\n    if (cart.subtotal >= 500) {\n      return 0.05;\n    }\n    return 0;\n  }",
+      "body_head": "  rate(cart: Cart): number {\n    if (cart.loyaltyYears >= 5) {\n      return 0.1;\n    }\n    if (cart.subtotal >= 500) {\n      return 0.05;\n    }\n    return 0;\n  }",
+      "hunks": [
+        {
+          "old": [
+            9,
+            9
+          ],
+          "new": [
+            10,
+            10
+          ]
+        }
+      ],
+      "generated": false
+    }
+  ],
+  "nodes": [],
+  "edges": [],
+  "tests": [],
+  "rules": [],
+  "diagnostics": [],
+  "config_items": [],
+  "risk_signals": []
+}

@@ -1,0 +1,10 @@
+# Routing override for the live-openai-fallback evaluation: OpenAI first for review_reasoner,
+# Anthropic as the fallback. Needs OPENAI_API_KEY and OPENAI_REVIEW_MODEL.
+version: 1
+routes:
+  - tier: review_reasoner
+    risk_bands: [low, medium, high, critical]
+    privacy: [standard, zero_retention_only, no_external]
+    candidates:
+      - { provider: openai, model: "${OPENAI_REVIEW_MODEL}", max_context: 128000, enabled_if_set: true }
+      - { provider: anthropic, model: claude-sonnet-5-5, max_context: 200000 }

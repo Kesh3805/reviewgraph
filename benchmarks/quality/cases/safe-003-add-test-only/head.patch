@@ -1,0 +1,17 @@
+diff --git a/src/billing/discount.service.spec.ts b/src/billing/discount.service.spec.ts
+new file mode 100644
+index 0000000..a7f9ba1
+--- /dev/null
++++ b/src/billing/discount.service.spec.ts
+@@ -0,0 +1,11 @@
++import { DiscountService } from './discount.service';
++
++describe('DiscountService', () => {
++  it('gives loyal customers 10%', () => {
++    expect(new DiscountService().rate({ subtotal: 10, loyaltyYears: 6 })).toBe(0.1);
++  });
++
++  it('gives large carts 5%', () => {
++    expect(new DiscountService().rate({ subtotal: 600, loyaltyYears: 0 })).toBe(0.05);
++  });
++});

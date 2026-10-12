@@ -1,0 +1,21 @@
+id: "corr-004-error-swallowed"
+version: 1
+title: "Settlement errors are swallowed and turned into null"
+classes: ["correctness_regression"]
+language: "typescript"
+frameworks: ["nestjs"]
+pr:
+  title: "Settlement errors are swallowed and turned into null"
+  description: "Settlement errors are swallowed and turned into null"
+  base_branch: "main"
+required_reviewers: ["correctness"]
+expected_findings:
+  - id: "E1"
+    categories: ["correctness"]
+    severity_at_least: "medium"
+    symbol: "ts:src/billing/invoice.service#InvoiceService.settle/method"
+    claim_any_of: ["swallow", "error", "null"]
+forbidden_findings: []
+optional_findings: []
+expect_no_published_findings: false
+synthetic_fixtures: true

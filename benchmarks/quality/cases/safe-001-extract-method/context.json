@@ -1,0 +1,91 @@
+{
+  "change_summary": {
+    "files_changed": 1,
+    "intent": "refactor",
+    "change_classes": [
+      "extract_method"
+    ]
+  },
+  "changed_symbols": [
+    {
+      "symbol_id": "ts:src/users/users.service#UsersService.displayName/method",
+      "kind": "method",
+      "path": "src/users/users.service.ts",
+      "range": [
+        8,
+        11
+      ],
+      "base_range": [
+        8,
+        11
+      ],
+      "file_lines": 21,
+      "change_classes": [
+        "extract_method"
+      ],
+      "signature_base": "async displayName(id: string): Promise<string>",
+      "signature_head": "async displayName(id: string): Promise<string>",
+      "body_base": "  async displayName(id: string): Promise<string> {\n    const user = await this.users.findUser(id);\n    return `${user.firstName} ${user.lastName}`;\n  }",
+      "body_head": "  async displayName(id: string): Promise<string> {\n    const user = await this.users.findUser(id);\n    return this.formatName(user.firstName, user.lastName);\n  }",
+      "hunks": [
+        {
+          "old": [
+            10,
+            10
+          ],
+          "new": [
+            10,
+            14
+          ]
+        }
+      ],
+      "generated": false
+    },
+    {
+      "symbol_id": "ts:src/users/users.service#UsersService.formatName/method",
+      "kind": "method",
+      "path": "src/users/users.service.ts",
+      "range": [
+        13,
+        15
+      ],
+      "base_range": null,
+      "file_lines": 21,
+      "change_classes": [
+        "symbol_added"
+      ],
+      "signature_base": null,
+      "signature_head": "private formatName(first: string, last: string): string",
+      "body_base": null,
+      "body_head": "  private formatName(first: string, last: string): string {\n    return `${first} ${last}`;\n  }",
+      "hunks": [
+        {
+          "old": [
+            10,
+            10
+          ],
+          "new": [
+            10,
+            14
+          ]
+        }
+      ],
+      "generated": false
+    }
+  ],
+  "nodes": [],
+  "edges": [],
+  "tests": [
+    {
+      "test_id": "test:src/users/users.service.spec.ts#formats the display name",
+      "path": "src/users/users.service.spec.ts",
+      "covers": [
+        "ts:src/users/users.service#UsersService.displayName/method"
+      ]
+    }
+  ],
+  "rules": [],
+  "diagnostics": [],
+  "config_items": [],
+  "risk_signals": []
+}

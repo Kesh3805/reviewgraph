@@ -1,0 +1,30 @@
+{
+  "fixture_version": 1,
+  "request_hash": "24958c479bd7eeac7ea6320950ae1e5f3e849e822940c2c69d1181b283f832fd",
+  "provider": "any",
+  "model": "any",
+  "task": "correctness_review",
+  "prompt_id": "correctness",
+  "prompt_version": "correctness:v1:472b8c34",
+  "schema_hash": "3d175f915b29ad6025bd3b02bfeef90ddea257bf2d3f65b4e9b9c9b3a990e8be",
+  "synthetic": true,
+  "recorded_at": "2026-10-08T00:00:00Z",
+  "engine_git_sha": null,
+  "response": {
+    "output": {
+      "json": {
+        "findings": [],
+        "no_findings_reason": "Behaviour is unchanged; the dependency direction is an architecture concern."
+      }
+    },
+    "usage": {
+      "input_uncached": 0,
+      "cache_write": 0,
+      "cache_read": 0,
+      "output": 0,
+      "reasoning": 0
+    },
+    "finish_reason": "complete"
+  },
+  "latency_ms": 0
+}

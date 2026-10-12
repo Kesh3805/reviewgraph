@@ -1,0 +1,14 @@
+diff --git a/src/jobs/email.processor.ts b/src/jobs/email.processor.ts
+index a375c2c..ba79e8c 100644
+--- a/src/jobs/email.processor.ts
++++ b/src/jobs/email.processor.ts
+@@ -24,9 +24,6 @@ export class EmailProcessor extends WorkerHost {
+   }
+ 
+   async process(job: EmailJob): Promise<void> {
+-    if (await this.sent.has(job.id)) {
+-      return;
+-    }
+     await this.mailer.send(job.data.to, job.data.template);
+     await this.sent.add(job.id);
+   }

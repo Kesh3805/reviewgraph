@@ -1,0 +1,21 @@
+id: "corr-005-invalid-state-transition"
+version: 1
+title: "Orders can be shipped before they are paid"
+classes: ["correctness_regression"]
+language: "typescript"
+frameworks: ["nestjs"]
+pr:
+  title: "Orders can be shipped before they are paid"
+  description: "Orders can be shipped before they are paid"
+  base_branch: "main"
+required_reviewers: ["correctness"]
+expected_findings:
+  - id: "E1"
+    categories: ["correctness"]
+    severity_at_least: "medium"
+    symbol: "ts:src/orders/orders.service#OrdersService.ship/method"
+    claim_any_of: ["paid", "status", "ship"]
+forbidden_findings: []
+optional_findings: []
+expect_no_published_findings: false
+synthetic_fixtures: true

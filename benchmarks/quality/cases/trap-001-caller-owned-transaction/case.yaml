@@ -1,0 +1,20 @@
+id: "trap-001-caller-owned-transaction"
+version: 1
+title: "LedgerRepository.save skips empty batches; callers own the transaction"
+classes: ["fp_trap", "transaction"]
+language: "typescript"
+frameworks: ["nestjs", "typeorm"]
+pr:
+  title: "LedgerRepository.save skips empty batches; callers own the transaction"
+  description: "LedgerRepository.save skips empty batches; callers own the transaction"
+  base_branch: "main"
+required_reviewers: ["correctness"]
+expected_findings: []
+forbidden_findings:
+  - id: "F1"
+    categories: ["any"]
+    symbol: "ts:src/ledger/ledger.repository#LedgerRepository.save/method"
+    reason: "transaction owned by caller (trap: caller_owned_transaction)"
+optional_findings: []
+expect_no_published_findings: false
+synthetic_fixtures: true

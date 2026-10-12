@@ -1,0 +1,13 @@
+diff --git a/src/ledger/ledger.service.ts b/src/ledger/ledger.service.ts
+index 4af55f4..9859624 100644
+--- a/src/ledger/ledger.service.ts
++++ b/src/ledger/ledger.service.ts
+@@ -11,7 +11,7 @@ export class LedgerService {
+ 
+   async close(accountId: string, balance: number): Promise<void> {
+     await this.dataSource.transaction(async (manager) => {
+-      await this.ledger.post(manager, { accountId, amount: -balance, memo: 'close' });
++      this.ledger.post(manager, { accountId, amount: -balance, memo: 'close' });
+       await manager.query('UPDATE accounts SET closed = true WHERE id = $1', [accountId]);
+     });
+   }

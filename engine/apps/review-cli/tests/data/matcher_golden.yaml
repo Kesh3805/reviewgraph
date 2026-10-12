@@ -1,0 +1,130 @@
+# Hand-labelled (expectation, finding) pairs for the EVAL-002 matcher. `matches` is the human
+# label: would a reviewer of the benchmark count this finding as the expected one?
+- name: exact symbol, same category
+  expectation: '{id: E1, categories: [correctness], symbol: "ts:src/a#A.run/method"}'
+  finding: {category: correctness, symbol: "ts:src/a#A.run/method", path: src/a.ts, lines: [10, 12], text: run breaks}
+  matches: true
+- name: different symbol, no location
+  expectation: '{id: E1, categories: [correctness], symbol: "ts:src/a#A.run/method"}'
+  finding: {category: correctness, symbol: "ts:src/a#A.stop/method", path: src/a.ts, lines: [10, 12], text: stop breaks}
+  matches: false
+- name: symbol right, category incompatible
+  expectation: '{id: E1, categories: [correctness], symbol: "ts:src/a#A.run/method"}'
+  finding: {category: performance, symbol: "ts:src/a#A.run/method", path: src/a.ts, lines: [10, 12], text: slow}
+  matches: false
+- name: security expectation, correctness finding
+  expectation: '{id: E1, categories: [security], symbol: "ts:src/auth#Auth.check/method"}'
+  finding: {category: correctness, symbol: "ts:src/auth#Auth.check/method", path: src/auth.ts, lines: [3, 9], text: check removed}
+  matches: true
+- name: correctness expectation, security finding
+  expectation: '{id: E1, categories: [correctness], symbol: "ts:src/auth#Auth.check/method"}'
+  finding: {category: security, symbol: "ts:src/auth#Auth.check/method", path: src/auth.ts, lines: [3, 9], text: check removed}
+  matches: true
+- name: transaction expectation, data integrity finding
+  expectation: '{id: E1, categories: [transaction], symbol: "ts:src/t#T.move/method"}'
+  finding: {category: data_integrity, symbol: "ts:src/t#T.move/method", path: src/t.ts, lines: [5, 6], text: partial write}
+  matches: true
+- name: transaction expectation, correctness finding
+  expectation: '{id: E1, categories: [transaction], symbol: "ts:src/t#T.move/method"}'
+  finding: {category: correctness, symbol: "ts:src/t#T.move/method", path: src/t.ts, lines: [5, 6], text: partial write}
+  matches: true
+- name: transaction expectation, maintainability finding
+  expectation: '{id: E1, categories: [transaction], symbol: "ts:src/t#T.move/method"}'
+  finding: {category: maintainability, symbol: "ts:src/t#T.move/method", path: src/t.ts, lines: [5, 6], text: long method}
+  matches: false
+- name: any category
+  expectation: '{id: E1, categories: [any], symbol: "ts:src/t#T.move/method"}'
+  finding: {category: maintainability, symbol: "ts:src/t#T.move/method", path: src/t.ts, lines: [5, 6], text: long method}
+  matches: true
+- name: location inside window
+  expectation: '{id: E1, categories: [correctness], location: {path: src/a.ts, line: 20, window: 3}}'
+  finding: {category: correctness, symbol: null, path: src/a.ts, lines: [22, 22], text: bug}
+  matches: true
+- name: location at lower edge
+  expectation: '{id: E1, categories: [correctness], location: {path: src/a.ts, line: 20, window: 3}}'
+  finding: {category: correctness, symbol: null, path: src/a.ts, lines: [10, 17], text: bug}
+  matches: true
+- name: location just below window
+  expectation: '{id: E1, categories: [correctness], location: {path: src/a.ts, line: 20, window: 3}}'
+  finding: {category: correctness, symbol: null, path: src/a.ts, lines: [10, 16], text: bug}
+  matches: false
+- name: location at upper edge
+  expectation: '{id: E1, categories: [correctness], location: {path: src/a.ts, line: 20, window: 3}}'
+  finding: {category: correctness, symbol: null, path: src/a.ts, lines: [23, 30], text: bug}
+  matches: true
+- name: location just above window
+  expectation: '{id: E1, categories: [correctness], location: {path: src/a.ts, line: 20, window: 3}}'
+  finding: {category: correctness, symbol: null, path: src/a.ts, lines: [24, 30], text: bug}
+  matches: false
+- name: range spanning the window
+  expectation: '{id: E1, categories: [correctness], location: {path: src/a.ts, line: 20, window: 0}}'
+  finding: {category: correctness, symbol: null, path: src/a.ts, lines: [1, 40], text: bug}
+  matches: true
+- name: other file, same lines
+  expectation: '{id: E1, categories: [correctness], location: {path: src/a.ts, line: 20, window: 3}}'
+  finding: {category: correctness, symbol: null, path: src/b.ts, lines: [20, 20], text: bug}
+  matches: false
+- name: window zero, exact line
+  expectation: '{id: E1, categories: [correctness], location: {path: src/a.ts, line: 20, window: 0}}'
+  finding: {category: correctness, symbol: null, path: src/a.ts, lines: [20, 20], text: bug}
+  matches: true
+- name: window zero, next line
+  expectation: '{id: E1, categories: [correctness], location: {path: src/a.ts, line: 20, window: 0}}'
+  finding: {category: correctness, symbol: null, path: src/a.ts, lines: [21, 21], text: bug}
+  matches: false
+- name: claim keyword present
+  expectation: '{id: E1, categories: [correctness], symbol: "ts:src/l#L.close/method", claim_any_of: [await, promise]}'
+  finding: {category: correctness, symbol: "ts:src/l#L.close/method", path: src/l.ts, lines: [4, 4], text: the promise is dropped}
+  matches: true
+- name: claim keyword absent
+  expectation: '{id: E1, categories: [correctness], symbol: "ts:src/l#L.close/method", claim_any_of: [await, promise]}'
+  finding: {category: correctness, symbol: "ts:src/l#L.close/method", path: src/l.ts, lines: [4, 4], text: missing validation}
+  matches: false
+- name: claim keyword is case insensitive
+  expectation: '{id: E1, categories: [correctness], symbol: "ts:src/l#L.close/method", claim_any_of: [await]}'
+  finding: {category: correctness, symbol: "ts:src/l#L.close/method", path: src/l.ts, lines: [4, 4], text: Missing AWAIT on post}
+  matches: true
+- name: claim keyword as substring
+  expectation: '{id: E1, categories: [correctness], symbol: "ts:src/l#L.close/method", claim_any_of: [await]}'
+  finding: {category: correctness, symbol: "ts:src/l#L.close/method", path: src/l.ts, lines: [4, 4], text: the call is unawaited}
+  matches: true
+- name: symbol wrong, location right
+  expectation: '{id: E1, categories: [correctness], symbol: "ts:src/a#A.run/method", location: {path: src/a.ts, line: 11, window: 1}}'
+  finding: {category: correctness, symbol: "ts:src/a#A.other/method", path: src/a.ts, lines: [12, 12], text: bug}
+  matches: true
+- name: symbol right, location wrong
+  expectation: '{id: E1, categories: [correctness], symbol: "ts:src/a#A.run/method", location: {path: src/a.ts, line: 11, window: 1}}'
+  finding: {category: correctness, symbol: "ts:src/a#A.run/method", path: src/a.ts, lines: [80, 90], text: bug}
+  matches: true
+- name: neither symbol nor location
+  expectation: '{id: E1, categories: [correctness], symbol: "ts:src/a#A.run/method", location: {path: src/a.ts, line: 11, window: 1}}'
+  finding: {category: correctness, symbol: "ts:src/a#A.other/method", path: src/a.ts, lines: [80, 90], text: bug}
+  matches: false
+- name: api contract expectation, correctness finding
+  expectation: '{id: E1, categories: [api_contract], symbol: "ts:src/p#P/class"}'
+  finding: {category: correctness, symbol: "ts:src/p#P/class", path: src/p.ts, lines: [1, 5], text: field removed}
+  matches: true
+- name: api contract expectation, architecture finding
+  expectation: '{id: E1, categories: [api_contract], symbol: "ts:src/p#P/class"}'
+  finding: {category: architecture, symbol: "ts:src/p#P/class", path: src/p.ts, lines: [1, 5], text: field removed}
+  matches: true
+- name: tests expectation, testing finding
+  expectation: '{id: E1, categories: [tests], symbol: "ts:src/d#D.rate/method"}'
+  finding: {category: testing, symbol: "ts:src/d#D.rate/method", path: src/d.ts, lines: [2, 9], text: no test covers the change}
+  matches: true
+- name: tests expectation, correctness finding
+  expectation: '{id: E1, categories: [tests], symbol: "ts:src/d#D.rate/method"}'
+  finding: {category: correctness, symbol: "ts:src/d#D.rate/method", path: src/d.ts, lines: [2, 9], text: threshold changed}
+  matches: false
+- name: architecture expectation, correctness finding
+  expectation: '{id: E1, categories: [architecture], symbol: "ts:src/c#C.list/method"}'
+  finding: {category: correctness, symbol: "ts:src/c#C.list/method", path: src/c.ts, lines: [9, 11], text: wrong page}
+  matches: false
+- name: concurrency expectation, correctness finding
+  expectation: '{id: E1, categories: [concurrency], symbol: "ts:src/s#S.reserve/method"}'
+  finding: {category: correctness, symbol: "ts:src/s#S.reserve/method", path: src/s.ts, lines: [8, 11], text: lost update}
+  matches: true
+- name: error handling expectation, security finding
+  expectation: '{id: E1, categories: [error_handling], symbol: "ts:src/i#I.settle/method"}'
+  finding: {category: security, symbol: "ts:src/i#I.settle/method", path: src/i.ts, lines: [9, 15], text: error swallowed}
+  matches: false

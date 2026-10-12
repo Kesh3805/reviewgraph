@@ -1,0 +1,22 @@
+id: "sec-001-auth-bypass"
+version: 1
+title: "AuthService.authorize no longer calls PermissionService.check"
+classes: ["security"]
+language: "typescript"
+frameworks: ["nestjs"]
+pr:
+  title: "AuthService.authorize no longer calls PermissionService.check"
+  description: "Simplify authorize: the permission check moved elsewhere."
+  base_branch: "main"
+required_reviewers: ["correctness"]
+expected_findings:
+  - id: "E1"
+    categories: ["security", "correctness"]
+    severity_at_least: "high"
+    symbol: "ts:src/auth/auth.service#AuthService.authorize/method"
+    claim_any_of: ["permission", "check", "authoriz"]
+    must_publish: true
+forbidden_findings: []
+optional_findings: []
+expect_no_published_findings: false
+synthetic_fixtures: true

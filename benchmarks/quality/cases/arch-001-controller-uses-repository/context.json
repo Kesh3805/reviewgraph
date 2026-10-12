@@ -1,0 +1,98 @@
+{
+  "change_summary": {
+    "files_changed": 1,
+    "intent": "refactor",
+    "change_classes": [
+      "dependency_added"
+    ]
+  },
+  "changed_symbols": [
+    {
+      "symbol_id": "ts:src/orders/orders.controller#OrdersController.list/method",
+      "kind": "method",
+      "path": "src/orders/orders.controller.ts",
+      "range": [
+        14,
+        16
+      ],
+      "base_range": [
+        10,
+        12
+      ],
+      "file_lines": 22,
+      "change_classes": [
+        "dependency_added"
+      ],
+      "signature_base": "list(@Req() req: { user: User }, @Query('page') page = 0, @Query('size') size = 20)",
+      "signature_head": "list(@Req() req: { user: User }, @Query('page') page = 0, @Query('size') size = 20)",
+      "body_base": "  list(@Req() req: { user: User }, @Query('page') page = 0, @Query('size') size = 20) {\n    return this.orders.page(req.user.organizationId, Number(page), Number(size));\n  }",
+      "body_head": "  list(@Req() req: { user: User }, @Query('page') page = 0, @Query('size') size = 20) {\n    return this.repo.listForOrganization(req.user.organizationId, Number(page), Number(size));\n  }",
+      "hunks": [
+        {
+          "old": [
+            2,
+            2
+          ],
+          "new": [
+            3,
+            3
+          ]
+        },
+        {
+          "old": [
+            7,
+            7
+          ],
+          "new": [
+            8,
+            11
+          ]
+        },
+        {
+          "old": [
+            11,
+            11
+          ],
+          "new": [
+            15,
+            15
+          ]
+        }
+      ],
+      "generated": false
+    }
+  ],
+  "nodes": [
+    {
+      "symbol_id": "ts:src/orders/orders.repository#OrdersRepository.listForOrganization/method",
+      "kind": "method",
+      "path": "src/orders/orders.repository.ts",
+      "range": [
+        21,
+        23
+      ],
+      "file_lines": 34,
+      "distance": 1,
+      "excerpt": "  async listForOrganization(organizationId: string, page: number, size: number): Promise<Order[]> {\n    return this.find({ where: { organizationId }, skip: page * size, take: size });\n  }"
+    }
+  ],
+  "edges": [
+    {
+      "from": "ts:src/orders/orders.controller#OrdersController.list/method",
+      "to": "ts:src/orders/orders.repository#OrdersRepository.listForOrganization/method",
+      "kind": "CALLS",
+      "confidence": 0.95
+    }
+  ],
+  "tests": [],
+  "rules": [
+    {
+      "rule_id": "controllers-not-repositories",
+      "text": "Controllers must not depend on repositories.",
+      "source": "policy"
+    }
+  ],
+  "diagnostics": [],
+  "config_items": [],
+  "risk_signals": []
+}

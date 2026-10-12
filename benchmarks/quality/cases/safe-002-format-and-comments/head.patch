@@ -1,0 +1,12 @@
+diff --git a/src/billing/discount.service.ts b/src/billing/discount.service.ts
+index 0c90b8b..b09a7bf 100644
+--- a/src/billing/discount.service.ts
++++ b/src/billing/discount.service.ts
+@@ -7,6 +7,7 @@ export interface Cart {
+ 
+ @Injectable()
+ export class DiscountService {
++  // Loyal customers get 10%, large carts 5%, everyone else nothing.
+   rate(cart: Cart): number {
+     if (cart.loyaltyYears >= 5) {
+       return 0.1;

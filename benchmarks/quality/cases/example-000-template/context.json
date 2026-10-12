@@ -1,0 +1,52 @@
+{
+  "change_summary": {
+    "files_changed": 1,
+    "intent": "docs",
+    "change_classes": [
+      "comment_only"
+    ]
+  },
+  "changed_symbols": [
+    {
+      "symbol_id": "ts:src/users/users.service.spec#__module__/module",
+      "kind": "module",
+      "path": "src/users/users.service.spec.ts",
+      "range": [
+        1,
+        11
+      ],
+      "base_range": [
+        1,
+        10
+      ],
+      "file_lines": 11,
+      "change_classes": [
+        "comment_only"
+      ],
+      "signature_base": "import { UsersRepository } from './users.repository';",
+      "signature_head": "import { UsersRepository } from './users.repository';",
+      "body_base": "import { UsersRepository } from './users.repository';\nimport { UsersService } from './users.service';\n\ndescribe('UsersService', () => {\n  it('formats the display name', async () => {\n    const repo = { findUser: async () => ({ firstName: 'Ada', lastName: 'Lovelace' }) };\n    const service = new UsersService(repo as unknown as UsersRepository);\n    expect(await service.displayName('u1')).toBe('Ada Lovelace');\n  });\n});",
+      "body_head": "import { UsersRepository } from './users.repository';\nimport { UsersService } from './users.service';\n\n// Display name formatting.\ndescribe('UsersService', () => {\n  it('formats the display name', async () => {\n    const repo = { findUser: async () => ({ firstName: 'Ada', lastName: 'Lovelace' }) };\n    const service = new UsersService(repo as unknown as UsersRepository);\n    expect(await service.displayName('u1')).toBe('Ada Lovelace');\n  });\n});",
+      "hunks": [
+        {
+          "old": [
+            3,
+            3
+          ],
+          "new": [
+            4,
+            4
+          ]
+        }
+      ],
+      "generated": false
+    }
+  ],
+  "nodes": [],
+  "edges": [],
+  "tests": [],
+  "rules": [],
+  "diagnostics": [],
+  "config_items": [],
+  "risk_signals": []
+}

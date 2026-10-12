@@ -1,0 +1,113 @@
+{
+  "change_summary": {
+    "files_changed": 1,
+    "intent": "refactor",
+    "change_classes": [
+      "call_removed"
+    ]
+  },
+  "changed_symbols": [
+    {
+      "symbol_id": "ts:src/auth/auth.service#AuthService.authorize/method",
+      "kind": "method",
+      "path": "src/auth/auth.service.ts",
+      "range": [
+        10,
+        14
+      ],
+      "base_range": [
+        10,
+        15
+      ],
+      "file_lines": 15,
+      "change_classes": [
+        "call_removed"
+      ],
+      "signature_base": "async authorize(user: User | undefined, resource: Resource): Promise<void>",
+      "signature_head": "async authorize(user: User | undefined, resource: Resource): Promise<void>",
+      "body_base": "  async authorize(user: User | undefined, resource: Resource): Promise<void> {\n    if (!user) {\n      throw new ForbiddenError('anonymous');\n    }\n    await this.permissions.check(user, resource);\n  }",
+      "body_head": "  async authorize(user: User | undefined, resource: Resource): Promise<void> {\n    if (!user) {\n      throw new ForbiddenError('anonymous');\n    }\n  }",
+      "hunks": [
+        {
+          "old": [
+            14,
+            14
+          ],
+          "new": [
+            13,
+            13
+          ]
+        }
+      ],
+      "generated": false
+    }
+  ],
+  "nodes": [
+    {
+      "symbol_id": "ts:src/admin/admin.service#AdminService.updateUser/method",
+      "kind": "method",
+      "path": "src/admin/admin.service.ts",
+      "range": [
+        13,
+        17
+      ],
+      "file_lines": 25,
+      "distance": 1,
+      "excerpt": "  async updateUser(actor: User, targetId: string, patch: Partial<User>): Promise<User> {\n    const target = await this.users.findUser(targetId);\n    await this.auth.authorize(actor, { ownerId: target.id, organizationId: target.organizationId });\n    return this.users.update(targetId, patch);\n  }"
+    },
+    {
+      "symbol_id": "ts:src/admin/admin.controller#AdminController.update/method",
+      "kind": "method",
+      "path": "src/admin/admin.controller.ts",
+      "range": [
+        11,
+        13
+      ],
+      "file_lines": 21,
+      "distance": 2,
+      "excerpt": "  update(@Req() req: { user: User }, @Param('id') id: string, @Body() patch: Partial<User>) {\n    return this.admin.updateUser(req.user, id, patch);\n  }"
+    },
+    {
+      "symbol_id": "ts:src/auth/permission.service#PermissionService.check/method",
+      "kind": "method",
+      "path": "src/auth/permission.service.ts",
+      "range": [
+        12,
+        19
+      ],
+      "file_lines": 20,
+      "distance": 1,
+      "excerpt": "  async check(user: User, resource: Resource): Promise<void> {\n    if (user.role === 'admin' && user.organizationId === resource.organizationId) {\n      return;\n    }\n    if (user.id !== resource.ownerId) {\n      throw new ForbiddenError('not allowed');\n    }\n  }"
+    }
+  ],
+  "edges": [
+    {
+      "from": "ts:src/admin/admin.service#AdminService.updateUser/method",
+      "to": "ts:src/auth/auth.service#AuthService.authorize/method",
+      "kind": "CALLS",
+      "confidence": 0.95
+    },
+    {
+      "from": "ts:src/admin/admin.controller#AdminController.update/method",
+      "to": "ts:src/admin/admin.service#AdminService.updateUser/method",
+      "kind": "CALLS",
+      "confidence": 0.95
+    }
+  ],
+  "tests": [],
+  "rules": [
+    {
+      "rule_id": "rule:permission-check",
+      "text": "Every write to another user must pass PermissionService.check.",
+      "source": "policy"
+    }
+  ],
+  "diagnostics": [],
+  "config_items": [],
+  "risk_signals": [
+    {
+      "signal": "authorization_logic_changed",
+      "weight": 0.9
+    }
+  ]
+}

@@ -1,0 +1,72 @@
+{
+  "change_summary": {
+    "files_changed": 1,
+    "intent": "feature",
+    "change_classes": [
+      "condition_changed"
+    ]
+  },
+  "changed_symbols": [
+    {
+      "symbol_id": "ts:src/billing/discount.service#DiscountService.rate/method",
+      "kind": "method",
+      "path": "src/billing/discount.service.ts",
+      "range": [
+        10,
+        18
+      ],
+      "base_range": [
+        10,
+        18
+      ],
+      "file_lines": 23,
+      "change_classes": [
+        "condition_changed"
+      ],
+      "signature_base": "rate(cart: Cart): number",
+      "signature_head": "rate(cart: Cart): number",
+      "body_base": "  rate(cart: Cart): number {\n    if (cart.loyaltyYears >= 5) {\n      return 0.1;\n    }\n    if (cart.subtotal >= 500) {\n      return 0.05;\n    }\n    return 0;\n  }",
+      "body_head": "  rate(cart: Cart): number {\n    if (cart.loyaltyYears >= 3) {\n      return 0.1;\n    }\n    if (cart.subtotal >= 500) {\n      return 0.05;\n    }\n    return 0;\n  }",
+      "hunks": [
+        {
+          "old": [
+            11,
+            11
+          ],
+          "new": [
+            11,
+            11
+          ]
+        }
+      ],
+      "generated": false
+    }
+  ],
+  "nodes": [
+    {
+      "symbol_id": "ts:src/billing/discount.service#DiscountService.total/method",
+      "kind": "method",
+      "path": "src/billing/discount.service.ts",
+      "range": [
+        20,
+        22
+      ],
+      "file_lines": 23,
+      "distance": 1,
+      "excerpt": "  total(cart: Cart): number {\n    return Math.round(cart.subtotal * (1 - this.rate(cart)) * 100) / 100;\n  }"
+    }
+  ],
+  "edges": [
+    {
+      "from": "ts:src/billing/discount.service#DiscountService.total/method",
+      "to": "ts:src/billing/discount.service#DiscountService.rate/method",
+      "kind": "CALLS",
+      "confidence": 0.95
+    }
+  ],
+  "tests": [],
+  "rules": [],
+  "diagnostics": [],
+  "config_items": [],
+  "risk_signals": []
+}

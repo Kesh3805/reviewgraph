@@ -1,0 +1,122 @@
+{
+  "fixture_version": 1,
+  "request_hash": "77cbacf99bdf9477c011667c787891872618640b89816bbdddb3771a95bac203",
+  "provider": "any",
+  "model": "any",
+  "task": "correctness_review",
+  "prompt_id": "correctness",
+  "prompt_version": "correctness:v1:472b8c34",
+  "schema_hash": "3d175f915b29ad6025bd3b02bfeef90ddea257bf2d3f65b4e9b9c9b3a990e8be",
+  "synthetic": true,
+  "recorded_at": "2026-10-08T00:00:00Z",
+  "engine_git_sha": null,
+  "response": {
+    "output": {
+      "json": {
+        "findings": [
+          {
+            "category": "correctness",
+            "title": "displayName dereferences a possibly undefined user",
+            "claim": "S1 now returns undefined for a missing id and N1 reads user.firstName without a check",
+            "description": "S1 now returns undefined for a missing id and N1 reads user.firstName without a check",
+            "severity": "high",
+            "anchor": {
+              "ref": "N1",
+              "side": "head",
+              "start_line": 9,
+              "end_line": 10
+            },
+            "affected_refs": [
+              "N1",
+              "S1"
+            ],
+            "evidence": [
+              {
+                "kind": "changed_source",
+                "ref": "S1",
+                "side": "head",
+                "start_line": 10,
+                "end_line": 10,
+                "quote": "return this.rows.get(id);",
+                "explanation": "Missing ids now yield undefined instead of NotFoundError."
+              },
+              {
+                "kind": "caller_path",
+                "ref": "N1",
+                "side": "head",
+                "start_line": 10,
+                "end_line": 10,
+                "quote": "return `${user.firstName} ${user.lastName}`;",
+                "explanation": "The caller dereferences the result without a check."
+              }
+            ],
+            "claimed_relations": [
+              {
+                "from": "N1",
+                "relation": "calls",
+                "to": "S1"
+              }
+            ],
+            "predicate": {
+              "kind": "null_check_removed",
+              "subject": "N1",
+              "params": [
+                {
+                  "name": "caller",
+                  "value": "N1"
+                }
+              ]
+            },
+            "corrective_direction": "Handle the undefined result in displayName or keep throwing NotFoundError in findUser.",
+            "self_confidence": 0.7
+          },
+          {
+            "category": "correctness",
+            "title": "NotFoundError import is unused",
+            "claim": "S1 no longer throws NotFoundError so the import is unused",
+            "description": "S1 no longer throws NotFoundError so the import is unused",
+            "severity": "low",
+            "anchor": {
+              "ref": "S1",
+              "side": "head",
+              "start_line": 9,
+              "end_line": 11
+            },
+            "affected_refs": [
+              "S1"
+            ],
+            "evidence": [
+              {
+                "kind": "changed_source",
+                "ref": "S1",
+                "side": "head",
+                "start_line": 9,
+                "end_line": 9,
+                "quote": "async findUser(id: string): Promise<User | undefined> {",
+                "explanation": "The method no longer raises the error."
+              }
+            ],
+            "claimed_relations": [],
+            "predicate": {
+              "kind": "other",
+              "subject": "S1",
+              "params": []
+            },
+            "corrective_direction": "Restore the previous behaviour.",
+            "self_confidence": 0.3
+          }
+        ],
+        "no_findings_reason": null
+      }
+    },
+    "usage": {
+      "input_uncached": 0,
+      "cache_write": 0,
+      "cache_read": 0,
+      "output": 0,
+      "reasoning": 0
+    },
+    "finish_reason": "complete"
+  },
+  "latency_ms": 0
+}

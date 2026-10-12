@@ -1,0 +1,112 @@
+{
+  "fixture_version": 1,
+  "request_hash": "95eab0802194c61b090e699802aec272c09c454fc346bdee5a7f8ade74ac1e71",
+  "provider": "any",
+  "model": "any",
+  "task": "correctness_review",
+  "prompt_id": "correctness",
+  "prompt_version": "correctness:v1:472b8c34",
+  "schema_hash": "3d175f915b29ad6025bd3b02bfeef90ddea257bf2d3f65b4e9b9c9b3a990e8be",
+  "synthetic": true,
+  "recorded_at": "2026-10-08T00:00:00Z",
+  "engine_git_sha": null,
+  "response": {
+    "output": {
+      "json": {
+        "findings": [
+          {
+            "category": "correctness",
+            "title": "Pagination offset skips the first page",
+            "claim": "S1 computes skip as (page + 1) * size so page 0 returns the second page",
+            "description": "S1 computes skip as (page + 1) * size so page 0 returns the second page",
+            "severity": "high",
+            "anchor": {
+              "ref": "S1",
+              "side": "head",
+              "start_line": 22,
+              "end_line": 22
+            },
+            "affected_refs": [
+              "S1"
+            ],
+            "evidence": [
+              {
+                "kind": "changed_source",
+                "ref": "S1",
+                "side": "head",
+                "start_line": 22,
+                "end_line": 22,
+                "quote": "return this.find({ where: { organizationId }, skip: (page + 1) * size, take: size });",
+                "explanation": "The offset is one page too far."
+              }
+            ],
+            "claimed_relations": [
+              {
+                "from": "N1",
+                "relation": "calls",
+                "to": "S1"
+              }
+            ],
+            "predicate": {
+              "kind": "condition_changed",
+              "subject": "S1",
+              "params": [
+                {
+                  "name": "expression",
+                  "value": "(page + 1) * size"
+                }
+              ]
+            },
+            "corrective_direction": "Use page * size as the offset.",
+            "self_confidence": 0.7
+          },
+          {
+            "category": "correctness",
+            "title": "Negative page numbers are not rejected",
+            "claim": "S1 accepts a negative page value",
+            "description": "S1 accepts a negative page value",
+            "severity": "low",
+            "anchor": {
+              "ref": "S1",
+              "side": "head",
+              "start_line": 21,
+              "end_line": 23
+            },
+            "affected_refs": [
+              "S1"
+            ],
+            "evidence": [
+              {
+                "kind": "changed_source",
+                "ref": "S1",
+                "side": "head",
+                "start_line": 21,
+                "end_line": 21,
+                "quote": "async listForOrganization(organizationId: string, page: number, size: number): Promise<Order[]> {",
+                "explanation": "No bounds check on page."
+              }
+            ],
+            "claimed_relations": [],
+            "predicate": {
+              "kind": "other",
+              "subject": "S1",
+              "params": []
+            },
+            "corrective_direction": "Restore the previous behaviour.",
+            "self_confidence": 0.3
+          }
+        ],
+        "no_findings_reason": null
+      }
+    },
+    "usage": {
+      "input_uncached": 0,
+      "cache_write": 0,
+      "cache_read": 0,
+      "output": 0,
+      "reasoning": 0
+    },
+    "finish_reason": "complete"
+  },
+  "latency_ms": 0
+}

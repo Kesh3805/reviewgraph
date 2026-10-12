@@ -1,0 +1,17 @@
+diff --git a/src/users/users.service.ts b/src/users/users.service.ts
+index 33810cc..189d3e4 100644
+--- a/src/users/users.service.ts
++++ b/src/users/users.service.ts
+@@ -7,7 +7,11 @@ export class UsersService {
+ 
+   async displayName(id: string): Promise<string> {
+     const user = await this.users.findUser(id);
+-    return `${user.firstName} ${user.lastName}`;
++    return this.formatName(user.firstName, user.lastName);
++  }
++
++  private formatName(first: string, last: string): string {
++    return `${first} ${last}`;
+   }
+ 
+   async contactEmail(id: string): Promise<string> {

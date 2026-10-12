@@ -1,0 +1,21 @@
+id: "trap-006-type-impossible-null"
+version: 1
+title: "Drop a null check on a non-nullable parameter"
+classes: ["fp_trap"]
+language: "typescript"
+frameworks: ["nestjs"]
+pr:
+  title: "Drop a null check on a non-nullable parameter"
+  description: "Drop a null check on a non-nullable parameter"
+  base_branch: "main"
+required_reviewers: ["correctness"]
+expected_findings: []
+forbidden_findings:
+  - id: "F1"
+    categories: ["any"]
+    symbol: "ts:src/settings/settings.service#SettingsService.merge/method"
+    claim_any_of: ["null", "undefined"]
+    reason: "current is non-nullable under strict mode (trap: type_impossible_null)"
+optional_findings: []
+expect_no_published_findings: false
+synthetic_fixtures: true

@@ -1,0 +1,66 @@
+{
+  "fixture_version": 1,
+  "request_hash": "3377078682abd39d83f21e26d47a0e4421ef0bda62482847257b653e48513938",
+  "provider": "any",
+  "model": "any",
+  "task": "correctness_review",
+  "prompt_id": "correctness",
+  "prompt_version": "correctness:v1:472b8c34",
+  "schema_hash": "3d175f915b29ad6025bd3b02bfeef90ddea257bf2d3f65b4e9b9c9b3a990e8be",
+  "synthetic": true,
+  "recorded_at": "2026-10-08T00:00:00Z",
+  "engine_git_sha": null,
+  "response": {
+    "output": {
+      "json": {
+        "findings": [
+          {
+            "category": "correctness",
+            "title": "Loyalty threshold lowered from five to three years",
+            "claim": "S1 now grants the loyalty discount after three years",
+            "description": "S1 now grants the loyalty discount after three years",
+            "severity": "low",
+            "anchor": {
+              "ref": "S1",
+              "side": "head",
+              "start_line": 11,
+              "end_line": 11
+            },
+            "affected_refs": [
+              "S1"
+            ],
+            "evidence": [
+              {
+                "kind": "changed_source",
+                "ref": "S1",
+                "side": "head",
+                "start_line": 11,
+                "end_line": 11,
+                "quote": "if (cart.loyaltyYears >= 3) {",
+                "explanation": "The threshold changed."
+              }
+            ],
+            "claimed_relations": [],
+            "predicate": {
+              "kind": "condition_changed",
+              "subject": "S1",
+              "params": []
+            },
+            "corrective_direction": "Confirm the new threshold and add tests.",
+            "self_confidence": 0.7
+          }
+        ],
+        "no_findings_reason": null
+      }
+    },
+    "usage": {
+      "input_uncached": 0,
+      "cache_write": 0,
+      "cache_read": 0,
+      "output": 0,
+      "reasoning": 0
+    },
+    "finish_reason": "complete"
+  },
+  "latency_ms": 0
+}

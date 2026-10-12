@@ -1,0 +1,16 @@
+id: "api-002-additive-optional-field"
+version: 1
+title: "Add an optional locale to the profile response"
+classes: ["api_contract", "safe_change"]
+language: "typescript"
+frameworks: ["nestjs"]
+pr:
+  title: "Add an optional locale to the profile response"
+  description: "Add an optional locale to the profile response"
+  base_branch: "main"
+required_reviewers: ["correctness"]
+expected_findings: []
+forbidden_findings: []
+optional_findings: []
+expect_no_published_findings: true
+synthetic_fixtures: true

@@ -1,0 +1,105 @@
+{
+  "change_summary": {
+    "files_changed": 1,
+    "intent": "refactor",
+    "change_classes": [
+      "signature_changed",
+      "throw_removed"
+    ]
+  },
+  "changed_symbols": [
+    {
+      "symbol_id": "ts:src/users/users.repository#UsersRepository.findUser/method",
+      "kind": "method",
+      "path": "src/users/users.repository.ts",
+      "range": [
+        9,
+        11
+      ],
+      "base_range": [
+        9,
+        15
+      ],
+      "file_lines": 19,
+      "change_classes": [
+        "signature_changed",
+        "throw_removed"
+      ],
+      "signature_base": "async findUser(id: string): Promise<User>",
+      "signature_head": "async findUser(id: string): Promise<User | undefined>",
+      "body_base": "  async findUser(id: string): Promise<User> {\n    const user = this.rows.get(id);\n    if (!user) {\n      throw new NotFoundError(`user ${id}`);\n    }\n    return user;\n  }",
+      "body_head": "  async findUser(id: string): Promise<User | undefined> {\n    return this.rows.get(id);\n  }",
+      "hunks": [
+        {
+          "old": [
+            9,
+            14
+          ],
+          "new": [
+            9,
+            10
+          ]
+        }
+      ],
+      "generated": false
+    }
+  ],
+  "nodes": [
+    {
+      "symbol_id": "ts:src/users/users.service#UsersService.displayName/method",
+      "kind": "method",
+      "path": "src/users/users.service.ts",
+      "range": [
+        8,
+        11
+      ],
+      "file_lines": 17,
+      "distance": 1,
+      "excerpt": "  async displayName(id: string): Promise<string> {\n    const user = await this.users.findUser(id);\n    return `${user.firstName} ${user.lastName}`;\n  }"
+    },
+    {
+      "symbol_id": "ts:src/users/users.service#UsersService.contactEmail/method",
+      "kind": "method",
+      "path": "src/users/users.service.ts",
+      "range": [
+        13,
+        16
+      ],
+      "file_lines": 17,
+      "distance": 1,
+      "excerpt": "  async contactEmail(id: string): Promise<string> {\n    const user = await this.users.findUser(id);\n    return user.email.toLowerCase();\n  }"
+    }
+  ],
+  "edges": [
+    {
+      "from": "ts:src/users/users.service#UsersService.displayName/method",
+      "to": "ts:src/users/users.repository#UsersRepository.findUser/method",
+      "kind": "CALLS",
+      "confidence": 0.95
+    },
+    {
+      "from": "ts:src/users/users.service#UsersService.contactEmail/method",
+      "to": "ts:src/users/users.repository#UsersRepository.findUser/method",
+      "kind": "CALLS",
+      "confidence": 0.95
+    }
+  ],
+  "tests": [
+    {
+      "test_id": "test:src/users/users.service.spec.ts#formats the display name",
+      "path": "src/users/users.service.spec.ts",
+      "covers": [
+        "ts:src/users/users.service#UsersService.displayName/method"
+      ]
+    }
+  ],
+  "rules": [],
+  "diagnostics": [],
+  "config_items": [],
+  "risk_signals": [
+    {
+      "signal": "return_type_widened",
+      "weight": 0.6
+    }
+  ]
+}

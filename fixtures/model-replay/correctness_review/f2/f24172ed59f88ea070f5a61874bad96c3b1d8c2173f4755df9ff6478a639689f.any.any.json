@@ -1,0 +1,112 @@
+{
+  "fixture_version": 1,
+  "request_hash": "f24172ed59f88ea070f5a61874bad96c3b1d8c2173f4755df9ff6478a639689f",
+  "provider": "any",
+  "model": "any",
+  "task": "correctness_review",
+  "prompt_id": "correctness",
+  "prompt_version": "correctness:v1:472b8c34",
+  "schema_hash": "3d175f915b29ad6025bd3b02bfeef90ddea257bf2d3f65b4e9b9c9b3a990e8be",
+  "synthetic": true,
+  "recorded_at": "2026-10-08T00:00:00Z",
+  "engine_git_sha": null,
+  "response": {
+    "output": {
+      "json": {
+        "findings": [
+          {
+            "category": "correctness",
+            "title": "ledger.post is not awaited inside the transaction",
+            "claim": "S1 calls N1 without await, so the transaction can commit before the ledger entry is written",
+            "description": "S1 calls N1 without await, so the transaction can commit before the ledger entry is written",
+            "severity": "high",
+            "anchor": {
+              "ref": "S1",
+              "side": "head",
+              "start_line": 14,
+              "end_line": 14
+            },
+            "affected_refs": [
+              "S1"
+            ],
+            "evidence": [
+              {
+                "kind": "changed_source",
+                "ref": "S1",
+                "side": "head",
+                "start_line": 14,
+                "end_line": 14,
+                "quote": "this.ledger.post(manager, { accountId, amount: -balance, memo: 'close' });",
+                "explanation": "The returned promise is dropped."
+              }
+            ],
+            "claimed_relations": [
+              {
+                "from": "S1",
+                "relation": "calls",
+                "to": "N1"
+              }
+            ],
+            "predicate": {
+              "kind": "await_missing",
+              "subject": "S1",
+              "params": [
+                {
+                  "name": "callee",
+                  "value": "N1"
+                }
+              ]
+            },
+            "corrective_direction": "Await ledger.post before the account update.",
+            "self_confidence": 0.7
+          },
+          {
+            "category": "correctness",
+            "title": "Closing balance is not validated",
+            "claim": "S1 accepts a negative balance",
+            "description": "S1 accepts a negative balance",
+            "severity": "low",
+            "anchor": {
+              "ref": "S1",
+              "side": "head",
+              "start_line": 12,
+              "end_line": 17
+            },
+            "affected_refs": [
+              "S1"
+            ],
+            "evidence": [
+              {
+                "kind": "changed_source",
+                "ref": "S1",
+                "side": "head",
+                "start_line": 12,
+                "end_line": 12,
+                "quote": "async close(accountId: string, balance: number): Promise<void> {",
+                "explanation": "No validation of balance."
+              }
+            ],
+            "claimed_relations": [],
+            "predicate": {
+              "kind": "other",
+              "subject": "S1",
+              "params": []
+            },
+            "corrective_direction": "Restore the previous behaviour.",
+            "self_confidence": 0.3
+          }
+        ],
+        "no_findings_reason": null
+      }
+    },
+    "usage": {
+      "input_uncached": 0,
+      "cache_write": 0,
+      "cache_read": 0,
+      "output": 0,
+      "reasoning": 0
+    },
+    "finish_reason": "complete"
+  },
+  "latency_ms": 0
+}

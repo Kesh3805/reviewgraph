@@ -1,0 +1,23 @@
+id: "trap-004-generated-code"
+version: 1
+title: "Regenerate the API client"
+classes: ["fp_trap"]
+language: "typescript"
+frameworks: ["nestjs"]
+pr:
+  title: "Regenerate the API client"
+  description: "Regenerate the API client"
+  base_branch: "main"
+required_reviewers: ["correctness"]
+expected_findings: []
+forbidden_findings:
+  - id: "F1"
+    categories: ["any"]
+    location:
+      path: "src/gen/api.generated.ts"
+      line: 14
+      window: 20
+    reason: "generated code is never reviewed (trap: generated_code)"
+optional_findings: []
+expect_no_published_findings: false
+synthetic_fixtures: true

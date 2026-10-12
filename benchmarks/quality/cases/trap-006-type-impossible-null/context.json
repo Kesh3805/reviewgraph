@@ -1,0 +1,52 @@
+{
+  "change_summary": {
+    "files_changed": 1,
+    "intent": "refactor",
+    "change_classes": [
+      "null_check_removed"
+    ]
+  },
+  "changed_symbols": [
+    {
+      "symbol_id": "ts:src/settings/settings.service#SettingsService.merge/method",
+      "kind": "method",
+      "path": "src/settings/settings.service.ts",
+      "range": [
+        10,
+        12
+      ],
+      "base_range": [
+        10,
+        15
+      ],
+      "file_lines": 13,
+      "change_classes": [
+        "null_check_removed"
+      ],
+      "signature_base": "merge(current: Settings, patch: Partial<Settings>): Settings",
+      "signature_head": "merge(current: Settings, patch: Partial<Settings>): Settings",
+      "body_base": "  merge(current: Settings, patch: Partial<Settings>): Settings {\n    if (current === null || current === undefined) {\n      return { locale: 'en', theme: 'light', ...patch };\n    }\n    return { ...current, ...patch };\n  }",
+      "body_head": "  merge(current: Settings, patch: Partial<Settings>): Settings {\n    return { ...current, ...patch };\n  }",
+      "hunks": [
+        {
+          "old": [
+            11,
+            13
+          ],
+          "new": [
+            10,
+            10
+          ]
+        }
+      ],
+      "generated": false
+    }
+  ],
+  "nodes": [],
+  "edges": [],
+  "tests": [],
+  "rules": [],
+  "diagnostics": [],
+  "config_items": [],
+  "risk_signals": []
+}

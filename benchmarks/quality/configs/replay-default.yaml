@@ -1,0 +1,9 @@
+name: replay-default
+gateway_mode: replay
+routing_override: null
+reviewers: [correctness]
+# "none" until VER-* lands: every normalised candidate counts as published.
+verification_version: none
+repetitions: 1
+max_parallel_cases: 4
+budgets: { max_model_calls: 40, max_model_tokens: 400000 }

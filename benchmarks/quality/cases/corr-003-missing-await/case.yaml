@@ -1,0 +1,25 @@
+id: "corr-003-missing-await"
+version: 1
+title: "Promise returned by ledger.post is no longer awaited"
+classes: ["correctness_regression", "concurrency"]
+language: "typescript"
+frameworks: ["nestjs", "typeorm"]
+pr:
+  title: "Promise returned by ledger.post is no longer awaited"
+  description: "Promise returned by ledger.post is no longer awaited"
+  base_branch: "main"
+required_reviewers: ["correctness"]
+expected_findings:
+  - id: "E1"
+    categories: ["correctness"]
+    severity_at_least: "medium"
+    symbol: "ts:src/ledger/ledger.service#LedgerService.close/method"
+    location:
+      path: "src/ledger/ledger.service.ts"
+      line: 14
+      window: 4
+    claim_any_of: ["await", "promise", "unawaited"]
+forbidden_findings: []
+optional_findings: []
+expect_no_published_findings: false
+synthetic_fixtures: true

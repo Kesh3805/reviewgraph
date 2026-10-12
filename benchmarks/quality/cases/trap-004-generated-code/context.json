@@ -1,0 +1,52 @@
+{
+  "change_summary": {
+    "files_changed": 1,
+    "intent": "chore",
+    "change_classes": [
+      "generated"
+    ]
+  },
+  "changed_symbols": [
+    {
+      "symbol_id": "ts:src/gen/api.generated#parseOrder/function",
+      "kind": "function",
+      "path": "src/gen/api.generated.ts",
+      "range": [
+        10,
+        16
+      ],
+      "base_range": [
+        10,
+        16
+      ],
+      "file_lines": 16,
+      "change_classes": [
+        "generated"
+      ],
+      "signature_base": "export function parseOrder(raw: Record<string, unknown>): ApiOrder",
+      "signature_head": "export function parseOrder(raw: Record<string, unknown>): ApiOrder",
+      "body_base": "export function parseOrder(raw: Record<string, unknown>): ApiOrder {\n  return {\n    id: String(raw.id),\n    status: String(raw.status),\n    total: Number(raw.total),\n  };\n}",
+      "body_head": "export function parseOrder(raw: Record<string, unknown>): ApiOrder {\n  return {\n    id: String(raw.id),\n    status: String(raw.status),\n    total: Number(raw.total) || 0,\n  };\n}",
+      "hunks": [
+        {
+          "old": [
+            14,
+            14
+          ],
+          "new": [
+            14,
+            14
+          ]
+        }
+      ],
+      "generated": true
+    }
+  ],
+  "nodes": [],
+  "edges": [],
+  "tests": [],
+  "rules": [],
+  "diagnostics": [],
+  "config_items": [],
+  "risk_signals": []
+}

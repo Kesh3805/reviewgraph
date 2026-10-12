@@ -1,0 +1,14 @@
+diff --git a/src/admin/admin.service.ts b/src/admin/admin.service.ts
+index 24cff91..037a3b0 100644
+--- a/src/admin/admin.service.ts
++++ b/src/admin/admin.service.ts
+@@ -17,9 +17,6 @@ export class AdminService {
+   }
+ 
+   async deactivate(actor: User, targetId: string): Promise<User> {
+-    if (actor.role !== 'admin') {
+-      throw new Error('admins only');
+-    }
+     return this.users.update(targetId, { role: 'member' });
+   }
+ }

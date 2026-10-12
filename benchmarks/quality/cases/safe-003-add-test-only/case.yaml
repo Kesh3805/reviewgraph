@@ -1,0 +1,16 @@
+id: "safe-003-add-test-only"
+version: 1
+title: "Add unit tests for the discount rules"
+classes: ["safe_change"]
+language: "typescript"
+frameworks: ["nestjs"]
+pr:
+  title: "Add unit tests for the discount rules"
+  description: "Add unit tests for the discount rules"
+  base_branch: "main"
+required_reviewers: ["correctness"]
+expected_findings: []
+forbidden_findings: []
+optional_findings: []
+expect_no_published_findings: true
+synthetic_fixtures: true

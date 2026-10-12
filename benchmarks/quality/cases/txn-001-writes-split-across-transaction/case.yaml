@@ -1,0 +1,21 @@
+id: "txn-001-writes-split-across-transaction"
+version: 1
+title: "The credit write moves outside the transfer transaction"
+classes: ["transaction"]
+language: "typescript"
+frameworks: ["nestjs", "typeorm"]
+pr:
+  title: "The credit write moves outside the transfer transaction"
+  description: "The credit write moves outside the transfer transaction"
+  base_branch: "main"
+required_reviewers: ["correctness"]
+expected_findings:
+  - id: "E1"
+    categories: ["correctness", "transaction"]
+    severity_at_least: "high"
+    symbol: "ts:src/accounts/transfer.service#TransferService.transfer/method"
+    claim_any_of: ["transaction", "atomic", "commit"]
+forbidden_findings: []
+optional_findings: []
+expect_no_published_findings: false
+synthetic_fixtures: true

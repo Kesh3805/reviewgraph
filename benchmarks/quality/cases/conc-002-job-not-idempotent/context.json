@@ -1,0 +1,57 @@
+{
+  "change_summary": {
+    "files_changed": 1,
+    "intent": "refactor",
+    "change_classes": [
+      "guard_removed"
+    ]
+  },
+  "changed_symbols": [
+    {
+      "symbol_id": "ts:src/jobs/email.processor#EmailProcessor.process/method",
+      "kind": "method",
+      "path": "src/jobs/email.processor.ts",
+      "range": [
+        26,
+        29
+      ],
+      "base_range": [
+        26,
+        32
+      ],
+      "file_lines": 30,
+      "change_classes": [
+        "guard_removed"
+      ],
+      "signature_base": "async process(job: EmailJob): Promise<void>",
+      "signature_head": "async process(job: EmailJob): Promise<void>",
+      "body_base": "  async process(job: EmailJob): Promise<void> {\n    if (await this.sent.has(job.id)) {\n      return;\n    }\n    await this.mailer.send(job.data.to, job.data.template);\n    await this.sent.add(job.id);\n  }",
+      "body_head": "  async process(job: EmailJob): Promise<void> {\n    await this.mailer.send(job.data.to, job.data.template);\n    await this.sent.add(job.id);\n  }",
+      "hunks": [
+        {
+          "old": [
+            27,
+            29
+          ],
+          "new": [
+            26,
+            26
+          ]
+        }
+      ],
+      "generated": false
+    }
+  ],
+  "nodes": [],
+  "edges": [],
+  "tests": [],
+  "rules": [],
+  "diagnostics": [],
+  "config_items": [],
+  "risk_signals": [
+    {
+      "signal": "queue_consumer_changed",
+      "weight": 0.7
+    }
+  ]
+}

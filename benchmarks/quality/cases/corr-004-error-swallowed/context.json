@@ -1,0 +1,72 @@
+{
+  "change_summary": {
+    "files_changed": 1,
+    "intent": "refactor",
+    "change_classes": [
+      "catch_changed"
+    ]
+  },
+  "changed_symbols": [
+    {
+      "symbol_id": "ts:src/billing/invoice.service#InvoiceService.settle/method",
+      "kind": "method",
+      "path": "src/billing/invoice.service.ts",
+      "range": [
+        9,
+        15
+      ],
+      "base_range": [
+        9,
+        15
+      ],
+      "file_lines": 25,
+      "change_classes": [
+        "catch_changed"
+      ],
+      "signature_base": "async settle(customerId: string, amount: number): Promise<ChargeResult | null>",
+      "signature_head": "async settle(customerId: string, amount: number): Promise<ChargeResult | null>",
+      "body_base": "  async settle(customerId: string, amount: number): Promise<ChargeResult | null> {\n    try {\n      return await this.payments.charge(customerId, amount);\n    } catch (e) {\n      throw new BillingError('settlement failed', e);\n    }\n  }",
+      "body_head": "  async settle(customerId: string, amount: number): Promise<ChargeResult | null> {\n    try {\n      return await this.payments.charge(customerId, amount);\n    } catch {\n      return null;\n    }\n  }",
+      "hunks": [
+        {
+          "old": [
+            12,
+            13
+          ],
+          "new": [
+            12,
+            13
+          ]
+        }
+      ],
+      "generated": false
+    }
+  ],
+  "nodes": [
+    {
+      "symbol_id": "ts:src/billing/payment.client#PaymentClient.charge/method",
+      "kind": "method",
+      "path": "src/billing/payment.client.ts",
+      "range": [
+        11,
+        20
+      ],
+      "file_lines": 21,
+      "distance": 1,
+      "excerpt": "  async charge(customerId: string, amount: number): Promise<ChargeResult | null> {\n    if (amount <= 0) {\n      return null;\n    }\n    const id = `ch_${customerId}_${amount}`;\n    if (customerId.length === 0) {\n      throw new BillingError('missing customer');\n    }\n    return { id, ok: true };\n  }"
+    }
+  ],
+  "edges": [
+    {
+      "from": "ts:src/billing/invoice.service#InvoiceService.settle/method",
+      "to": "ts:src/billing/payment.client#PaymentClient.charge/method",
+      "kind": "CALLS",
+      "confidence": 0.95
+    }
+  ],
+  "tests": [],
+  "rules": [],
+  "diagnostics": [],
+  "config_items": [],
+  "risk_signals": []
+}

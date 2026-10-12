@@ -1,0 +1,52 @@
+{
+  "change_summary": {
+    "files_changed": 1,
+    "intent": "feature",
+    "change_classes": [
+      "api_contract_changed"
+    ]
+  },
+  "changed_symbols": [
+    {
+      "symbol_id": "ts:src/profile/profile.dto#ProfileResponseDto/class",
+      "kind": "class",
+      "path": "src/profile/profile.dto.ts",
+      "range": [
+        1,
+        7
+      ],
+      "base_range": [
+        1,
+        6
+      ],
+      "file_lines": 7,
+      "change_classes": [
+        "api_contract_changed"
+      ],
+      "signature_base": "export class ProfileResponseDto",
+      "signature_head": "export class ProfileResponseDto",
+      "body_base": "export class ProfileResponseDto {\n  id!: string;\n  displayName!: string;\n  email!: string;\n  timezone!: string;\n}",
+      "body_head": "export class ProfileResponseDto {\n  id!: string;\n  displayName!: string;\n  email!: string;\n  timezone!: string;\n  locale?: string;\n}",
+      "hunks": [
+        {
+          "old": [
+            5,
+            5
+          ],
+          "new": [
+            6,
+            6
+          ]
+        }
+      ],
+      "generated": false
+    }
+  ],
+  "nodes": [],
+  "edges": [],
+  "tests": [],
+  "rules": [],
+  "diagnostics": [],
+  "config_items": [],
+  "risk_signals": []
+}

@@ -1,0 +1,16 @@
+id: "safe-002-format-and-comments"
+version: 1
+title: "Reformat the discount service and document the rules"
+classes: ["safe_change"]
+language: "typescript"
+frameworks: ["nestjs"]
+pr:
+  title: "Reformat the discount service and document the rules"
+  description: "Reformat the discount service and document the rules"
+  base_branch: "main"
+required_reviewers: ["correctness"]
+expected_findings: []
+forbidden_findings: []
+optional_findings: []
+expect_no_published_findings: true
+synthetic_fixtures: true

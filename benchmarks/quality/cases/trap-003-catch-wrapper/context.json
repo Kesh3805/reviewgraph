@@ -1,0 +1,90 @@
+{
+  "change_summary": {
+    "files_changed": 1,
+    "intent": "refactor",
+    "change_classes": [
+      "throw_changed"
+    ]
+  },
+  "changed_symbols": [
+    {
+      "symbol_id": "ts:src/billing/payment.client#PaymentClient.charge/method",
+      "kind": "method",
+      "path": "src/billing/payment.client.ts",
+      "range": [
+        11,
+        20
+      ],
+      "base_range": [
+        11,
+        20
+      ],
+      "file_lines": 21,
+      "change_classes": [
+        "throw_changed"
+      ],
+      "signature_base": "async charge(customerId: string, amount: number): Promise<ChargeResult | null>",
+      "signature_head": "async charge(customerId: string, amount: number): Promise<ChargeResult | null>",
+      "body_base": "  async charge(customerId: string, amount: number): Promise<ChargeResult | null> {\n    if (amount <= 0) {\n      return null;\n    }\n    const id = `ch_${customerId}_${amount}`;\n    if (customerId.length === 0) {\n      throw new BillingError('missing customer');\n    }\n    return { id, ok: true };\n  }",
+      "body_head": "  async charge(customerId: string, amount: number): Promise<ChargeResult | null> {\n    if (amount <= 0) {\n      throw new BillingError('invalid amount');\n    }\n    const id = `ch_${customerId}_${amount}`;\n    if (customerId.length === 0) {\n      throw new BillingError('missing customer');\n    }\n    return { id, ok: true };\n  }",
+      "hunks": [
+        {
+          "old": [
+            13,
+            13
+          ],
+          "new": [
+            13,
+            13
+          ]
+        }
+      ],
+      "generated": false
+    }
+  ],
+  "nodes": [
+    {
+      "symbol_id": "ts:src/billing/invoice.service#InvoiceService.settle/method",
+      "kind": "method",
+      "path": "src/billing/invoice.service.ts",
+      "range": [
+        9,
+        15
+      ],
+      "file_lines": 25,
+      "distance": 1,
+      "excerpt": "  async settle(customerId: string, amount: number): Promise<ChargeResult | null> {\n    try {\n      return await this.payments.charge(customerId, amount);\n    } catch (e) {\n      throw new BillingError('settlement failed', e);\n    }\n  }"
+    },
+    {
+      "symbol_id": "ts:src/billing/invoice.service#InvoiceService.retry/method",
+      "kind": "method",
+      "path": "src/billing/invoice.service.ts",
+      "range": [
+        17,
+        24
+      ],
+      "file_lines": 25,
+      "distance": 1,
+      "excerpt": "  async retry(customerId: string, amount: number): Promise<boolean> {\n    try {\n      const result = await this.payments.charge(customerId, amount);\n      return result?.ok ?? false;\n    } catch {\n      return false;\n    }\n  }"
+    }
+  ],
+  "edges": [
+    {
+      "from": "ts:src/billing/invoice.service#InvoiceService.settle/method",
+      "to": "ts:src/billing/payment.client#PaymentClient.charge/method",
+      "kind": "CALLS",
+      "confidence": 0.95
+    },
+    {
+      "from": "ts:src/billing/invoice.service#InvoiceService.retry/method",
+      "to": "ts:src/billing/payment.client#PaymentClient.charge/method",
+      "kind": "CALLS",
+      "confidence": 0.95
+    }
+  ],
+  "tests": [],
+  "rules": [],
+  "diagnostics": [],
+  "config_items": [],
+  "risk_signals": []
+}

@@ -1,0 +1,77 @@
+{
+  "change_summary": {
+    "files_changed": 1,
+    "intent": "refactor",
+    "change_classes": [
+      "guard_removed"
+    ]
+  },
+  "changed_symbols": [
+    {
+      "symbol_id": "ts:src/admin/admin.service#AdminService.deactivate/method",
+      "kind": "method",
+      "path": "src/admin/admin.service.ts",
+      "range": [
+        19,
+        21
+      ],
+      "base_range": [
+        19,
+        24
+      ],
+      "file_lines": 22,
+      "change_classes": [
+        "guard_removed"
+      ],
+      "signature_base": "async deactivate(actor: User, targetId: string): Promise<User>",
+      "signature_head": "async deactivate(actor: User, targetId: string): Promise<User>",
+      "body_base": "  async deactivate(actor: User, targetId: string): Promise<User> {\n    if (actor.role !== 'admin') {\n      throw new Error('admins only');\n    }\n    return this.users.update(targetId, { role: 'member' });\n  }",
+      "body_head": "  async deactivate(actor: User, targetId: string): Promise<User> {\n    return this.users.update(targetId, { role: 'member' });\n  }",
+      "hunks": [
+        {
+          "old": [
+            20,
+            22
+          ],
+          "new": [
+            19,
+            19
+          ]
+        }
+      ],
+      "generated": false
+    }
+  ],
+  "nodes": [
+    {
+      "symbol_id": "ts:src/admin/admin.controller#AdminController.deactivate/method",
+      "kind": "method",
+      "path": "src/admin/admin.controller.ts",
+      "range": [
+        18,
+        20
+      ],
+      "file_lines": 21,
+      "distance": 1,
+      "excerpt": "  deactivate(@Req() req: { user: User }, @Param('id') id: string) {\n    return this.admin.deactivate(req.user, id);\n  }"
+    }
+  ],
+  "edges": [
+    {
+      "from": "ts:src/admin/admin.controller#AdminController.deactivate/method",
+      "to": "ts:src/admin/admin.service#AdminService.deactivate/method",
+      "kind": "CALLS",
+      "confidence": 0.95
+    }
+  ],
+  "tests": [],
+  "rules": [],
+  "diagnostics": [],
+  "config_items": [],
+  "risk_signals": [
+    {
+      "signal": "authorization_logic_changed",
+      "weight": 0.8
+    }
+  ]
+}

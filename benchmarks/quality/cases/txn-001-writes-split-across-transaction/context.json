@@ -1,0 +1,62 @@
+{
+  "change_summary": {
+    "files_changed": 1,
+    "intent": "refactor",
+    "change_classes": [
+      "transaction_boundary_changed"
+    ]
+  },
+  "changed_symbols": [
+    {
+      "symbol_id": "ts:src/accounts/transfer.service#TransferService.transfer/method",
+      "kind": "method",
+      "path": "src/accounts/transfer.service.ts",
+      "range": [
+        8,
+        21
+      ],
+      "base_range": [
+        8,
+        21
+      ],
+      "file_lines": 22,
+      "change_classes": [
+        "transaction_boundary_changed"
+      ],
+      "signature_base": "async transfer(from: string, to: string, amount: number): Promise<void>",
+      "signature_head": "async transfer(from: string, to: string, amount: number): Promise<void>",
+      "body_base": "  async transfer(from: string, to: string, amount: number): Promise<void> {\n    const runner = this.dataSource.createQueryRunner();\n    await runner.startTransaction();\n    try {\n      await runner.manager.query('UPDATE accounts SET balance = balance - $2 WHERE id = $1', [from, amount]);\n      await runner.manager.query('UPDATE accounts SET balance = balance + $2 WHERE id = $1', [to, amount]);\n      await runner.commitTransaction();\n    } catch (e) {\n      await runner.rollbackTransaction();\n      throw e;\n    } finally {\n      await runner.release();\n    }\n  }",
+      "body_head": "  async transfer(from: string, to: string, amount: number): Promise<void> {\n    const runner = this.dataSource.createQueryRunner();\n    await runner.startTransaction();\n    try {\n      await runner.manager.query('UPDATE accounts SET balance = balance - $2 WHERE id = $1', [from, amount]);\n      await runner.commitTransaction();\n      await runner.manager.query('UPDATE accounts SET balance = balance + $2 WHERE id = $1', [to, amount]);\n    } catch (e) {\n      await runner.rollbackTransaction();\n      throw e;\n    } finally {\n      await runner.release();\n    }\n  }",
+      "hunks": [
+        {
+          "old": [
+            13,
+            13
+          ],
+          "new": [
+            12,
+            12
+          ]
+        },
+        {
+          "old": [
+            14,
+            14
+          ],
+          "new": [
+            14,
+            14
+          ]
+        }
+      ],
+      "generated": false
+    }
+  ],
+  "nodes": [],
+  "edges": [],
+  "tests": [],
+  "rules": [],
+  "diagnostics": [],
+  "config_items": [],
+  "risk_signals": []
+}

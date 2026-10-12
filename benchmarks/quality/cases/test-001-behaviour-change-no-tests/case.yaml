@@ -1,0 +1,22 @@
+id: "test-001-behaviour-change-no-tests"
+version: 1
+title: "Loyalty discount now starts after three years, without tests"
+classes: ["test_gap"]
+language: "typescript"
+frameworks: ["nestjs"]
+pr:
+  title: "Loyalty discount now starts after three years, without tests"
+  description: "Loyalty discount now starts after three years, without tests"
+  base_branch: "main"
+required_reviewers: ["tests"]
+expected_findings:
+  - id: "E1"
+    categories: ["tests"]
+    symbol: "ts:src/billing/discount.service#DiscountService.rate/method"
+forbidden_findings: []
+optional_findings:
+  - id: "O1"
+    categories: ["correctness"]
+    symbol: "ts:src/billing/discount.service#DiscountService.rate/method"
+expect_no_published_findings: false
+synthetic_fixtures: true

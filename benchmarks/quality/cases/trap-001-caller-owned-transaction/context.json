@@ -1,0 +1,90 @@
+{
+  "change_summary": {
+    "files_changed": 1,
+    "intent": "bugfix",
+    "change_classes": [
+      "database_write_changed"
+    ]
+  },
+  "changed_symbols": [
+    {
+      "symbol_id": "ts:src/ledger/ledger.repository#LedgerRepository.save/method",
+      "kind": "method",
+      "path": "src/ledger/ledger.repository.ts",
+      "range": [
+        16,
+        23
+      ],
+      "base_range": [
+        16,
+        20
+      ],
+      "file_lines": 24,
+      "change_classes": [
+        "database_write_changed"
+      ],
+      "signature_base": "async save(manager: EntityManager, entries: LedgerEntry[]): Promise<void>",
+      "signature_head": "async save(manager: EntityManager, entries: LedgerEntry[]): Promise<void>",
+      "body_base": "  async save(manager: EntityManager, entries: LedgerEntry[]): Promise<void> {\n    for (const entry of entries) {\n      await manager.save(entry);\n    }\n  }",
+      "body_head": "  async save(manager: EntityManager, entries: LedgerEntry[]): Promise<void> {\n    if (entries.length === 0) {\n      return;\n    }\n    for (const entry of entries) {\n      await manager.save(entry);\n    }\n  }",
+      "hunks": [
+        {
+          "old": [
+            16,
+            16
+          ],
+          "new": [
+            17,
+            19
+          ]
+        }
+      ],
+      "generated": false
+    }
+  ],
+  "nodes": [
+    {
+      "symbol_id": "ts:src/ledger/ledger.service#LedgerService.import/method",
+      "kind": "method",
+      "path": "src/ledger/ledger.service.ts",
+      "range": [
+        19,
+        23
+      ],
+      "file_lines": 31,
+      "distance": 1,
+      "excerpt": "  async import(entries: LedgerEntry[]): Promise<void> {\n    await this.dataSource.transaction(async (manager) => {\n      await this.ledger.save(manager, entries);\n    });\n  }"
+    },
+    {
+      "symbol_id": "ts:src/ledger/ledger.service#LedgerService.reverse/method",
+      "kind": "method",
+      "path": "src/ledger/ledger.service.ts",
+      "range": [
+        25,
+        30
+      ],
+      "file_lines": 31,
+      "distance": 1,
+      "excerpt": "  async reverse(entries: LedgerEntry[]): Promise<void> {\n    const reversed = entries.map((e) => ({ ...e, amount: -e.amount, memo: `reverse ${e.memo}` }));\n    await this.dataSource.transaction(async (manager) => {\n      await this.ledger.save(manager, reversed);\n    });\n  }"
+    }
+  ],
+  "edges": [
+    {
+      "from": "ts:src/ledger/ledger.service#LedgerService.import/method",
+      "to": "ts:src/ledger/ledger.repository#LedgerRepository.save/method",
+      "kind": "CALLS",
+      "confidence": 0.95
+    },
+    {
+      "from": "ts:src/ledger/ledger.service#LedgerService.reverse/method",
+      "to": "ts:src/ledger/ledger.repository#LedgerRepository.save/method",
+      "kind": "CALLS",
+      "confidence": 0.95
+    }
+  ],
+  "tests": [],
+  "rules": [],
+  "diagnostics": [],
+  "config_items": [],
+  "risk_signals": []
+}

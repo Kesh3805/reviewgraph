@@ -1,0 +1,14 @@
+diff --git a/src/accounts/transfer.service.ts b/src/accounts/transfer.service.ts
+index b2123e6..9f3ead0 100644
+--- a/src/accounts/transfer.service.ts
++++ b/src/accounts/transfer.service.ts
+@@ -10,8 +10,8 @@ export class TransferService {
+     await runner.startTransaction();
+     try {
+       await runner.manager.query('UPDATE accounts SET balance = balance - $2 WHERE id = $1', [from, amount]);
+-      await runner.manager.query('UPDATE accounts SET balance = balance + $2 WHERE id = $1', [to, amount]);
+       await runner.commitTransaction();
++      await runner.manager.query('UPDATE accounts SET balance = balance + $2 WHERE id = $1', [to, amount]);
+     } catch (e) {
+       await runner.rollbackTransaction();
+       throw e;

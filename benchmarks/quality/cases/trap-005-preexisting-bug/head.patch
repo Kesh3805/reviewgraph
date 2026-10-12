@@ -1,0 +1,13 @@
+diff --git a/src/reports/report.service.ts b/src/reports/report.service.ts
+index 0827e38..12b484e 100644
+--- a/src/reports/report.service.ts
++++ b/src/reports/report.service.ts
+@@ -7,7 +7,7 @@ export interface ReportRow {
+ 
+ @Injectable()
+ export class ReportService {
+-  // Builds the header line of the monthly report.
++  // Builds the header line shown on the first page of the monthly report.
+   header(month: string): string {
+     return `Monthly report for ${month}`;
+   }

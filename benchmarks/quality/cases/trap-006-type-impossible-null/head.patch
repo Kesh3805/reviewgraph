@@ -1,0 +1,14 @@
+diff --git a/src/settings/settings.service.ts b/src/settings/settings.service.ts
+index c80737d..9b26a58 100644
+--- a/src/settings/settings.service.ts
++++ b/src/settings/settings.service.ts
+@@ -8,9 +8,6 @@ export interface Settings {
+ @Injectable()
+ export class SettingsService {
+   merge(current: Settings, patch: Partial<Settings>): Settings {
+-    if (current === null || current === undefined) {
+-      return { locale: 'en', theme: 'light', ...patch };
+-    }
+     return { ...current, ...patch };
+   }
+ }

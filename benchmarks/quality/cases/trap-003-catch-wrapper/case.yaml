@@ -1,0 +1,21 @@
+id: "trap-003-catch-wrapper"
+version: 1
+title: "PaymentClient.charge throws on invalid amounts; callers catch"
+classes: ["fp_trap"]
+language: "typescript"
+frameworks: ["nestjs"]
+pr:
+  title: "PaymentClient.charge throws on invalid amounts; callers catch"
+  description: "PaymentClient.charge throws on invalid amounts; callers catch"
+  base_branch: "main"
+required_reviewers: ["correctness"]
+expected_findings: []
+forbidden_findings:
+  - id: "F1"
+    categories: ["any"]
+    symbol: "ts:src/billing/payment.client#PaymentClient.charge/method"
+    claim_any_of: ["unhandled", "uncaught"]
+    reason: "all callers wrap charge in try/catch (trap: catch_wrapper)"
+optional_findings: []
+expect_no_published_findings: false
+synthetic_fixtures: true

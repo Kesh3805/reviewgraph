@@ -1,0 +1,95 @@
+{
+  "change_summary": {
+    "files_changed": 1,
+    "intent": "refactor",
+    "change_classes": [
+      "condition_changed"
+    ]
+  },
+  "changed_symbols": [
+    {
+      "symbol_id": "ts:src/orders/orders.repository#OrdersRepository.listForOrganization/method",
+      "kind": "method",
+      "path": "src/orders/orders.repository.ts",
+      "range": [
+        21,
+        23
+      ],
+      "base_range": [
+        21,
+        23
+      ],
+      "file_lines": 34,
+      "change_classes": [
+        "condition_changed"
+      ],
+      "signature_base": "async listForOrganization(organizationId: string, page: number, size: number): Promise<Order[]>",
+      "signature_head": "async listForOrganization(organizationId: string, page: number, size: number): Promise<Order[]>",
+      "body_base": "  async listForOrganization(organizationId: string, page: number, size: number): Promise<Order[]> {\n    return this.find({ where: { organizationId }, skip: page * size, take: size });\n  }",
+      "body_head": "  async listForOrganization(organizationId: string, page: number, size: number): Promise<Order[]> {\n    return this.find({ where: {}, skip: page * size, take: size });\n  }",
+      "hunks": [
+        {
+          "old": [
+            22,
+            22
+          ],
+          "new": [
+            22,
+            22
+          ]
+        }
+      ],
+      "generated": false
+    }
+  ],
+  "nodes": [
+    {
+      "symbol_id": "ts:src/orders/orders.service#OrdersService.page/method",
+      "kind": "method",
+      "path": "src/orders/orders.service.ts",
+      "range": [
+        10,
+        12
+      ],
+      "file_lines": 24,
+      "distance": 1,
+      "excerpt": "  async page(organizationId: string, page: number, size: number): Promise<Order[]> {\n    return this.orders.listForOrganization(organizationId, page, size);\n  }"
+    },
+    {
+      "symbol_id": "ts:src/orders/orders.controller#OrdersController.list/method",
+      "kind": "method",
+      "path": "src/orders/orders.controller.ts",
+      "range": [
+        10,
+        12
+      ],
+      "file_lines": 18,
+      "distance": 2,
+      "excerpt": "  list(@Req() req: { user: User }, @Query('page') page = 0, @Query('size') size = 20) {\n    return this.orders.page(req.user.organizationId, Number(page), Number(size));\n  }"
+    }
+  ],
+  "edges": [
+    {
+      "from": "ts:src/orders/orders.service#OrdersService.page/method",
+      "to": "ts:src/orders/orders.repository#OrdersRepository.listForOrganization/method",
+      "kind": "CALLS",
+      "confidence": 0.95
+    },
+    {
+      "from": "ts:src/orders/orders.controller#OrdersController.list/method",
+      "to": "ts:src/orders/orders.service#OrdersService.page/method",
+      "kind": "CALLS",
+      "confidence": 0.95
+    }
+  ],
+  "tests": [],
+  "rules": [],
+  "diagnostics": [],
+  "config_items": [],
+  "risk_signals": [
+    {
+      "signal": "tenant_filter_changed",
+      "weight": 0.9
+    }
+  ]
+}

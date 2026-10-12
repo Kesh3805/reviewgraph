@@ -1,0 +1,12 @@
+diff --git a/src/users/users.service.spec.ts b/src/users/users.service.spec.ts
+index da2c6c1..fb18fd2 100644
+--- a/src/users/users.service.spec.ts
++++ b/src/users/users.service.spec.ts
+@@ -1,6 +1,7 @@
+ import { UsersRepository } from './users.repository';
+ import { UsersService } from './users.service';
+ 
++// Display name formatting.
+ describe('UsersService', () => {
+   it('formats the display name', async () => {
+     const repo = { findUser: async () => ({ firstName: 'Ada', lastName: 'Lovelace' }) };

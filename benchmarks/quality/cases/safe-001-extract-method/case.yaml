@@ -1,0 +1,16 @@
+id: "safe-001-extract-method"
+version: 1
+title: "Extract the name formatting into a private method"
+classes: ["safe_change"]
+language: "typescript"
+frameworks: ["nestjs"]
+pr:
+  title: "Extract the name formatting into a private method"
+  description: "Extract the name formatting into a private method"
+  base_branch: "main"
+required_reviewers: ["correctness"]
+expected_findings: []
+forbidden_findings: []
+optional_findings: []
+expect_no_published_findings: true
+synthetic_fixtures: true

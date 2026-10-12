@@ -1,0 +1,18 @@
+diff --git a/src/inventory/stock.service.ts b/src/inventory/stock.service.ts
+index 81afa4f..9706729 100644
+--- a/src/inventory/stock.service.ts
++++ b/src/inventory/stock.service.ts
+@@ -6,10 +6,9 @@ export class StockService {
+   constructor(private readonly dataSource: DataSource) {}
+ 
+   async reserve(sku: string, quantity: number): Promise<void> {
+-    await this.dataSource.manager.query(
+-      'UPDATE stock SET reserved = reserved + $2 WHERE sku = $1',
+-      [sku, quantity],
+-    );
++    const rows = (await this.dataSource.manager.query('SELECT reserved FROM stock WHERE sku = $1', [sku])) as { reserved: number }[];
++    const next = rows[0].reserved + quantity;
++    await this.dataSource.manager.query('UPDATE stock SET reserved = $2 WHERE sku = $1', [sku, next]);
+   }
+ 
+   async release(sku: string, quantity: number): Promise<void> {

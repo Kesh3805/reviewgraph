@@ -1,0 +1,20 @@
+id: "trap-002-upstream-guard-all-paths"
+version: 1
+title: "Remove the in-service admin check already enforced by RolesGuard"
+classes: ["fp_trap", "security"]
+language: "typescript"
+frameworks: ["nestjs"]
+pr:
+  title: "Remove the in-service admin check already enforced by RolesGuard"
+  description: "Remove the in-service admin check already enforced by RolesGuard"
+  base_branch: "main"
+required_reviewers: ["correctness"]
+expected_findings: []
+forbidden_findings:
+  - id: "F1"
+    categories: ["any"]
+    symbol: "ts:src/admin/admin.service#AdminService.deactivate/method"
+    reason: "every route to deactivate has RolesGuard with the admin role (trap: upstream_guard)"
+optional_findings: []
+expect_no_published_findings: false
+synthetic_fixtures: true

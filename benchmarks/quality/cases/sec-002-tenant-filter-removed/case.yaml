@@ -1,0 +1,21 @@
+id: "sec-002-tenant-filter-removed"
+version: 1
+title: "Order listing no longer filters by organization"
+classes: ["security"]
+language: "typescript"
+frameworks: ["nestjs"]
+pr:
+  title: "Order listing no longer filters by organization"
+  description: "Order listing no longer filters by organization"
+  base_branch: "main"
+required_reviewers: ["correctness"]
+expected_findings:
+  - id: "E1"
+    categories: ["security", "correctness"]
+    severity_at_least: "high"
+    symbol: "ts:src/orders/orders.repository#OrdersRepository.listForOrganization/method"
+    claim_any_of: ["tenant", "organization"]
+forbidden_findings: []
+optional_findings: []
+expect_no_published_findings: false
+synthetic_fixtures: true

@@ -1,0 +1,21 @@
+id: "api-001-dto-field-removed"
+version: 1
+title: "Remove timezone from the profile response"
+classes: ["api_contract"]
+language: "typescript"
+frameworks: ["nestjs"]
+pr:
+  title: "Remove timezone from the profile response"
+  description: "Remove timezone from the profile response"
+  base_branch: "main"
+required_reviewers: ["correctness"]
+expected_findings:
+  - id: "E1"
+    categories: ["correctness", "api_contract"]
+    severity_at_least: "medium"
+    symbol: "ts:src/profile/profile.dto#ProfileResponseDto/class"
+    claim_any_of: ["timezone", "contract", "field"]
+forbidden_findings: []
+optional_findings: []
+expect_no_published_findings: false
+synthetic_fixtures: true

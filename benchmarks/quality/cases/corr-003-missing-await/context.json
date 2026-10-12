@@ -1,0 +1,77 @@
+{
+  "change_summary": {
+    "files_changed": 1,
+    "intent": "refactor",
+    "change_classes": [
+      "await_removed"
+    ]
+  },
+  "changed_symbols": [
+    {
+      "symbol_id": "ts:src/ledger/ledger.service#LedgerService.close/method",
+      "kind": "method",
+      "path": "src/ledger/ledger.service.ts",
+      "range": [
+        12,
+        17
+      ],
+      "base_range": [
+        12,
+        17
+      ],
+      "file_lines": 31,
+      "change_classes": [
+        "await_removed"
+      ],
+      "signature_base": "async close(accountId: string, balance: number): Promise<void>",
+      "signature_head": "async close(accountId: string, balance: number): Promise<void>",
+      "body_base": "  async close(accountId: string, balance: number): Promise<void> {\n    await this.dataSource.transaction(async (manager) => {\n      await this.ledger.post(manager, { accountId, amount: -balance, memo: 'close' });\n      await manager.query('UPDATE accounts SET closed = true WHERE id = $1', [accountId]);\n    });\n  }",
+      "body_head": "  async close(accountId: string, balance: number): Promise<void> {\n    await this.dataSource.transaction(async (manager) => {\n      this.ledger.post(manager, { accountId, amount: -balance, memo: 'close' });\n      await manager.query('UPDATE accounts SET closed = true WHERE id = $1', [accountId]);\n    });\n  }",
+      "hunks": [
+        {
+          "old": [
+            14,
+            14
+          ],
+          "new": [
+            14,
+            14
+          ]
+        }
+      ],
+      "generated": false
+    }
+  ],
+  "nodes": [
+    {
+      "symbol_id": "ts:src/ledger/ledger.repository#LedgerRepository.post/method",
+      "kind": "method",
+      "path": "src/ledger/ledger.repository.ts",
+      "range": [
+        12,
+        14
+      ],
+      "file_lines": 21,
+      "distance": 1,
+      "excerpt": "  async post(manager: EntityManager, entry: LedgerEntry): Promise<LedgerEntry> {\n    return manager.save(entry);\n  }"
+    }
+  ],
+  "edges": [
+    {
+      "from": "ts:src/ledger/ledger.service#LedgerService.close/method",
+      "to": "ts:src/ledger/ledger.repository#LedgerRepository.post/method",
+      "kind": "CALLS",
+      "confidence": 0.95
+    }
+  ],
+  "tests": [],
+  "rules": [],
+  "diagnostics": [],
+  "config_items": [],
+  "risk_signals": [
+    {
+      "signal": "transaction_body_changed",
+      "weight": 0.7
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+id: "conc-001-lost-update"
+version: 1
+title: "Stock reservation becomes a read-modify-write in code"
+classes: ["concurrency"]
+language: "typescript"
+frameworks: ["nestjs"]
+pr:
+  title: "Stock reservation becomes a read-modify-write in code"
+  description: "Stock reservation becomes a read-modify-write in code"
+  base_branch: "main"
+required_reviewers: ["correctness"]
+expected_findings:
+  - id: "E1"
+    categories: ["correctness"]
+    severity_at_least: "medium"
+    symbol: "ts:src/inventory/stock.service#StockService.reserve/method"
+    claim_any_of: ["lost update", "race", "concurrent", "atomic"]
+forbidden_findings: []
+optional_findings: []
+expect_no_published_findings: false
+synthetic_fixtures: true

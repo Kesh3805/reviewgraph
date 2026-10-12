@@ -1,0 +1,65 @@
+{
+  "change_summary": {
+    "files_changed": 1,
+    "intent": "docs",
+    "change_classes": [
+      "comment_only"
+    ]
+  },
+  "changed_symbols": [
+    {
+      "symbol_id": "ts:src/reports/report.service#ReportService.header/method",
+      "kind": "method",
+      "path": "src/reports/report.service.ts",
+      "range": [
+        11,
+        13
+      ],
+      "base_range": [
+        11,
+        13
+      ],
+      "file_lines": 18,
+      "change_classes": [
+        "comment_only"
+      ],
+      "signature_base": "header(month: string): string",
+      "signature_head": "header(month: string): string",
+      "body_base": "  header(month: string): string {\n    return `Monthly report for ${month}`;\n  }",
+      "body_head": "  header(month: string): string {\n    return `Monthly report for ${month}`;\n  }",
+      "hunks": [
+        {
+          "old": [
+            10,
+            10
+          ],
+          "new": [
+            10,
+            10
+          ]
+        }
+      ],
+      "generated": false
+    }
+  ],
+  "nodes": [
+    {
+      "symbol_id": "ts:src/reports/report.service#ReportService.ownerNames/method",
+      "kind": "method",
+      "path": "src/reports/report.service.ts",
+      "range": [
+        15,
+        17
+      ],
+      "file_lines": 18,
+      "distance": 0,
+      "excerpt": "  ownerNames(rows: ReportRow[]): string[] {\n    return rows.map((r) => r.owner!.name);\n  }"
+    }
+  ],
+  "edges": [],
+  "tests": [],
+  "rules": [],
+  "diagnostics": [],
+  "config_items": [],
+  "risk_signals": []
+}

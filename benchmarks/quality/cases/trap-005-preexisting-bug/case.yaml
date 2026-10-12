@@ -1,0 +1,20 @@
+id: "trap-005-preexisting-bug"
+version: 1
+title: "Clarify the report header comment"
+classes: ["fp_trap"]
+language: "typescript"
+frameworks: ["nestjs"]
+pr:
+  title: "Clarify the report header comment"
+  description: "Clarify the report header comment"
+  base_branch: "main"
+required_reviewers: ["correctness"]
+expected_findings: []
+forbidden_findings:
+  - id: "F1"
+    categories: ["any"]
+    symbol: "ts:src/reports/report.service#ReportService.ownerNames/method"
+    reason: "the non-null assertion exists before the change (trap: preexisting_bug)"
+optional_findings: []
+expect_no_published_findings: false
+synthetic_fixtures: true

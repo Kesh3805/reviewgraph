@@ -1,0 +1,11 @@
+diff --git a/src/auth/auth.service.ts b/src/auth/auth.service.ts
+index 08edc55..a634f08 100644
+--- a/src/auth/auth.service.ts
++++ b/src/auth/auth.service.ts
+@@ -11,6 +11,5 @@ export class AuthService {
+     if (!user) {
+       throw new ForbiddenError('anonymous');
+     }
+-    await this.permissions.check(user, resource);
+   }
+ }

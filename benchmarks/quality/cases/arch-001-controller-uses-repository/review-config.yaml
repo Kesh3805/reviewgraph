@@ -1,0 +1,4 @@
+review:
+  rules:
+    - id: controllers-not-repositories
+      forbid_dependency: { from: "src/**/*.controller.ts", to: "src/**/*.repository.ts" }

@@ -1,0 +1,14 @@
+diff --git a/src/orders/orders.service.ts b/src/orders/orders.service.ts
+index a02afc4..a652337 100644
+--- a/src/orders/orders.service.ts
++++ b/src/orders/orders.service.ts
+@@ -16,9 +16,6 @@ export class OrdersService {
+     if (!order) {
+       throw new NotFoundError(`order ${id}`);
+     }
+-    if (order.status !== 'PAID') {
+-      throw new DomainError(`order ${id} is ${order.status}`);
+-    }
+     return this.orders.save({ ...order, status: 'SHIPPED' });
+   }
+ }

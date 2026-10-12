@@ -9,6 +9,10 @@ publish.workspace = true
 [lints]
 workspace = true
 
+[features]
+# Tests that need Postgres (TEST_DATABASE_URL or DATABASE_URL).
+integration = []
+
 [dependencies]
 anyhow.workspace = true
 telemetry.workspace = true
@@ -18,9 +22,29 @@ repository.workspace = true
 schemars.workspace = true
 serde_json.workspace = true
 sha2.workspace = true
+serde.workspace = true
+serde_yaml.workspace = true
+blake3.workspace = true
+globset.workspace = true
+rayon.workspace = true
+uuid.workspace = true
+chrono.workspace = true
+tokio.workspace = true
+tokio-util.workspace = true
+tracing.workspace = true
+sqlx.workspace = true
+async-trait = "0.1"
+model-gateway.workspace = true
+reviewers.workspace = true
 
 [dev-dependencies]
 tempfile.workspace = true
+insta.workspace = true
+proptest.workspace = true
+
+[lib]
+name = "review_cli"
+path = "src/lib.rs"
 
 [[bin]]
 name = "review"

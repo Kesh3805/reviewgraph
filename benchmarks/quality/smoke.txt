@@ -1,0 +1,6 @@
+# The five cases run by the CI smoke step (EVAL-003, EVAL-006).
+sec-001-auth-bypass
+trap-001-caller-owned-transaction
+trap-002-upstream-guard-all-paths
+safe-001-extract-method
+corr-003-missing-await

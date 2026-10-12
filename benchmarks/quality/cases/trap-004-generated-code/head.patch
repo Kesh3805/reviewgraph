@@ -1,0 +1,12 @@
+diff --git a/src/gen/api.generated.ts b/src/gen/api.generated.ts
+index d53ffd6..eeb4028 100644
+--- a/src/gen/api.generated.ts
++++ b/src/gen/api.generated.ts
+@@ -11,6 +11,6 @@ export function parseOrder(raw: Record<string, unknown>): ApiOrder {
+   return {
+     id: String(raw.id),
+     status: String(raw.status),
+-    total: Number(raw.total),
++    total: Number(raw.total) || 0,
+   };
+ }

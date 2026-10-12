@@ -1,0 +1,14 @@
+diff --git a/src/ledger/ledger.repository.ts b/src/ledger/ledger.repository.ts
+index 38ec94a..2d95683 100644
+--- a/src/ledger/ledger.repository.ts
++++ b/src/ledger/ledger.repository.ts
+@@ -14,6 +14,9 @@ export class LedgerRepository {
+   }
+ 
+   async save(manager: EntityManager, entries: LedgerEntry[]): Promise<void> {
++    if (entries.length === 0) {
++      return;
++    }
+     for (const entry of entries) {
+       await manager.save(entry);
+     }

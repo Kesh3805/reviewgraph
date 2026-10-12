@@ -1,0 +1,10 @@
+diff --git a/src/profile/profile.dto.ts b/src/profile/profile.dto.ts
+index 131b165..ff29f3d 100644
+--- a/src/profile/profile.dto.ts
++++ b/src/profile/profile.dto.ts
+@@ -3,4 +3,5 @@ export class ProfileResponseDto {
+   displayName!: string;
+   email!: string;
+   timezone!: string;
++  locale?: string;
+ }

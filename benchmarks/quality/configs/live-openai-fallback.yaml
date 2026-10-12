@@ -1,0 +1,9 @@
+name: live-openai-fallback
+gateway_mode: live
+# Routes review_reasoner to OpenAI first; see benchmarks/quality/configs/routing-openai-first.yaml.
+routing_override: benchmarks/quality/configs/routing-openai-first.yaml
+reviewers: [correctness]
+verification_version: none
+repetitions: 3
+max_parallel_cases: 2
+budgets: { max_model_calls: 40, max_model_tokens: 400000 }

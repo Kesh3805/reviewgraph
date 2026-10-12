@@ -1,0 +1,21 @@
+id: "conc-002-job-not-idempotent"
+version: 1
+title: "Email processor drops its duplicate-job check"
+classes: ["concurrency"]
+language: "typescript"
+frameworks: ["nestjs", "bullmq"]
+pr:
+  title: "Email processor drops its duplicate-job check"
+  description: "Email processor drops its duplicate-job check"
+  base_branch: "main"
+required_reviewers: ["correctness"]
+expected_findings:
+  - id: "E1"
+    categories: ["correctness"]
+    severity_at_least: "medium"
+    symbol: "ts:src/jobs/email.processor#EmailProcessor.process/method"
+    claim_any_of: ["duplicate", "idempot", "dedup", "twice"]
+forbidden_findings: []
+optional_findings: []
+expect_no_published_findings: false
+synthetic_fixtures: true

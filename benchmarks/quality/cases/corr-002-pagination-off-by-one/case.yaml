@@ -1,0 +1,21 @@
+id: "corr-002-pagination-off-by-one"
+version: 1
+title: "Order pagination skips the first page"
+classes: ["correctness_regression"]
+language: "typescript"
+frameworks: ["nestjs"]
+pr:
+  title: "Order pagination skips the first page"
+  description: "Order pagination skips the first page"
+  base_branch: "main"
+required_reviewers: ["correctness"]
+expected_findings:
+  - id: "E1"
+    categories: ["correctness"]
+    severity_at_least: "medium"
+    symbol: "ts:src/orders/orders.repository#OrdersRepository.listForOrganization/method"
+    claim_any_of: ["skip", "page", "offset"]
+forbidden_findings: []
+optional_findings: []
+expect_no_published_findings: false
+synthetic_fixtures: true

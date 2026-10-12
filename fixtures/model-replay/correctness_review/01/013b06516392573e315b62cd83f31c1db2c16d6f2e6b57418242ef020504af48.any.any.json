@@ -1,0 +1,84 @@
+{
+  "fixture_version": 1,
+  "request_hash": "013b06516392573e315b62cd83f31c1db2c16d6f2e6b57418242ef020504af48",
+  "provider": "any",
+  "model": "any",
+  "task": "correctness_review",
+  "prompt_id": "correctness",
+  "prompt_version": "correctness:v1:472b8c34",
+  "schema_hash": "3d175f915b29ad6025bd3b02bfeef90ddea257bf2d3f65b4e9b9c9b3a990e8be",
+  "synthetic": true,
+  "recorded_at": "2026-10-08T00:00:00Z",
+  "engine_git_sha": null,
+  "response": {
+    "output": {
+      "json": {
+        "findings": [
+          {
+            "category": "security",
+            "title": "Orders of every organization are listed",
+            "claim": "S1 no longer filters by organizationId, so N2 returns orders of other organizations",
+            "description": "S1 no longer filters by organizationId, so N2 returns orders of other organizations",
+            "severity": "critical",
+            "anchor": {
+              "ref": "S1",
+              "side": "head",
+              "start_line": 22,
+              "end_line": 22
+            },
+            "affected_refs": [
+              "S1",
+              "N1",
+              "N2"
+            ],
+            "evidence": [
+              {
+                "kind": "changed_source",
+                "ref": "S1",
+                "side": "head",
+                "start_line": 22,
+                "end_line": 22,
+                "quote": "return this.find({ where: {}, skip: page * size, take: size });",
+                "explanation": "The tenant predicate is gone."
+              }
+            ],
+            "claimed_relations": [
+              {
+                "from": "N1",
+                "relation": "calls",
+                "to": "S1"
+              },
+              {
+                "from": "N2",
+                "relation": "reaches_endpoint",
+                "to": "N1"
+              }
+            ],
+            "predicate": {
+              "kind": "condition_changed",
+              "subject": "S1",
+              "params": [
+                {
+                  "name": "removed",
+                  "value": "organizationId"
+                }
+              ]
+            },
+            "corrective_direction": "Filter by organizationId again.",
+            "self_confidence": 0.85
+          }
+        ],
+        "no_findings_reason": null
+      }
+    },
+    "usage": {
+      "input_uncached": 0,
+      "cache_write": 0,
+      "cache_read": 0,
+      "output": 0,
+      "reasoning": 0
+    },
+    "finish_reason": "complete"
+  },
+  "latency_ms": 0
+}

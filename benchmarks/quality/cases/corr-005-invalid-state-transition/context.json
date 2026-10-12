@@ -1,0 +1,72 @@
+{
+  "change_summary": {
+    "files_changed": 1,
+    "intent": "refactor",
+    "change_classes": [
+      "guard_removed"
+    ]
+  },
+  "changed_symbols": [
+    {
+      "symbol_id": "ts:src/orders/orders.service#OrdersService.ship/method",
+      "kind": "method",
+      "path": "src/orders/orders.service.ts",
+      "range": [
+        14,
+        20
+      ],
+      "base_range": [
+        14,
+        23
+      ],
+      "file_lines": 21,
+      "change_classes": [
+        "guard_removed"
+      ],
+      "signature_base": "async ship(organizationId: string, id: string): Promise<Order>",
+      "signature_head": "async ship(organizationId: string, id: string): Promise<Order>",
+      "body_base": "  async ship(organizationId: string, id: string): Promise<Order> {\n    const [order] = await this.orders.find({ where: { id, organizationId }, skip: 0, take: 1 });\n    if (!order) {\n      throw new NotFoundError(`order ${id}`);\n    }\n    if (order.status !== 'PAID') {\n      throw new DomainError(`order ${id} is ${order.status}`);\n    }\n    return this.orders.save({ ...order, status: 'SHIPPED' });\n  }",
+      "body_head": "  async ship(organizationId: string, id: string): Promise<Order> {\n    const [order] = await this.orders.find({ where: { id, organizationId }, skip: 0, take: 1 });\n    if (!order) {\n      throw new NotFoundError(`order ${id}`);\n    }\n    return this.orders.save({ ...order, status: 'SHIPPED' });\n  }",
+      "hunks": [
+        {
+          "old": [
+            19,
+            21
+          ],
+          "new": [
+            18,
+            18
+          ]
+        }
+      ],
+      "generated": false
+    }
+  ],
+  "nodes": [
+    {
+      "symbol_id": "ts:src/orders/orders.controller#OrdersController.ship/method",
+      "kind": "method",
+      "path": "src/orders/orders.controller.ts",
+      "range": [
+        15,
+        17
+      ],
+      "file_lines": 18,
+      "distance": 1,
+      "excerpt": "  ship(@Req() req: { user: User }, @Param('id') id: string) {\n    return this.orders.ship(req.user.organizationId, id);\n  }"
+    }
+  ],
+  "edges": [
+    {
+      "from": "ts:src/orders/orders.controller#OrdersController.ship/method",
+      "to": "ts:src/orders/orders.service#OrdersService.ship/method",
+      "kind": "CALLS",
+      "confidence": 0.95
+    }
+  ],
+  "tests": [],
+  "rules": [],
+  "diagnostics": [],
+  "config_items": [],
+  "risk_signals": []
+}

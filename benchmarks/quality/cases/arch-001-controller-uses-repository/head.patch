@@ -1,0 +1,25 @@
+diff --git a/src/orders/orders.controller.ts b/src/orders/orders.controller.ts
+index 1b4b696..968e0e3 100644
+--- a/src/orders/orders.controller.ts
++++ b/src/orders/orders.controller.ts
+@@ -1,14 +1,18 @@
+ import { Controller, Get, Param, Post, Query, Req } from '@nestjs/common';
+ import { User } from '../users/user.entity';
++import { OrdersRepository } from './orders.repository';
+ import { OrdersService } from './orders.service';
+ 
+ @Controller('orders')
+ export class OrdersController {
+-  constructor(private readonly orders: OrdersService) {}
++  constructor(
++    private readonly orders: OrdersService,
++    private readonly repo: OrdersRepository,
++  ) {}
+ 
+   @Get()
+   list(@Req() req: { user: User }, @Query('page') page = 0, @Query('size') size = 20) {
+-    return this.orders.page(req.user.organizationId, Number(page), Number(size));
++    return this.repo.listForOrganization(req.user.organizationId, Number(page), Number(size));
+   }
+ 
+   @Post(':id/ship')

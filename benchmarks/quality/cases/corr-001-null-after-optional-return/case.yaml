@@ -1,0 +1,22 @@
+id: "corr-001-null-after-optional-return"
+version: 1
+title: "findUser now returns undefined for a missing user; callers dereference it"
+classes: ["correctness_regression"]
+language: "typescript"
+frameworks: ["nestjs"]
+pr:
+  title: "findUser now returns undefined for a missing user; callers dereference it"
+  description: "findUser now returns undefined for a missing user; callers dereference it"
+  base_branch: "main"
+required_reviewers: ["correctness"]
+expected_findings:
+  - id: "E1"
+    categories: ["correctness"]
+    severity_at_least: "medium"
+    symbol: "ts:src/users/users.service#UsersService.displayName/method"
+    claim_any_of: ["undefined", "null"]
+    must_publish: true
+forbidden_findings: []
+optional_findings: []
+expect_no_published_findings: false
+synthetic_fixtures: true

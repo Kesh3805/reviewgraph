@@ -1,0 +1,52 @@
+{
+  "change_summary": {
+    "files_changed": 1,
+    "intent": "refactor",
+    "change_classes": [
+      "database_write_changed"
+    ]
+  },
+  "changed_symbols": [
+    {
+      "symbol_id": "ts:src/inventory/stock.service#StockService.reserve/method",
+      "kind": "method",
+      "path": "src/inventory/stock.service.ts",
+      "range": [
+        8,
+        12
+      ],
+      "base_range": [
+        8,
+        13
+      ],
+      "file_lines": 20,
+      "change_classes": [
+        "database_write_changed"
+      ],
+      "signature_base": "async reserve(sku: string, quantity: number): Promise<void>",
+      "signature_head": "async reserve(sku: string, quantity: number): Promise<void>",
+      "body_base": "  async reserve(sku: string, quantity: number): Promise<void> {\n    await this.dataSource.manager.query(\n      'UPDATE stock SET reserved = reserved + $2 WHERE sku = $1',\n      [sku, quantity],\n    );\n  }",
+      "body_head": "  async reserve(sku: string, quantity: number): Promise<void> {\n    const rows = (await this.dataSource.manager.query('SELECT reserved FROM stock WHERE sku = $1', [sku])) as { reserved: number }[];\n    const next = rows[0].reserved + quantity;\n    await this.dataSource.manager.query('UPDATE stock SET reserved = $2 WHERE sku = $1', [sku, next]);\n  }",
+      "hunks": [
+        {
+          "old": [
+            9,
+            12
+          ],
+          "new": [
+            9,
+            11
+          ]
+        }
+      ],
+      "generated": false
+    }
+  ],
+  "nodes": [],
+  "edges": [],
+  "tests": [],
+  "rules": [],
+  "diagnostics": [],
+  "config_items": [],
+  "risk_signals": []
+}

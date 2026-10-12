@@ -1,0 +1,49 @@
+{
+  "change_summary": {
+    "files_changed": 1,
+    "intent": "test",
+    "change_classes": [
+      "test_added"
+    ]
+  },
+  "changed_symbols": [
+    {
+      "symbol_id": "ts:src/billing/discount.service.spec#__module__/module",
+      "kind": "module",
+      "path": "src/billing/discount.service.spec.ts",
+      "range": [
+        1,
+        11
+      ],
+      "base_range": null,
+      "file_lines": 11,
+      "change_classes": [
+        "test_added"
+      ],
+      "signature_base": null,
+      "signature_head": "import { DiscountService } from './discount.service';",
+      "body_base": null,
+      "body_head": "import { DiscountService } from './discount.service';\n\ndescribe('DiscountService', () => {\n  it('gives loyal customers 10%', () => {\n    expect(new DiscountService().rate({ subtotal: 10, loyaltyYears: 6 })).toBe(0.1);\n  });\n\n  it('gives large carts 5%', () => {\n    expect(new DiscountService().rate({ subtotal: 600, loyaltyYears: 0 })).toBe(0.05);\n  });\n});",
+      "hunks": [
+        {
+          "old": [
+            0,
+            0
+          ],
+          "new": [
+            1,
+            11
+          ]
+        }
+      ],
+      "generated": false
+    }
+  ],
+  "nodes": [],
+  "edges": [],
+  "tests": [],
+  "rules": [],
+  "diagnostics": [],
+  "config_items": [],
+  "risk_signals": []
+}

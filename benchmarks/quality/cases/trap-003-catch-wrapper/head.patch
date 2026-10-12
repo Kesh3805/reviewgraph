@@ -1,0 +1,13 @@
+diff --git a/src/billing/payment.client.ts b/src/billing/payment.client.ts
+index acf0d6b..605106c 100644
+--- a/src/billing/payment.client.ts
++++ b/src/billing/payment.client.ts
+@@ -10,7 +10,7 @@ export interface ChargeResult {
+ export class PaymentClient {
+   async charge(customerId: string, amount: number): Promise<ChargeResult | null> {
+     if (amount <= 0) {
+-      return null;
++      throw new BillingError('invalid amount');
+     }
+     const id = `ch_${customerId}_${amount}`;
+     if (customerId.length === 0) {

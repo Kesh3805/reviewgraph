@@ -1,0 +1,72 @@
+{
+  "fixture_version": 1,
+  "request_hash": "561e6b623a2be868b238666c7d7101894b599b162c1572f188881ceb1c9d77e9",
+  "provider": "any",
+  "model": "any",
+  "task": "correctness_review",
+  "prompt_id": "correctness",
+  "prompt_version": "correctness:v1:472b8c34",
+  "schema_hash": "3d175f915b29ad6025bd3b02bfeef90ddea257bf2d3f65b4e9b9c9b3a990e8be",
+  "synthetic": true,
+  "recorded_at": "2026-10-08T00:00:00Z",
+  "engine_git_sha": null,
+  "response": {
+    "output": {
+      "json": {
+        "findings": [
+          {
+            "category": "correctness",
+            "title": "Profile response drops the timezone field",
+            "claim": "S1 removed timezone, so clients of the profile endpoint in S2 lose a field they read",
+            "description": "S1 removed timezone, so clients of the profile endpoint in S2 lose a field they read",
+            "severity": "medium",
+            "anchor": {
+              "ref": "S1",
+              "side": "head",
+              "start_line": 1,
+              "end_line": 5
+            },
+            "affected_refs": [
+              "S1",
+              "S2"
+            ],
+            "evidence": [
+              {
+                "kind": "interface_contract",
+                "ref": "S1",
+                "side": "base",
+                "start_line": 5,
+                "end_line": 5,
+                "quote": "timezone!: string;",
+                "explanation": "The field existed in the response contract."
+              }
+            ],
+            "claimed_relations": [],
+            "predicate": {
+              "kind": "contract_changed",
+              "subject": "S1",
+              "params": [
+                {
+                  "name": "field",
+                  "value": "timezone"
+                }
+              ]
+            },
+            "corrective_direction": "Keep the field or version the endpoint.",
+            "self_confidence": 0.7
+          }
+        ],
+        "no_findings_reason": null
+      }
+    },
+    "usage": {
+      "input_uncached": 0,
+      "cache_write": 0,
+      "cache_read": 0,
+      "output": 0,
+      "reasoning": 0
+    },
+    "finish_reason": "complete"
+  },
+  "latency_ms": 0
+}

@@ -1,0 +1,8 @@
+name: live-anthropic-default
+gateway_mode: live
+routing_override: null
+reviewers: [correctness]
+verification_version: none
+repetitions: 3
+max_parallel_cases: 2
+budgets: { max_model_calls: 40, max_model_tokens: 400000 }

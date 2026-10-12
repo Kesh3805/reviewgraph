@@ -1,0 +1,20 @@
+id: "arch-001-controller-uses-repository"
+version: 1
+title: "OrdersController reads the repository directly"
+classes: ["architecture"]
+language: "typescript"
+frameworks: ["nestjs"]
+pr:
+  title: "OrdersController reads the repository directly"
+  description: "OrdersController reads the repository directly"
+  base_branch: "main"
+required_reviewers: ["architecture"]
+expected_findings:
+  - id: "E1"
+    categories: ["architecture"]
+    symbol: "ts:src/orders/orders.controller#OrdersController.list/method"
+    must_publish: true
+forbidden_findings: []
+optional_findings: []
+expect_no_published_findings: false
+synthetic_fixtures: true

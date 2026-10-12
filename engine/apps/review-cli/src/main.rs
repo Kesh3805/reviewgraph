@@ -18,6 +18,12 @@ enum Command {
         #[command(subcommand)]
         action: ContractsAction,
     },
+    /// Model evaluation harness (developer tooling).
+    #[command(hide = true)]
+    Eval {
+        #[command(subcommand)]
+        action: review_cli::eval::EvalCommand,
+    },
 }
 
 #[derive(Debug, Subcommand)]
@@ -42,6 +48,13 @@ fn main() -> anyhow::Result<()> {
             let written = contracts::export(&out)?;
             for path in written {
                 println!("{}", path.display());
+            }
+            Ok(())
+        }
+        Command::Eval { action } => {
+            let code = review_cli::eval::dispatch(action)?;
+            if code != 0 {
+                std::process::exit(code);
             }
             Ok(())
         }
