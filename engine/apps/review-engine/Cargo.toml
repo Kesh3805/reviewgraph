@@ -9,6 +9,40 @@ publish.workspace = true
 [lints]
 workspace = true
 
+[lib]
+name = "review_engine"
+path = "src/lib.rs"
+
+[[bin]]
+name = "review-engine"
+path = "src/main.rs"
+
 [dependencies]
 anyhow.workspace = true
 telemetry.workspace = true
+review-core.workspace = true
+analysis-ir.workspace = true
+repository.workspace = true
+codegraph.workspace = true
+graph-storage.workspace = true
+impact.workspace = true
+model-gateway.workspace = true
+axum.workspace = true
+tokio.workspace = true
+futures.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+schemars.workspace = true
+sqlx.workspace = true
+tracing.workspace = true
+uuid.workspace = true
+thiserror.workspace = true
+opentelemetry.workspace = true
+sha2.workspace = true
+async-trait = "0.1"
+hmac = "0.12"
+base64 = "0.22"
+
+[dev-dependencies]
+tower = { version = "0.5", features = ["util"] }
+http-body-util = "0.1"
