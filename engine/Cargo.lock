@@ -3201,8 +3201,13 @@ checksum = "a89322df9ebe1c1578d689c92318e070967d1042b512afbe49518723f4e6d5cd"
 name = "pipeline"
 version = "0.1.0"
 dependencies = [
+ "analysis-ir",
+ "async-trait",
+ "blake3",
+ "graph-storage",
  "review-core",
  "thiserror",
+ "tokio",
 ]
 
 [[package]]

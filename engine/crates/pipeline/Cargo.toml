@@ -11,4 +11,11 @@ workspace = true
 
 [dependencies]
 review-core.workspace = true
+analysis-ir.workspace = true
+graph-storage.workspace = true
+async-trait = "0.1"
+blake3.workspace = true
 thiserror.workspace = true
+
+[dev-dependencies]
+tokio.workspace = true
