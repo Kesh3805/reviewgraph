@@ -1068,7 +1068,7 @@ pub struct RedactionReport { pub replacements: u32, pub by_pattern: BTreeMap<&'s
 ---
 
 ### EVAL-001 — Benchmark case format
-Status: ☐
+Status: ☑
 
 **Task ID:** EVAL-001
 
@@ -1175,7 +1175,7 @@ synthetic_fixtures: true               # replay fixtures are hand-authored (see 
 ---
 
 ### EVAL-002 — Matcher
-Status: ☐
+Status: ☑
 
 **Task ID:** EVAL-002
 
@@ -1353,7 +1353,7 @@ budgets: { max_model_calls: 40, max_model_tokens: 400000 }
 ---
 
 ### EVAL-004 — Metrics
-Status: ☐
+Status: ☑
 
 **Task ID:** EVAL-004
 

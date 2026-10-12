@@ -3,6 +3,7 @@
 mod cli;
 mod context;
 mod contracts;
+mod eval;
 mod exit;
 mod output;
 mod semantic_cmd;
@@ -38,6 +39,7 @@ fn run(cli: Cli, out: &Output) -> Result<(), CliError> {
             })?;
             semantic_cmd::run(database_url, action).map_err(internal)
         }
+        Command::Eval { action } => eval::run(action).map_err(internal),
     }
 }
 

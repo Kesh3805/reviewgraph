@@ -60,6 +60,11 @@ pub enum Command {
         #[command(subcommand)]
         action: crate::semantic_cmd::SemanticAction,
     },
+    /// Quality benchmark tooling (developer use).
+    Eval {
+        #[command(subcommand)]
+        action: crate::eval::EvalAction,
+    },
 }
 
 #[derive(Debug, Subcommand)]
