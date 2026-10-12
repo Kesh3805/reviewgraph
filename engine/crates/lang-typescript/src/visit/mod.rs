@@ -74,9 +74,11 @@ pub fn run(
     } else {
         Vec::new()
     };
+    let framework = crate::frameworks::run(root, &ctx.source, &table.symbols, ctx.cfg, sink);
     Collected {
         symbols: table.symbols,
         facts,
+        framework,
         ..Collected::default()
     }
 }
