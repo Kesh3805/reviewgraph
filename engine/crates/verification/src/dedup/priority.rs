@@ -155,22 +155,47 @@ mod tests {
     fn caller_count_effect_capped() {
         let w = PriorityWeights::V1;
         let a = priority_score(&base(), &w);
-        let b = priority_score(&PriorityInputs { callers: 1000, ..base() }, &w);
+        let b = priority_score(
+            &PriorityInputs {
+                callers: 1000,
+                ..base()
+            },
+            &w,
+        );
         assert!(b - a <= 0.07 + 1e-4);
     }
 
     #[test]
     fn high_severity_beats_many_callers() {
         let w = PriorityWeights::V1;
-        let hi = priority_score(&PriorityInputs { severity: Severity::High, ..base() }, &w);
-        let lo = priority_score(&PriorityInputs { severity: Severity::Low, callers: 500, ..base() }, &w);
+        let hi = priority_score(
+            &PriorityInputs {
+                severity: Severity::High,
+                ..base()
+            },
+            &w,
+        );
+        let lo = priority_score(
+            &PriorityInputs {
+                severity: Severity::Low,
+                callers: 500,
+                ..base()
+            },
+            &w,
+        );
         assert!(hi > lo);
     }
 
     #[test]
     fn nan_clamped_and_golden() {
         let w = PriorityWeights::V1;
-        let s = priority_score(&PriorityInputs { test_gap: f32::NAN, ..base() }, &w);
+        let s = priority_score(
+            &PriorityInputs {
+                test_gap: f32::NAN,
+                ..base()
+            },
+            &w,
+        );
         // 0.35*0.5 + 0.20*0.8 + 0.07*log2(2)/log2(33)
         let expect = 0.175 + 0.16 + 0.07 / 33f32.log2();
         assert!((s - expect).abs() < 1e-3);
@@ -179,13 +204,31 @@ mod tests {
     #[test]
     fn untested_scores_higher() {
         let w = PriorityWeights::V1;
-        assert!(priority_score(&PriorityInputs { test_gap: 1.0, ..base() }, &w) > priority_score(&base(), &w));
+        assert!(
+            priority_score(
+                &PriorityInputs {
+                    test_gap: 1.0,
+                    ..base()
+                },
+                &w
+            ) > priority_score(&base(), &w)
+        );
     }
 
     #[test]
     fn ordering_total() {
-        let a = Ranked { identity_key: "a", score: 0.5, severity: Severity::High, confidence: 0.5 };
-        let b = Ranked { identity_key: "b", score: 0.5, severity: Severity::High, confidence: 0.5 };
+        let a = Ranked {
+            identity_key: "a",
+            score: 0.5,
+            severity: Severity::High,
+            confidence: 0.5,
+        };
+        let b = Ranked {
+            identity_key: "b",
+            score: 0.5,
+            severity: Severity::High,
+            confidence: 0.5,
+        };
         assert_eq!(compare(&a, &b), Ordering::Less);
     }
 }

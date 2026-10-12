@@ -10,7 +10,10 @@ pub struct Backoff {
 
 impl Default for Backoff {
     fn default() -> Self {
-        Self { base: Duration::from_secs(5), cap: Duration::from_secs(300) }
+        Self {
+            base: Duration::from_secs(5),
+            cap: Duration::from_secs(300),
+        }
     }
 }
 

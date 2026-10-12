@@ -76,7 +76,10 @@ fn link(a: &VerifiedCandidate, b: &VerifiedCandidate) -> Option<(MergeRule, f32)
     if a.fingerprint == b.fingerprint {
         return Some((MergeRule::R1, 1.0));
     }
-    let (sa, sb) = (a.anchor_symbol_key.as_deref()?, b.anchor_symbol_key.as_deref()?);
+    let (sa, sb) = (
+        a.anchor_symbol_key.as_deref()?,
+        b.anchor_symbol_key.as_deref()?,
+    );
     if sa != sb {
         return None;
     }
@@ -165,8 +168,7 @@ pub fn merge_verified(
         out.push(MergeGroup {
             primary: primary.candidate_id.clone(),
             duplicates: {
-                let mut d: Vec<String> =
-                    ms[1..].iter().map(|m| m.candidate_id.clone()).collect();
+                let mut d: Vec<String> = ms[1..].iter().map(|m| m.candidate_id.clone()).collect();
                 d.sort();
                 d
             },

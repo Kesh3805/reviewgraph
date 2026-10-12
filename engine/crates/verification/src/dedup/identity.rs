@@ -16,7 +16,9 @@ pub fn identity_key(
     origin_symbol_key: &str,
     claim_signature: &str,
 ) -> String {
-    let pre = format!("{repository_id}\0{pull_request_id}\0{category}\0{origin_symbol_key}\0{claim_signature}");
+    let pre = format!(
+        "{repository_id}\0{pull_request_id}\0{category}\0{origin_symbol_key}\0{claim_signature}"
+    );
     blake3::hash(pre.as_bytes()).as_bytes()[..16]
         .iter()
         .map(|b| format!("{b:02x}"))
@@ -44,7 +46,13 @@ pub fn resolve_identity(
         None => (anchor_symbol_key.to_string(), true),
     };
     FindingIdentity {
-        identity_key: identity_key(repository_id, pull_request_id, category, &origin, claim_signature),
+        identity_key: identity_key(
+            repository_id,
+            pull_request_id,
+            category,
+            &origin,
+            claim_signature,
+        ),
         lineage_fallback: fallback,
     }
 }
@@ -117,7 +125,10 @@ pub fn apply_post_verdict_dedup(
         })
         .cloned()
         .collect();
-    PostVerdict { verdict_set: eligible, publish_set }
+    PostVerdict {
+        verdict_set: eligible,
+        publish_set,
+    }
 }
 
 #[cfg(test)]
@@ -137,7 +148,11 @@ mod tests {
 
     #[test]
     fn rename_keeps_identity() {
-        let l = Map([("new".to_string(), "old".to_string()), ("old".to_string(), "old".to_string())].into());
+        let l = Map([
+            ("new".to_string(), "old".to_string()),
+            ("old".to_string(), "old".to_string()),
+        ]
+        .into());
         let a = resolve_identity(&l, "r", "pr", "sec", "old", "sig");
         let b = resolve_identity(&l, "r", "pr", "sec", "new", "sig");
         assert_eq!(a.identity_key, b.identity_key);
@@ -151,7 +166,10 @@ mod tests {
 
     #[test]
     fn identity_isolated_between_pull_requests() {
-        assert_ne!(identity_key("r", "pr1", "c", "s", "g"), identity_key("r", "pr2", "c", "s", "g"));
+        assert_ne!(
+            identity_key("r", "pr1", "c", "s", "g"),
+            identity_key("r", "pr2", "c", "s", "g")
+        );
     }
 
     #[test]
@@ -166,10 +184,22 @@ mod tests {
     #[test]
     fn verdict_counts_posted_but_publish_excludes_it() {
         let items = vec![
-            VerdictItem { identity_key: "a".into(), fingerprint: "f".into() },
-            VerdictItem { identity_key: "b".into(), fingerprint: "g".into() },
+            VerdictItem {
+                identity_key: "a".into(),
+                fingerprint: "f".into(),
+            },
+            VerdictItem {
+                identity_key: "b".into(),
+                fingerprint: "g".into(),
+            },
         ];
-        let posted = [("a".to_string(), PostedRecord { fingerprint: "f".into() })].into();
+        let posted = [(
+            "a".to_string(),
+            PostedRecord {
+                fingerprint: "f".into(),
+            },
+        )]
+        .into();
         let v = apply_post_verdict_dedup(items, &posted);
         assert_eq!(v.verdict_set.len(), 2);
         assert_eq!(v.publish_set.len(), 1);

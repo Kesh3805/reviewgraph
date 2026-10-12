@@ -75,7 +75,10 @@ pub fn claim_signature(input: &RootCauseInput<'_>) -> (String, FingerprintBasis)
     match &input.predicate {
         Some(p) if p.kind != "other" => {
             let subject = normalize_claim(&p.subject).as_text();
-            (format!("p:{}\0{}", p.kind, subject), FingerprintBasis::Predicate)
+            (
+                format!("p:{}\0{}", p.kind, subject),
+                FingerprintBasis::Predicate,
+            )
         }
         _ => (
             format!("c:{}", normalize_claim(input.claim).as_text()),
@@ -98,7 +101,10 @@ pub fn root_cause_fingerprint(
     }
     let preimage = format!("v2\0{}\0{}\0{}", input.category, anchor, sig);
     let hash = blake3::hash(preimage.as_bytes());
-    let hex: String = hash.as_bytes()[..16].iter().map(|b| format!("{b:02x}")).collect();
+    let hex: String = hash.as_bytes()[..16]
+        .iter()
+        .map(|b| format!("{b:02x}"))
+        .collect();
     Ok((RootCauseFingerprint(format!("v2:{hex}")), basis))
 }
 
@@ -121,8 +127,12 @@ mod tests {
 
     #[test]
     fn stable_under_paraphrase_with_same_predicate() {
-        let a = root_cause_fingerprint(&input("authorization removed", "s1")).unwrap().0;
-        let b = root_cause_fingerprint(&input("permission validation gone", "s1")).unwrap().0;
+        let a = root_cause_fingerprint(&input("authorization removed", "s1"))
+            .unwrap()
+            .0;
+        let b = root_cause_fingerprint(&input("permission validation gone", "s1"))
+            .unwrap()
+            .0;
         assert_eq!(a, b);
         assert_eq!(a.as_str().len(), 35);
     }
@@ -151,12 +161,19 @@ mod tests {
         let mut i = input("x", "s1");
         i.anchor_symbol_key = None;
         i.anchor_path = None;
-        assert_eq!(root_cause_fingerprint(&i).unwrap_err(), DedupError::Unanchorable);
+        assert_eq!(
+            root_cause_fingerprint(&i).unwrap_err(),
+            DedupError::Unanchorable
+        );
     }
 
     #[test]
     fn parse_rejects_v1_prefix() {
-        assert!("v1:0123456789abcdef0123456789abcdef".parse::<RootCauseFingerprint>().is_err());
-        assert!("v2:0123456789abcdef0123456789abcdef".parse::<RootCauseFingerprint>().is_ok());
+        assert!("v1:0123456789abcdef0123456789abcdef"
+            .parse::<RootCauseFingerprint>()
+            .is_err());
+        assert!("v2:0123456789abcdef0123456789abcdef"
+            .parse::<RootCauseFingerprint>()
+            .is_ok());
     }
 }

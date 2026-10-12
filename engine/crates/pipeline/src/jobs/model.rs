@@ -68,7 +68,12 @@ pub const MAX_RATE_LIMIT_REQUEUES: i32 = 50;
 
 impl FailKind {
     /// Pure decision used by the SQL layer: what a failure does to a job.
-    pub fn outcome(&self, attempts: i32, max_attempts: i32, rate_limit_requeues: i32) -> FailOutcome {
+    pub fn outcome(
+        &self,
+        attempts: i32,
+        max_attempts: i32,
+        rate_limit_requeues: i32,
+    ) -> FailOutcome {
         match self {
             Self::Permanent => FailOutcome::Dead,
             Self::Transient if attempts >= max_attempts => FailOutcome::Dead,
@@ -118,7 +123,9 @@ mod tests {
         assert_eq!(FailKind::Permanent.outcome(1, 5, 0), FailOutcome::Dead);
         assert_eq!(FailKind::Transient.outcome(5, 5, 0), FailOutcome::Dead);
         assert_eq!(FailKind::Transient.outcome(2, 5, 0), FailOutcome::Requeued);
-        let rl = FailKind::RateLimited { retry_after: Duration::from_secs(1) };
+        let rl = FailKind::RateLimited {
+            retry_after: Duration::from_secs(1),
+        };
         assert_eq!(rl.outcome(5, 5, 0), FailOutcome::Requeued);
         assert_eq!(rl.outcome(1, 5, 50), FailOutcome::Dead);
     }
