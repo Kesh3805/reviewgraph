@@ -1,0 +1,94 @@
+{
+  "version": 5,
+  "dashboardId": "rg-false-positive-feedback",
+  "title": "ReviewGraph: False-positive feedback",
+  "description": "Source metrics: finding_acceptance_rate, finding_false_positive_rate",
+  "role": "",
+  "owner": "",
+  "created": "",
+  "tabs": [
+    {
+      "tabId": "default",
+      "name": "Default",
+      "panels": [
+        {
+          "id": "Panel_1",
+          "type": "line",
+          "title": "Acceptance rate",
+          "description": "",
+          "config": {
+            "show_legends": true
+          },
+          "queryType": "sql",
+          "queries": [
+            {
+              "query": "SELECT histogram(_timestamp) AS x, sum(value) AS y FROM \"finding_acceptance_rate\" GROUP BY x ORDER BY x",
+              "customQuery": true,
+              "fields": {
+                "stream": "finding_acceptance_rate",
+                "stream_type": "metrics"
+              },
+              "config": {}
+            }
+          ],
+          "layout": {
+            "x": 0,
+            "y": 0,
+            "w": 96,
+            "h": 9,
+            "i": 1
+          }
+        },
+        {
+          "id": "Panel_2",
+          "type": "line",
+          "title": "False-positive rate",
+          "description": "",
+          "config": {
+            "show_legends": true
+          },
+          "queryType": "sql",
+          "queries": [
+            {
+              "query": "SELECT histogram(_timestamp) AS x, sum(value) AS y FROM \"finding_false_positive_rate\" GROUP BY x ORDER BY x",
+              "customQuery": true,
+              "fields": {
+                "stream": "finding_false_positive_rate",
+                "stream_type": "metrics"
+              },
+              "config": {}
+            }
+          ],
+          "layout": {
+            "x": 96,
+            "y": 0,
+            "w": 96,
+            "h": 9,
+            "i": 2
+          }
+        }
+      ]
+    }
+  ],
+  "variables": {
+    "list": [
+      {
+        "name": "reviewer_type",
+        "label": "reviewer_type"
+      },
+      {
+        "name": "model",
+        "label": "model"
+      },
+      {
+        "name": "queue",
+        "label": "queue"
+      }
+    ]
+  },
+  "defaultDatetimeDuration": {
+    "type": "relative",
+    "relativeTimePeriod": "6h"
+  },
+  "refreshInterval": 30
+}

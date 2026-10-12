@@ -840,7 +840,7 @@ Status: ☐
 ---
 
 ### OBS-005 — Metrics instruments
-Status: ☐
+Status: ◐ (metrics-catalog.md contract done; Rust/TS instrument registries pending)
 
 - **Task ID:** OBS-005
 - **Title:** Central metric registries (Rust and TypeScript) for the full PRD §115 / master-plan metric set, with bounded label cardinality
@@ -948,7 +948,7 @@ Status: ◐ (TypeScript redaction and shared corpus done; Rust `telemetry::redac
 ---
 
 ### OBS-007 — OpenObserve dashboards as code
-Status: ☐
+Status: ☑
 
 - **Task ID:** OBS-007
 - **Title:** Versioned OpenObserve dashboards in `infra/openobserve/dashboards/` and an idempotent apply script

@@ -1,0 +1,94 @@
+{
+  "version": 5,
+  "dashboardId": "rg-postgres-latency",
+  "title": "ReviewGraph: PostgreSQL latency",
+  "description": "Source metrics: queue_wait_seconds, graph_invalidations_total",
+  "role": "",
+  "owner": "",
+  "created": "",
+  "tabs": [
+    {
+      "tabId": "default",
+      "name": "Default",
+      "panels": [
+        {
+          "id": "Panel_1",
+          "type": "line",
+          "title": "Queue wait",
+          "description": "",
+          "config": {
+            "show_legends": true
+          },
+          "queryType": "sql",
+          "queries": [
+            {
+              "query": "SELECT histogram(_timestamp) AS x, sum(value) AS y FROM \"queue_wait_seconds\" GROUP BY x ORDER BY x",
+              "customQuery": true,
+              "fields": {
+                "stream": "queue_wait_seconds",
+                "stream_type": "metrics"
+              },
+              "config": {}
+            }
+          ],
+          "layout": {
+            "x": 0,
+            "y": 0,
+            "w": 96,
+            "h": 9,
+            "i": 1
+          }
+        },
+        {
+          "id": "Panel_2",
+          "type": "line",
+          "title": "Graph invalidations",
+          "description": "",
+          "config": {
+            "show_legends": true
+          },
+          "queryType": "sql",
+          "queries": [
+            {
+              "query": "SELECT histogram(_timestamp) AS x, sum(value) AS y FROM \"graph_invalidations_total\" GROUP BY x ORDER BY x",
+              "customQuery": true,
+              "fields": {
+                "stream": "graph_invalidations_total",
+                "stream_type": "metrics"
+              },
+              "config": {}
+            }
+          ],
+          "layout": {
+            "x": 96,
+            "y": 0,
+            "w": 96,
+            "h": 9,
+            "i": 2
+          }
+        }
+      ]
+    }
+  ],
+  "variables": {
+    "list": [
+      {
+        "name": "reviewer_type",
+        "label": "reviewer_type"
+      },
+      {
+        "name": "model",
+        "label": "model"
+      },
+      {
+        "name": "queue",
+        "label": "queue"
+      }
+    ]
+  },
+  "defaultDatetimeDuration": {
+    "type": "relative",
+    "relativeTimePeriod": "6h"
+  },
+  "refreshInterval": 30
+}

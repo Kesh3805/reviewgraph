@@ -1,0 +1,94 @@
+{
+  "version": 5,
+  "dashboardId": "rg-review-latency",
+  "title": "ReviewGraph: Review latency",
+  "description": "Source metrics: review_duration_seconds, default",
+  "role": "",
+  "owner": "",
+  "created": "",
+  "tabs": [
+    {
+      "tabId": "default",
+      "name": "Default",
+      "panels": [
+        {
+          "id": "Panel_1",
+          "type": "line",
+          "title": "Review duration",
+          "description": "",
+          "config": {
+            "show_legends": true
+          },
+          "queryType": "sql",
+          "queries": [
+            {
+              "query": "SELECT histogram(_timestamp) AS x, sum(value) AS y FROM \"review_duration_seconds\" GROUP BY x ORDER BY x",
+              "customQuery": true,
+              "fields": {
+                "stream": "review_duration_seconds",
+                "stream_type": "metrics"
+              },
+              "config": {}
+            }
+          ],
+          "layout": {
+            "x": 0,
+            "y": 0,
+            "w": 96,
+            "h": 9,
+            "i": 1
+          }
+        },
+        {
+          "id": "Panel_2",
+          "type": "line",
+          "title": "Stage duration by span",
+          "description": "",
+          "config": {
+            "show_legends": true
+          },
+          "queryType": "sql",
+          "queries": [
+            {
+              "query": "SELECT histogram(_timestamp) AS x, span_name, approx_percentile_cont(duration, 0.95) AS p95 FROM \"default\" GROUP BY x, span_name ORDER BY x",
+              "customQuery": true,
+              "fields": {
+                "stream": "default",
+                "stream_type": "traces"
+              },
+              "config": {}
+            }
+          ],
+          "layout": {
+            "x": 96,
+            "y": 0,
+            "w": 96,
+            "h": 9,
+            "i": 2
+          }
+        }
+      ]
+    }
+  ],
+  "variables": {
+    "list": [
+      {
+        "name": "reviewer_type",
+        "label": "reviewer_type"
+      },
+      {
+        "name": "model",
+        "label": "model"
+      },
+      {
+        "name": "queue",
+        "label": "queue"
+      }
+    ]
+  },
+  "defaultDatetimeDuration": {
+    "type": "relative",
+    "relativeTimePeriod": "6h"
+  },
+  "refreshInterval": 30
+}

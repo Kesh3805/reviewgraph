@@ -1,0 +1,150 @@
+{
+  "version": 5,
+  "dashboardId": "rg-findings-funnel",
+  "title": "ReviewGraph: Findings funnel",
+  "description": "Source metrics: candidate_findings_total, verified_findings_total, published_findings_total, suppressed_findings_total",
+  "role": "",
+  "owner": "",
+  "created": "",
+  "tabs": [
+    {
+      "tabId": "default",
+      "name": "Default",
+      "panels": [
+        {
+          "id": "Panel_1",
+          "type": "line",
+          "title": "Candidate",
+          "description": "",
+          "config": {
+            "show_legends": true
+          },
+          "queryType": "sql",
+          "queries": [
+            {
+              "query": "SELECT histogram(_timestamp) AS x, sum(value) AS y FROM \"candidate_findings_total\" GROUP BY x ORDER BY x",
+              "customQuery": true,
+              "fields": {
+                "stream": "candidate_findings_total",
+                "stream_type": "metrics"
+              },
+              "config": {}
+            }
+          ],
+          "layout": {
+            "x": 0,
+            "y": 0,
+            "w": 96,
+            "h": 9,
+            "i": 1
+          }
+        },
+        {
+          "id": "Panel_2",
+          "type": "line",
+          "title": "Verified",
+          "description": "",
+          "config": {
+            "show_legends": true
+          },
+          "queryType": "sql",
+          "queries": [
+            {
+              "query": "SELECT histogram(_timestamp) AS x, sum(value) AS y FROM \"verified_findings_total\" GROUP BY x ORDER BY x",
+              "customQuery": true,
+              "fields": {
+                "stream": "verified_findings_total",
+                "stream_type": "metrics"
+              },
+              "config": {}
+            }
+          ],
+          "layout": {
+            "x": 96,
+            "y": 0,
+            "w": 96,
+            "h": 9,
+            "i": 2
+          }
+        },
+        {
+          "id": "Panel_3",
+          "type": "line",
+          "title": "Published",
+          "description": "",
+          "config": {
+            "show_legends": true
+          },
+          "queryType": "sql",
+          "queries": [
+            {
+              "query": "SELECT histogram(_timestamp) AS x, sum(value) AS y FROM \"published_findings_total\" GROUP BY x ORDER BY x",
+              "customQuery": true,
+              "fields": {
+                "stream": "published_findings_total",
+                "stream_type": "metrics"
+              },
+              "config": {}
+            }
+          ],
+          "layout": {
+            "x": 0,
+            "y": 9,
+            "w": 96,
+            "h": 9,
+            "i": 3
+          }
+        },
+        {
+          "id": "Panel_4",
+          "type": "line",
+          "title": "Suppressed",
+          "description": "",
+          "config": {
+            "show_legends": true
+          },
+          "queryType": "sql",
+          "queries": [
+            {
+              "query": "SELECT histogram(_timestamp) AS x, sum(value) AS y FROM \"suppressed_findings_total\" GROUP BY x ORDER BY x",
+              "customQuery": true,
+              "fields": {
+                "stream": "suppressed_findings_total",
+                "stream_type": "metrics"
+              },
+              "config": {}
+            }
+          ],
+          "layout": {
+            "x": 96,
+            "y": 9,
+            "w": 96,
+            "h": 9,
+            "i": 4
+          }
+        }
+      ]
+    }
+  ],
+  "variables": {
+    "list": [
+      {
+        "name": "reviewer_type",
+        "label": "reviewer_type"
+      },
+      {
+        "name": "model",
+        "label": "model"
+      },
+      {
+        "name": "queue",
+        "label": "queue"
+      }
+    ]
+  },
+  "defaultDatetimeDuration": {
+    "type": "relative",
+    "relativeTimePeriod": "6h"
+  },
+  "refreshInterval": 30
+}
