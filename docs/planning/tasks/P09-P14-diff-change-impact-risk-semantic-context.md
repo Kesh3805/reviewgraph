@@ -1175,7 +1175,7 @@ Status: ☑
 ---
 
 ### IMP-008 — Impact golden tests incl. auth-bypass
-Status: ☐
+Status: ◐ — golden only for auth-bypass (other shapes asserted synthetically); impact_e2e bench not written
 
 - **Task ID:** IMP-008
 - **Title:** Golden impact graphs for all PR fixtures, including the PRD §151 auth-bypass
@@ -1246,7 +1246,7 @@ Status: ☑
 ---
 
 ### IMP-010 — Cluster risk ranking, budget allocation, unreviewed-region report
-Status: ☐
+Status: ◐ — wiring to the PIPE-006 run budget and INV-013 registration pending
 
 - **Task ID:** IMP-010
 - **Title:** Rank clusters by risk, allocate the review budget in that order, and report unreviewed regions (PRD §91)
@@ -1322,7 +1322,7 @@ Status: ☑
 ---
 
 ### RISK-002 — Path, config and manifest signals
-Status: ☐
+Status: ☑
 
 - **Task ID:** RISK-002
 - **Title:** Signals from configured risk paths, migrations, manifests/lockfiles and secret-like files/literals
@@ -1359,7 +1359,7 @@ Status: ☐
 ---
 
 ### RISK-003 — Framework and graph signals
-Status: ☐
+Status: ☑
 
 - **Task ID:** RISK-003
 - **Title:** Signals from change classes, framework facts and impact: guards, endpoints, DB writes, queues, transactions, external calls, fs, crypto, serialization
@@ -1411,7 +1411,7 @@ Status: ☐
 ---
 
 ### RISK-004 — Risk scoring (0..1, level)
-Status: ◐
+Status: ◐ — golden risk.json exists for auth-bypass only; other fixtures lack change-model adapters
 
 - **Task ID:** RISK-004
 - **Title:** Deterministic risk score in [0,1] and level per symbol, cluster and PR
@@ -1445,7 +1445,7 @@ Status: ◐
 ---
 
 ### RISK-005 — Risk effects
-Status: ◐
+Status: ☑
 
 - **Task ID:** RISK-005
 - **Title:** Map risk level and categories to effects: reviewers, depth, context budget, model tier, verification depth, confidence threshold, test inspection
@@ -1487,7 +1487,7 @@ Status: ◐
 ---
 
 ### RISK-006 — Low-risk change detection with contract-change override
-Status: ◐
+Status: ◐ — fixtures are checked against hand-built change sets; no adapter derives them from patch.diff yet
 
 - **Task ID:** RISK-006
 - **Title:** Detect formatting/comment-only, pure rename, generated, import-sort and simple-constant changes, overridden when contracts or behaviour change
