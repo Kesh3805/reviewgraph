@@ -2385,7 +2385,7 @@ Status: ☑
 ---
 
 ### CI-004 — Integration tests with services
-Status: ☐
+Status: ☑
 
 - **Task ID:** CI-004
 - **Title:** `integration.yml`: Rust and TypeScript integration suites against PostgreSQL, Redis, Qdrant and the object store, including the tenant-isolation suites
