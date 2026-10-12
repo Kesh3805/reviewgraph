@@ -110,6 +110,39 @@ on the last name segment; `AnalyzerConfig.guard_decorator_names` replaces the pa
 list. `analysis_ir::facts::compare_keys(base, head)` returns the multiset difference by
 `(kind, key)` that the change classifier consumes.
 
+## References and receiver hints (TSA-005)
+
+`ParsedUnit.references` lists every call, `new`, type reference, heritage entry, decorator, JSX
+element and read of an imported binding, in source order. A reference belongs to the innermost
+symbol whose range contains it; callbacks fold into the enclosing symbol with
+`attrs.in_callback = true` and module-level statements belong to the module symbol. Occurrences are
+never merged: the linker aggregates them. The range of a reference is the range of its terminal
+name (`save` in `this.repo.save()`), which is the position the semantic helper receives.
+
+| Callee shape | `name` | `ReceiverHint` |
+| --- | --- | --- |
+| `x()` | `x` | `None`; `import_binding` set when `x` is imported and not shadowed |
+| `this.p()` | `p` | `This` |
+| `super.p()` / `super()` | `p` / `super` | `Super` (`attrs.super_ctor` on the constructor call) |
+| `this.f.p()` | `p` | `ThisField{field, declared_type}` from the class's typed fields, constructor parameter properties and `= new T()` initializers |
+| `o.p()`, `o` a namespace / default / CommonJS import | `p` | `ImportedNamespace{binding}` |
+| `o.p()`, `o` a local or parameter | `p` | `Identifier{name, declared_type}` from parameter annotations, `const x: T`, `const x = new T()`; inner scopes shadow outer ones, an untyped redeclaration clears the type |
+| `O.p()`, `O` capitalized and not local | `p` | `Identifier{name: O, declared_type: None}` plus `attrs.static_candidate` |
+| `a.b.c.p()` | `p` | `Chain{root, segments: [b, c]}` (`this.a.b.c()` has root `This`) |
+| `g(...).p()` | `p` | `CallResult{callee}` (code text only, at most 120 characters, no literals) |
+| `a[k]()` and other shapes | `<computed>` / `<unknown>` | `Computed` / `Unknown` |
+
+Parentheses, `!`, `as`, `satisfies` and `<T>x` are peeled before classification; `a?.b()` sets
+`attrs.optional`. A known receiver type is also written as `attrs.declared_head` and
+`attrs.declared_args`. Types: every `type_identifier`, predefined type and `A.B` path is a
+`TypeRef`, except in `extends` / `implements` clauses (`Extends` / `Implements`; `extends
+mixin(Base)` is an `Extends` with `attrs.extends_call`). Generic arguments are `TypeRef`s with
+`attrs.type_arg_of` naming the head; type parameters in scope are not references. Decorators are
+`Decorator` references named by the last callee segment and owned by the decorated symbol. Value
+reads (`ValueRead`) are identifiers in expression position that name an import and are not a
+callee or a receiver root. `in_test_block` is true inside the callbacks of `describe`, `it`,
+`test` and `suite` calls. At most 50,000 references are kept per file.
+
 ## Hash normalization (TSA-007)
 
 `body_hash`, `signature_hash` and `attr_hash` are BLAKE3 digests (first 16 bytes) over a normalized
