@@ -1551,7 +1551,7 @@ Status: ☐
 ---
 
 ### SEC-010 — Threat model document and dependency scanning
-Status: ☐
+Status: ☑
 
 - **Task ID:** SEC-010
 - **Title:** STRIDE threat model for ReviewGraph and an SBOM plus dependency/image scanning policy
