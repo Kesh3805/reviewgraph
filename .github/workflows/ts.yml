@@ -1,0 +1,82 @@
+name: ts
+
+on:
+  push:
+    branches: [main]
+    paths-ignore: ['engine/**', 'docs/**']
+  pull_request:
+    paths-ignore: ['engine/**', 'docs/**']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ts-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+env:
+  CI: 'true'
+  TZ: UTC
+
+# Coverage thresholds are advisory until a baseline is recorded (follow-up).
+jobs:
+  lint:
+    name: lint
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 24, cache: pnpm }
+      - run: pnpm install --frozen-lockfile --ignore-scripts
+      - name: Lint (affected on PRs, all on main)
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            F="$(node scripts/ci/affected-filter.mjs origin/${{ github.base_ref }})"
+          else F=ALL; fi
+          if [ "$F" = "ALL" ]; then pnpm -r --if-present lint -- --max-warnings 0
+          elif [ -n "$F" ]; then pnpm $F --if-present lint -- --max-warnings 0
+          else echo "no affected packages"; fi
+
+  typecheck:
+    name: typecheck
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 24, cache: pnpm }
+      - run: pnpm install --frozen-lockfile --ignore-scripts
+      - run: pnpm -r --if-present typecheck
+
+  unit:
+    name: unit
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 24, cache: pnpm }
+      - run: pnpm install --frozen-lockfile --ignore-scripts
+      - run: pnpm test:ts
+      - name: Job summary
+        if: always()
+        run: echo "unit tests finished for ${{ github.sha }}" >> "$GITHUB_STEP_SUMMARY"
+
+  format:
+    name: format
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 24, cache: pnpm }
+      - run: pnpm install --frozen-lockfile --ignore-scripts
+      - run: pnpm format:check

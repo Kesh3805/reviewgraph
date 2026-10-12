@@ -2339,7 +2339,7 @@ Status: ☐
 ---
 
 ### CI-003 — TypeScript lint, typecheck and test
-Status: ☐
+Status: ☑
 
 - **Task ID:** CI-003
 - **Title:** `ts.yml` workflow: pnpm install with frozen lockfile, ESLint, `tsc --noEmit`, Prettier check, unit tests for `apps/api`, `apps/web` and `packages/*`
