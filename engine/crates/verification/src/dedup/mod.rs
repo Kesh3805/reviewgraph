@@ -1,6 +1,7 @@
 //! Deduplication (DED-001..DED-004). Spec: docs/reviewers/deduplication.md.
 
 pub mod fingerprint;
+pub mod merge;
 pub mod normalize;
 
 pub use fingerprint::{

@@ -3391,7 +3391,7 @@ Status: ☑
 ---
 
 ### DED-002 — Cross-reviewer merge with persisted merge record
-Status: ☐
+Status: ☑
 
 - **Task ID:** DED-002
 - **Title:** Cross-reviewer merge: group duplicate verified findings, keep the strongest explanation, persist a merge record
