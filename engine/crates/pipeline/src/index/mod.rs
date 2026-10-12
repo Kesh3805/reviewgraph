@@ -7,10 +7,12 @@ use std::sync::Arc;
 use analysis_ir::AnalyzerRegistry;
 
 pub mod config;
+pub mod diagnostics;
 pub mod error;
 pub mod full;
 pub mod parse;
 pub mod parse_cache;
+pub mod pg_progress;
 pub mod progress;
 pub mod resolver;
 pub mod source;
@@ -24,6 +26,7 @@ pub use parse::{FailReason, FileOutcome, ParsedFile, SkipReason};
 pub use parse_cache::{
     CacheLookup, InMemoryParseCache, MissReason, ParseCache, ParseCacheError, ParseCacheKey,
 };
+pub use pg_progress::PgProgressSink;
 pub use progress::{IndexPhase, NoopProgress, ProgressSink, ProgressThrottle};
 pub use resolver::FileSetResolver;
 pub use source::{SourceFile, SourceSpec};

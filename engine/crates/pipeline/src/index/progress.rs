@@ -41,6 +41,8 @@ pub trait ProgressSink: Send + Sync {
     async fn started(&self, _snapshot: SnapshotId) {}
     /// The run succeeded with these counters (default: ignored).
     async fn finish(&self, _stats: &IndexStats) {}
+    /// The run failed with this redacted message (default: ignored).
+    async fn failed(&self, _error: &str) {}
 }
 
 /// Sink that discards everything (CLI and tests).

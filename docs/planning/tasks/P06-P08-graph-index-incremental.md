@@ -1903,7 +1903,7 @@ impl GraphCache {
 ---
 
 ### IDX-001 — Full index pipeline
-Status: ◐
+Status: ◐ - missing: GitTree source, committed goldens, store-failure test, benchmark, file store (GS-006)
 
 **Task ID:** IDX-001
 
@@ -1987,7 +1987,7 @@ impl FullIndexer { pub async fn run(&self, req: FullIndexRequest, progress: &dyn
 ---
 
 ### IDX-002 — Index status, progress and snapshot version fields
-Status: ◐
+Status: ◐ - missing: review-engine index-status endpoint (no HTTP server yet), contracts schema; PgProgressSink and index_runs writer done
 
 **Task ID:** IDX-002
 
@@ -2070,7 +2070,7 @@ ALTER TABLE index_runs ENABLE ROW LEVEL SECURITY;
 ---
 
 ### IDX-003 — Parse diagnostics persistence and tolerance policy
-Status: ◐
+Status: ◐ - missing: parse_diagnostics migration and PG adapter, broken-files fixture, config.yaml keys; policy, panic containment and in-memory diagnostics store done
 
 **Task ID:** IDX-003
 
@@ -2152,7 +2152,7 @@ ALTER TABLE parse_diagnostics ENABLE ROW LEVEL SECURITY;
 ---
 
 ### IDX-004 — repository-index job consumer
-Status: ☐
+Status: ◐ - not started: blocked on PIPE-001 queue client (no PgJobQueue yet)
 
 **Task ID:** IDX-004
 
@@ -2224,7 +2224,7 @@ pub struct RepositoryIndexJob { pub repository_id: Uuid, pub organization_id: Uu
 ---
 
 ### IDX-005 — Parse cache keyed by (path, content_hash, analyzer_version)
-Status: ◐
+Status: ◐ - missing: IR codec, IrCache (Fs/ObjectStore), file_versions blob columns; in-memory ParseCache is wired into the full index
 
 **Task ID:** IDX-005
 
@@ -2300,7 +2300,7 @@ ALTER TABLE file_versions ADD COLUMN ir_object_key text, ADD COLUMN ir_format sm
 ---
 
 ### IDX-006 — Index reference-api and parity report
-Status: ☐
+Status: ◐ - not started: parity scripts and report not produced
 
 **Task ID:** IDX-006
 

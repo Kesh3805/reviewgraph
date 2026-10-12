@@ -99,7 +99,15 @@ async fn indexes_a_small_repository_into_a_ready_snapshot() {
     assert_eq!(g.files.len(), 2);
     assert!(g.files.iter().all(|f| f.file_version_id.is_some()));
     assert!(g.edges.iter().any(|e| e.kind == EdgeKind::Imports));
-    assert!(g.edges.iter().any(|e| e.kind == EdgeKind::Calls));
+    assert!(
+        g.edges.iter().any(|e| e.kind == EdgeKind::Calls),
+        "edges: {:?}; unresolved: {:?}",
+        g.edges.iter().map(|e| e.kind).collect::<Vec<_>>(),
+        g.unresolved
+            .iter()
+            .map(|u| (u.name.clone(), u.reason))
+            .collect::<Vec<_>>()
+    );
     assert!(!out.snapshot.versions.analyzer_versions.is_empty());
     assert!(out
         .snapshot
@@ -387,4 +395,25 @@ async fn symlink_outside_repo_not_followed() {
         .await
         .expect("load");
     assert!(g.files.iter().all(|f| f.path != "src/link.ts"));
+}
+
+#[tokio::test]
+async fn syntax_errors_persist_diagnostics_without_source_text() {
+    let repo = small_repo();
+    write(repo.path(), "src/broken.ts", "export function ( {{{ \n");
+    let store: Arc<dyn GraphStore> = Arc::new(MemGraphStore::new());
+    let diagnostics = Arc::new(graph_storage::diagnostics::MemParseDiagnostics::new());
+    let (registry, parsers) = typescript_registry();
+    let out = FullIndexer::new(Arc::clone(&store), registry, 2)
+        .expect("pool")
+        .with_parser_versions(parsers)
+        .with_diagnostics(diagnostics.clone())
+        .run(
+            request(scope(), repo.path()),
+            &pipeline::index::NoopProgress,
+        )
+        .await
+        .expect("index");
+    assert!(out.stats.diagnostics_written > 0);
+    assert_eq!(diagnostics.file_versions(), 1);
 }

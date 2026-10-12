@@ -95,6 +95,7 @@ pub struct IndexStats {
     pub unresolved: u64,
     pub validation_warnings: u64,
     pub fact_issues: u64,
+    pub diagnostics_written: u64,
     /// Up to [`FAILED_PATH_SAMPLE`] failing paths, sorted.
     pub failed_paths_sample: Vec<String>,
     pub walk_ms: u64,
@@ -132,6 +133,7 @@ pub struct FullIndexer {
     analyzers: AnalyzerRegistry,
     parser_versions: BTreeMap<String, String>,
     parse_cache: Option<Arc<dyn ParseCache>>,
+    diagnostics: Option<Arc<dyn graph_storage::diagnostics::ParseDiagnosticsStore>>,
     pool: Arc<rayon::ThreadPool>,
     tolerance: TolerancePolicy,
     link_config: LinkConfig,
@@ -169,6 +171,7 @@ impl FullIndexer {
             analyzers,
             parser_versions: BTreeMap::new(),
             parse_cache: None,
+            diagnostics: None,
             pool: Arc::new(pool),
             tolerance: TolerancePolicy::default(),
             link_config: LinkConfig::default(),
@@ -179,6 +182,15 @@ impl FullIndexer {
     #[must_use]
     pub fn with_parser_versions(mut self, versions: BTreeMap<String, String>) -> Self {
         self.parser_versions = versions;
+        self
+    }
+
+    #[must_use]
+    pub fn with_diagnostics(
+        mut self,
+        store: Arc<dyn graph_storage::diagnostics::ParseDiagnosticsStore>,
+    ) -> Self {
+        self.diagnostics = Some(store);
         self
     }
 
@@ -285,6 +297,7 @@ impl FullIndexer {
             }
             Err(error) => {
                 progress.phase(IndexPhase::Failed).await;
+                progress.failed(error.code()).await;
                 self.fail(&req.scope, id, &error).await;
                 Err(error)
             }
@@ -471,6 +484,18 @@ impl FullIndexer {
             .upsert_versions(&req.scope, &stored, &parsed, cfg.persist_batch.max(1))
             .await?;
         assign_file_versions(&mut stored, &ids);
+        if let Some(diagnostics) = &self.diagnostics {
+            let mut rows = Vec::new();
+            for p in &parsed {
+                if let Some(version) = ids.get(p.file.path.as_str()) {
+                    let list = super::diagnostics::rows_for(p);
+                    if !list.is_empty() {
+                        rows.push((*version, list));
+                    }
+                }
+            }
+            stats.diagnostics_written = diagnostics.write(&req.scope, &rows).await?;
+        }
         self.store.write_full(&req.scope, id, &stored).await?;
         let ready = self
             .store
