@@ -422,7 +422,7 @@ Status: ☐
 ---
 
 ### REV-A-002 — Deterministic boundary-violation and cycle detector
-Status: ☐
+Status: ◐
 
 - **Task ID:** REV-A-002
 - **Title:** Deterministic boundary-violation and cycle detector

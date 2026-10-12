@@ -7,6 +7,7 @@
 //! - [`boundaries`]: forbidden layer dependencies and new import cycles (REV-A-002).
 //! - [`io_in_loop`]: I/O and queries inside loops (REV-P-002).
 
+pub mod boundaries;
 pub mod tests_gap;
 
 use serde::{Deserialize, Serialize};
