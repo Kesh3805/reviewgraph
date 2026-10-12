@@ -36,6 +36,7 @@ fn symbol(base: &str, head: &str) -> ChangedSymbol {
 }
 
 #[test]
+#[allow(clippy::assertions_on_constants)]
 fn maintainability_disabled_by_default() {
     assert!(!DEFAULT_ENABLED);
 }

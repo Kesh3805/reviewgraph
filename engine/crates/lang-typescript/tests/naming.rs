@@ -224,12 +224,21 @@ fn default_export_identifier_no_symbol() {
         "`export default <identifier>` exports a binding, it adds no symbol: {}",
         list(&unit).join(", ")
     );
-    // The export itself is recorded by TSA-004 as `IrExport::DefaultExpr`; TSA-004 has not landed
-    // yet, so only the naming rule is asserted here: no symbol is added for the identifier.
+    // TSA-004 records the export itself; the naming rule above is what this test pins.
     assert_eq!(
         unit.exports.len(),
-        0,
-        "no export is extracted yet (TSA-004)"
+        1,
+        "one default export: {:?}",
+        unit.exports
+    );
+    assert!(
+        match &unit.exports[0] {
+            analysis_ir::IrExport::DefaultExpr { .. } => true,
+            analysis_ir::IrExport::Local { exported_as, .. } => exported_as == "default",
+            _ => false,
+        },
+        "default export of an identifier: {:?}",
+        unit.exports[0]
     );
 }
 
