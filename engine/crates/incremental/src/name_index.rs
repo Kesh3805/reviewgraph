@@ -130,6 +130,15 @@ pub struct OverlayNameIndex<'a> {
     merged_members: HashMap<String, Box<[NodeKey]>>,
 }
 
+impl std::fmt::Debug for OverlayNameIndex<'_> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("OverlayNameIndex")
+            .field("merged_top", &self.merged_top.len())
+            .field("merged_members", &self.merged_members.len())
+            .finish_non_exhaustive()
+    }
+}
+
 impl<'a> OverlayNameIndex<'a> {
     /// Precomputes merged slices for the names `delta` touches. Cost `O(|delta| log |delta|)`.
     pub fn new(base: &'a dyn NameLookup, delta: &NameDelta) -> Self {

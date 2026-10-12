@@ -41,6 +41,7 @@ impl BudgetUsage {
     }
 }
 
+#[derive(Debug)]
 struct Inner {
     limits: ReviewBudget,
     used: [AtomicU64; 6],
@@ -49,7 +50,7 @@ struct Inner {
 }
 
 /// Lock-free accounting; reservations are linearizable (CAS loop, no overshoot).
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 pub struct BudgetManager(Arc<Inner>);
 
 impl BudgetManager {

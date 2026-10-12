@@ -26,6 +26,14 @@ pub struct MinerRegistry {
     miners: Vec<Box<dyn ConventionMiner>>,
 }
 
+impl std::fmt::Debug for MinerRegistry {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("MinerRegistry")
+            .field("miners", &self.miners.len())
+            .finish()
+    }
+}
+
 impl MinerRegistry {
     pub fn new() -> Self {
         Self::default()

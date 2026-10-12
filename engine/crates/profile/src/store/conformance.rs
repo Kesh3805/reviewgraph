@@ -1,4 +1,7 @@
 //! Conformance suite every `ProfileStore` adapter must pass.
+//!
+//! Test support compiled behind the `conformance` feature: failures panic by design.
+#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 
 use chrono::{TimeZone, Utc};
 use review_core::ids::{RepositoryId, SnapshotId};

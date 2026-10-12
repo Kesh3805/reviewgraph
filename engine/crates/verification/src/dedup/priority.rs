@@ -110,6 +110,7 @@ pub fn priority_score(i: &PriorityInputs, w: &PriorityWeights) -> f32 {
 }
 
 /// Total order: score desc, severity desc, confidence desc, identity_key asc.
+#[derive(Debug)]
 pub struct Ranked<'a> {
     pub identity_key: &'a str,
     pub score: f32,

@@ -3,3 +3,5 @@
 crates/analysis-ir/src/framework.rs | doc comment listing example framework ids for an opaque string field
 crates/codegraph/src/framework/mod.rs | module doc stating that framework knowledge stays in lang-typescript
 crates/impact/src/graph/calls.rs | module doc comment explaining a synthesized IMPLEMENTS step
+crates/impact/src/graph/tests_map.rs | module doc naming jest.mock as the mock signal and the Jest adapter that provides test-case nodes
+crates/impact/src/input.rs | doc comment naming jest.mock as an example of a mocked-class fact from NEST-006
