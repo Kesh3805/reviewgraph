@@ -2,6 +2,9 @@
 
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { explorerSearch, parseExplorerState, type ExplorerState } from '@/lib/explorer-url';
+import { Button } from '@/components/ui/button';
+import { ImpactForReview } from './ImpactGroups';
+import { PathFinder } from './PathFinder';
 import { SnapshotSelect } from './SnapshotSelect';
 import { SubgraphView } from './SubgraphView';
 import { SymbolPanel } from './SymbolPanel';
@@ -27,8 +30,55 @@ export function GraphExplorer({ repoId }: { repoId: string }) {
           value={state.snapshot}
           onChange={(snapshot) => update({ snapshot })}
         />
+        <div role="tablist" aria-label="Explorer mode" className="flex gap-1">
+          {(
+            [
+              ['search', 'Explore'],
+              ['path', 'Path'],
+              ['impact', 'Impact for review'],
+            ] as const
+          ).map(([mode, title]) => (
+            <Button
+              key={mode}
+              type="button"
+              role="tab"
+              size="sm"
+              aria-selected={state.mode === mode}
+              variant={state.mode === mode ? 'default' : 'outline'}
+              onClick={() => update({ mode })}
+            >
+              {title}
+            </Button>
+          ))}
+        </div>
       </div>
-      <div className="grid gap-6 lg:grid-cols-[minmax(18rem,26rem)_1fr]">
+      {state.mode === 'path' && (
+        <PathFinder
+          repoId={repoId}
+          snapshot={state.snapshot}
+          onSymbolClick={(symbol) => update({ mode: 'search', symbol })}
+        />
+      )}
+      {state.mode === 'impact' && (
+        <div className="grid gap-6 lg:grid-cols-[minmax(18rem,26rem)_1fr]">
+          <SymbolSearch
+            repoId={repoId}
+            snapshot={state.snapshot}
+            selectedKey={state.symbol}
+            onSelect={(r) => update({ symbol: r.key })}
+          />
+          <ImpactForReview
+            symbol={state.symbol}
+            review={state.review}
+            onReviewChange={(review) => update({ review })}
+            onSymbolClick={(symbol) => update({ symbol })}
+          />
+        </div>
+      )}
+      <div
+        hidden={state.mode !== 'search'}
+        className="grid gap-6 lg:grid-cols-[minmax(18rem,26rem)_1fr]"
+      >
         <SymbolSearch
           repoId={repoId}
           snapshot={state.snapshot}
