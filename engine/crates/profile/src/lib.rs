@@ -7,7 +7,9 @@
 pub mod config;
 pub mod error;
 mod metrics;
+pub mod model;
 #[cfg(feature = "pg")]
 pub mod pg;
+pub mod store;
 
 pub use error::{Error, Result};

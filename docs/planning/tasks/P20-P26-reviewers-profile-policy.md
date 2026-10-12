@@ -618,7 +618,7 @@ Status: ☐
 ---
 
 ### PROF-001 — RepositoryProfile model and persistence
-Status: ☐
+Status: ☑
 
 - **Task ID:** PROF-001
 - **Title:** RepositoryProfile model & persistence
