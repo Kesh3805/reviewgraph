@@ -2502,7 +2502,7 @@ Status: ☐
 ---
 
 ### INC-004 — Name index with delta support
-Status: ☐
+Status: ◐
 
 - **Task ID:** INC-004
 - **Title:** `incremental::name_index` — a base `NameIndex` cached with the base graph, an `OverlayNameIndex` implementing `NameLookup` for the head, and a `NameDelta` that lists exactly the names whose candidate sets changed.
@@ -2827,7 +2827,7 @@ Status: ☐
 ---
 
 ### INC-011 — Full-rebuild trigger evaluation (PRD §24)
-Status: ☐
+Status: ◐
 
 - **Task ID:** INC-011
 - **Title:** `incremental::rebuild` — a pure decision function that returns `Incremental` or `Full{reasons, mode}` from versions, config components, snapshot health, the change set and operator flags.

@@ -12,6 +12,7 @@ workspace = true
 [dependencies]
 review-core.workspace = true
 analysis-ir.workspace = true
+codegraph.workspace = true
 serde.workspace = true
 thiserror.workspace = true
 uuid.workspace = true
