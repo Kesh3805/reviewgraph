@@ -1,5 +1,6 @@
 //! `ContextItem` and its parts.
 
+use std::borrow::Cow;
 use std::collections::BTreeSet;
 use std::fmt;
 
@@ -121,36 +122,89 @@ pub struct PathStep {
     pub confidence: f32,
 }
 
-/// Raw ranking signals in `[0, 1]` (weights applied by CTX-005).
-#[derive(Debug, Clone, Copy, PartialEq, Default, Serialize, Deserialize)]
-pub struct SignalVector {
-    pub structural_proximity: f32,
-    pub path_confidence: f32,
-    pub risk: f32,
-    pub test_relationship: f32,
-    pub api_relationship: f32,
-    pub rule_priority: f32,
-    pub lexical: f32,
-    pub semantic: f32,
-    /// Subtracted by ranking; set for weak (low-confidence) edges and mocked tests.
-    pub weak_penalty: f32,
+/// The ten ranking signals of an item, each in `[0, 1]` (weights applied by CTX-005).
+pub type SignalVector = crate::ranking::Signals;
+
+/// How much of a symbol's source an excerpt keeps (CTX-007).
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum CompressionLevel {
+    /// The whole symbol body.
+    Full,
+    /// Signature plus changed hunks with three lines of context and elisions.
+    ChangedHunks,
+    /// Signature, the first 15 and last 5 lines, and lines calling the seeds.
+    BodyTrimmed,
+    SignatureOnly,
+    /// Title and location only.
+    Reference,
+}
+
+/// An inclusive range of 1-based lines.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub struct ElidedLines {
+    pub start: u32,
+    pub end: u32,
+}
+
+/// A contiguous run of source lines. `text` is exactly lines `location.start_line..=end_line`
+/// of the blob at `location.commit`.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct Segment {
+    pub location: SourceLocation,
+    pub text: String,
+    /// Lines skipped between the previous segment and this one.
+    pub elided_before: Option<ElidedLines>,
 }
 
 /// Rendered content of an item (CTX-007 decides the form).
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(tag = "form", rename_all = "snake_case")]
 pub enum ItemContent {
-    Full { text: String },
-    Signature { text: String },
-    Summary { text: String },
+    Full {
+        text: String,
+    },
+    Signature {
+        text: String,
+    },
+    Summary {
+        text: String,
+    },
     Empty,
+    /// Source excerpt with per-segment locations.
+    Code {
+        level: CompressionLevel,
+        segments: Vec<Segment>,
+    },
+    /// Endpoint attributes, config keys or rule text.
+    Structured {
+        value: serde_json::Value,
+    },
 }
 
 impl ItemContent {
-    pub fn text(&self) -> &str {
+    /// The text a model sees. Elisions between code segments are rendered as
+    /// `// … lines a–b elided …`.
+    pub fn text(&self) -> Cow<'_, str> {
         match self {
-            Self::Full { text } | Self::Signature { text } | Self::Summary { text } => text,
-            Self::Empty => "",
+            Self::Full { text } | Self::Signature { text } | Self::Summary { text } => {
+                Cow::Borrowed(text.as_str())
+            }
+            Self::Empty => Cow::Borrowed(""),
+            Self::Code { segments, .. } => {
+                let mut out = String::new();
+                for seg in segments {
+                    if let Some(gap) = seg.elided_before {
+                        out.push_str(&format!("// … lines {}–{} elided …\n", gap.start, gap.end));
+                    }
+                    out.push_str(&seg.text);
+                    if !seg.text.ends_with('\n') {
+                        out.push('\n');
+                    }
+                }
+                Cow::Owned(out)
+            }
+            Self::Structured { value } => Cow::Owned(value.to_string()),
         }
     }
 }

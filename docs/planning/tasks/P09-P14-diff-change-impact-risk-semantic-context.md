@@ -1923,7 +1923,7 @@ Status: ◐
 ---
 
 ### CTX-002 — Structural candidates from the impact graph
-Status: ☐
+Status: ◐ (implemented with unit tests; CI not yet confirmed; metrics counters and fixture-driven tests missing)
 
 - **Task ID:** CTX-002
 - **Title:** Structural candidate generation from the cluster's `ImpactGraph` elements
@@ -1961,7 +1961,7 @@ Status: ☐
 ---
 
 ### CTX-003 — Tests, config, API and rule-doc candidates
-Status: ☐
+Status: ◐ (implemented over narrow inputs; POL-004 precedence resolver not wired; metrics missing)
 
 - **Task ID:** CTX-003
 - **Title:** Candidates for tests (IMP-005), configuration/env, API endpoints/DTOs, and repository rule docs/conventions
@@ -1992,7 +1992,7 @@ Status: ☐
 ---
 
 ### CTX-004 — Lexical identifier index and candidates
-Status: ☐
+Status: ◐ (index, LRU and candidates done; benchmark and metrics missing)
 
 - **Task ID:** CTX-004
 - **Title:** Per-snapshot lexical identifier index and lexical candidates from changed identifiers
@@ -2114,7 +2114,7 @@ Status: ◐
 ---
 
 ### CTX-007 — Compression
-Status: ☐
+Status: ◐ (levels, excerpts, secret screen done behind a BlobSource trait; no diff-engine adapter, snapshots or bench)
 
 - **Task ID:** CTX-007
 - **Title:** Structured excerpts: signature + changed body + selected related bodies, with preserved source locations
@@ -2153,7 +2153,7 @@ Status: ☐
 ---
 
 ### CTX-008 — Semantic candidates (fill remaining budget only)
-Status: ☐
+Status: ◐ (fill logic behind a SemanticSource trait; no Qdrant adapter in pipeline yet)
 
 - **Task ID:** CTX-008
 - **Title:** Qdrant semantic candidates used only to fill remaining budget after structural/lexical selection
@@ -2186,7 +2186,7 @@ Status: ☐
 ---
 
 ### CTX-009 — Context cache + deterministic package hash
-Status: ☐
+Status: ◐ (PG adapter over stage_outputs, cross-run reuse and migration done; metrics missing)
 
 - **Task ID:** CTX-009
 - **Title:** Deterministic `package_hash` and a context cache keyed by `(review_run, cluster, reviewer, input_hash)`
@@ -2219,7 +2219,7 @@ Status: ☐
 ---
 
 ### CTX-010 — Context tests (golden packages; budget-never-exceeded property test)
-Status: ☐
+Status: ◐ (label goldens on a synthetic auth-bypass package and proptests; no fixture-backed goldens or bench)
 
 - **Task ID:** CTX-010
 - **Title:** Golden context packages for PR fixtures and property tests for budgets and invariants

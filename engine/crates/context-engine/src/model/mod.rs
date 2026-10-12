@@ -6,11 +6,11 @@ pub mod omitted;
 pub mod package;
 
 pub use item::{
-    CandidateSource, ContextItem, ItemContent, ItemId, ItemKind, PathStep, SignalVector,
-    SourceLocation,
+    CandidateSource, CompressionLevel, ContextItem, ElidedLines, ItemContent, ItemId, ItemKind,
+    PathStep, Segment, SignalVector, SourceLocation,
 };
 pub use omitted::{OmitReason, OmittedItem};
 pub use package::{
-    ChangeSummary, ContextBudget, ContextPackage, ContextProvenance, RiskSignal,
+    ChangeSummary, ContextBudget, ContextPackage, ContextProvenance, RiskSignal, SemanticStatus,
     MAX_OMITTED_LISTED, PACKAGE_SCHEMA_VERSION,
 };

@@ -11,8 +11,17 @@ workspace = true
 
 [dependencies]
 review-core.workspace = true
+codegraph.workspace = true
+impact.workspace = true
+profile.workspace = true
 thiserror.workspace = true
 serde.workspace = true
 serde_json.workspace = true
+serde_yaml.workspace = true
 blake3.workspace = true
 hex.workspace = true
+globset.workspace = true
+
+[dev-dependencies]
+proptest.workspace = true
+chrono.workspace = true

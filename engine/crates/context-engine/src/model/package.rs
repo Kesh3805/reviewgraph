@@ -30,6 +30,25 @@ pub struct ChangeSummary {
     pub symbols_changed: u32,
 }
 
+/// What the semantic fill step did (CTX-008).
+#[derive(Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize)]
+#[serde(tag = "status", rename_all = "snake_case")]
+pub enum SemanticStatus {
+    /// The step did not run (disabled, or no semantic source configured).
+    #[default]
+    NotRun,
+    /// The budget left no room, so no query was made.
+    NotNeeded {
+        reason: String,
+    },
+    Added {
+        count: u32,
+    },
+    Unavailable {
+        reason: String,
+    },
+}
+
 /// Inputs and versions that determine the package; part of the package hash.
 #[derive(Debug, Clone, PartialEq, Default, Serialize, Deserialize)]
 pub struct ContextProvenance {
@@ -39,6 +58,11 @@ pub struct ContextProvenance {
     /// `None` when no semantic space was used.
     pub semantic_space: Option<String>,
     pub structural_degraded: bool,
+    #[serde(default)]
+    pub semantic: SemanticStatus,
+    /// Degradations worth recording, for example `profile_missing` or `lexical_disabled`.
+    #[serde(default)]
+    pub flags: Vec<String>,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]

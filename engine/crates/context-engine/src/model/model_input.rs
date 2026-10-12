@@ -2,7 +2,7 @@
 
 use serde_json::{json, Value};
 
-use super::item::{ContextItem, ItemKind};
+use super::item::{ContextItem, ItemContent, ItemKind};
 use super::package::ContextPackage;
 
 fn excerpt(item: &ContextItem) -> Value {
@@ -11,13 +11,20 @@ fn excerpt(item: &ContextItem) -> Value {
         .first()
         .map(|l| l.render())
         .unwrap_or_default();
+    let locations: Vec<String> = item.locations.iter().map(|l| l.render()).collect();
+    let structured = match &item.content {
+        ItemContent::Structured { value } => value.clone(),
+        _ => Value::Null,
+    };
     json!({
         "title": item.title,
         "kind": item.kind.as_str(),
         "relation": item.relation,
         "distance": item.distance,
         "location": location,
-        "code": item.content.text(),
+        "locations": locations,
+        "code": item.content.text().into_owned(),
+        "structured": structured,
     })
 }
 
