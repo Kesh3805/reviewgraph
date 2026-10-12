@@ -211,6 +211,24 @@ mod tests {
         assert!(dir.path().join("index.json").exists());
     }
 
+    /// The committed schemas are exactly what the registry exports (the TypeScript side of the
+    /// drift check lives in `pnpm contracts:check`).
+    #[test]
+    fn committed_schemas_match_the_registry() {
+        let committed =
+            Path::new(env!("CARGO_MANIFEST_DIR")).join("../../../packages/contracts/schemas");
+        let fresh = tempfile::tempdir().unwrap();
+        export(fresh.path()).unwrap();
+        for (name, bytes) in read_all(fresh.path()) {
+            let on_disk = fs::read(committed.join(&name)).unwrap_or_default();
+            assert_eq!(
+                String::from_utf8_lossy(&bytes),
+                String::from_utf8_lossy(&on_disk),
+                "{name} drifted from the Rust registry"
+            );
+        }
+    }
+
     #[test]
     fn registry_names_unique() {
         let names: Vec<_> = registry().iter().map(|c| c.name).collect();
