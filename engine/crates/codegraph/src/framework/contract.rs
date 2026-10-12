@@ -96,9 +96,7 @@ impl fmt::Display for FactCategory {
 pub fn category_of(kind: &FrameworkFactKind) -> Option<FactCategory> {
     match kind {
         FrameworkFactKind::Controller => Some(FactCategory::Controller),
-        FrameworkFactKind::HttpRoute | FrameworkFactKind::RouteMetadata => {
-            Some(FactCategory::Route)
-        }
+        FrameworkFactKind::HttpRoute => Some(FactCategory::Route),
         FrameworkFactKind::Middleware | FrameworkFactKind::MiddlewareBinding => {
             Some(FactCategory::Guard)
         }
@@ -116,6 +114,7 @@ pub fn category_of(kind: &FrameworkFactKind) -> Option<FactCategory> {
         | FrameworkFactKind::DiInjection
         | FrameworkFactKind::GlobalProvider
         | FrameworkFactKind::MetadataDecoratorDefinition
+        | FrameworkFactKind::RouteMetadata
         | FrameworkFactKind::OrmColumn
         | FrameworkFactKind::OrmRelation
         | FrameworkFactKind::QueueRegistration
