@@ -8,6 +8,9 @@ pub mod expr;
 pub mod fact_keys;
 pub mod facts;
 pub mod modules;
+pub mod receiver;
+pub mod references;
+pub mod type_env;
 
 use analysis_ir::{
     AnalyzerConfig, DiagCode, DiagSeverity, IrExport, IrFrameworkFact, IrImport, IrReference,
@@ -81,6 +84,14 @@ pub fn run(
         Vec::new()
     };
     let module_facts = modules::collect(root, &ctx.source, &table, sink);
+    let references = references::collect(
+        root,
+        &ctx.source,
+        &table.symbols,
+        &module_facts.imports,
+        &module_facts.bindings,
+        sink,
+    );
     let file = crate::frameworks::FileInfo {
         path: ctx.file_path,
         symbols: &table.symbols,
@@ -88,14 +99,16 @@ pub fn run(
         bindings: &module_facts.bindings,
     };
     let framework = crate::frameworks::run(root, &ctx.source, file, ctx.cfg, sink);
+    let mut symbols = table.symbols;
+    crate::hashing::assign_hashes(&mut symbols, &ctx.source);
     Collected {
-        symbols: table.symbols,
+        symbols,
+        references,
         facts,
         imports: module_facts.imports,
         exports: module_facts.exports,
         bindings: module_facts.bindings,
         framework,
-        ..Collected::default()
     }
 }
 
