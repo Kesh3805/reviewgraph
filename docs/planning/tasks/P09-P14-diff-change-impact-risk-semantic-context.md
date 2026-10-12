@@ -2023,7 +2023,7 @@ Status: ☐
 ---
 
 ### CTX-005 — Ranking
-Status: ☐
+Status: ☑
 
 - **Task ID:** CTX-005
 - **Title:** Relevance ranking from 10 PRD §33 signals with per-reviewer weights (no weight > 0.35) and the §34 distance heuristic

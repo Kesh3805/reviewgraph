@@ -2,5 +2,6 @@
 
 pub mod error;
 pub mod model;
+pub mod ranking;
 
 pub use error::{Error, Result};
