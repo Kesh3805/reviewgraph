@@ -1615,7 +1615,9 @@ Status: â
 
 ### TSA-003 — Declaration extraction
 
-Status: ☐
+Status: ◐
+
+> **Status note:** tests and kind table are in place and green in CI. Missing: the `parse_and_extract_declarations` bench, the ignored `declarations_reference_counts` test, `ir_symbols_total` metric.
 
 - **Task ID:** TSA-003
 - **Title:** Declaration extraction: classes, interfaces, type aliases, enums+members, functions, methods, constructors, properties/fields, variables/constants, namespaces, arrow functions bound to const, default exports
@@ -1790,7 +1792,9 @@ Status: ☑
 
 ### TSA-005 — Reference extraction with receiver hints
 
-Status: ☐
+Status: ◐
+
+> **Status note:** extraction, receiver hints and tests are green in CI (`tests/references.rs`). Missing: `ir_references_total` metric, the ignored reference receiver-stats test, the `parse_and_extract_all` bench; separate files `references.rs`/`receiver.rs`/`type_env.rs` exist.
 
 - **Task ID:** TSA-005
 - **Title:** Reference extraction: calls with receiver hints (identifier, this.method, this.field.method, imported namespace member, chained), new, type references, extends/implements, decorators
@@ -1946,7 +1950,7 @@ Status: ☑
 
 Status: ◐
 
-> **Implementation note:** The language-neutral primitives (`analysis_ir::hashing`: framed BLAKE3 token hasher, 128-bit truncation, shingle sketch) and the TypeScript pass (`lang_typescript::tokens` lexer plus `lang_typescript::hashing::assign_hashes`, containers folding each member into one placeholder) are in place and `tests/hashing_pass.rs` passes in CI. Still missing: calling the pass from the analyzer itself (today the differ and matcher tests call it explicitly), the normalization section of `docs/languages/typescript.md`, the golden hash vectors, the `hashes` test target and the reformat-every-`ts-basic`-file check.
+> **Status note:** hashes are now filled by the analyzer; golden vectors, `tests/hashes.rs`, the `ts-basic` reformat check and docs are green in CI. Missing: `benches/hashing.rs`, `benchmarks/perf/baselines/hashing.json`, the `fixtures/.../src/hashing` files and the `ir_hash_tokens_total` counter.
 
 - **Task ID:** TSA-007
 - **Title:** Normalized `body_hash` / `signature_hash` / `attr_hash` (token stream excluding comments and whitespace, blake3) and token-shingle sketch
