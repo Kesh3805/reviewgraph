@@ -11,4 +11,20 @@ workspace = true
 
 [dependencies]
 review-core.workspace = true
+model-gateway.workspace = true
 thiserror.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+serde_yaml.workspace = true
+blake3.workspace = true
+regex.workspace = true
+globset.workspace = true
+tracing.workspace = true
+tokio-util.workspace = true
+async-trait = "0.1"
+
+[dev-dependencies]
+tokio = { workspace = true, features = ["test-util"] }
+insta.workspace = true
+model-gateway = { workspace = true, features = ["testing"] }
+tempfile.workspace = true

@@ -63,6 +63,7 @@ fn replay_gateway(dir: &tempfile::TempDir) -> model_gateway::Gateway {
     cfg.miss_log = Some(dir.path().join("misses.jsonl"));
     let router = StaticRouter::new().with_route(ModelTier::ReviewReasoner, vec![candidate()]);
     GatewayBuilder::new()
+        .redactor(Arc::new(model_gateway::DefaultRedactor::new()))
         .adapter(Arc::new(ReplayAdapter::new(
             ProviderId::new("anthropic"),
             store,
@@ -210,6 +211,7 @@ fn recorder(
     .expect("recorder");
     let router = StaticRouter::new().with_route(ModelTier::ReviewReasoner, vec![candidate()]);
     let gw = GatewayBuilder::new()
+        .redactor(Arc::new(model_gateway::DefaultRedactor::new()))
         .adapter(Arc::new(rec))
         .router(Arc::new(router))
         .build()
@@ -352,10 +354,17 @@ async fn recorder_refuses_secret_in_output() {
 #[tokio::test]
 async fn recorder_skips_schema_invalid_output() {
     let dir = tempfile::tempdir().expect("tmp");
-    let (gw, _) = recorder(&dir, json!({"ok": "not a bool"}), false);
-    gw.call(fixture_req(), CancellationToken::new())
+    let (gw, calls) = recorder(&dir, json!({"ok": "not a bool"}), false);
+    // The gateway rejects the output after one repair turn (GW-009); nothing is recorded.
+    let err = gw
+        .call(fixture_req(), CancellationToken::new())
         .await
-        .expect("served live");
+        .expect_err("invalid twice");
+    assert!(matches!(
+        err,
+        GatewayError::SchemaViolation { repaired: true, .. }
+    ));
+    assert_eq!(calls.load(Ordering::SeqCst), 2);
     assert!(fixture_files(&dir).is_empty());
 }
 

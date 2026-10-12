@@ -236,6 +236,7 @@ async fn anthropic_529_overloaded_retried() {
     let policy =
         RetryPolicy::default().with_delays(Duration::from_millis(1), Duration::from_millis(5));
     let gw = GatewayBuilder::new()
+        .redactor(Arc::new(model_gateway::DefaultRedactor::new()))
         .adapter(Arc::new(adapter(&server)))
         .router(Arc::new(router))
         .retry_policy(policy)

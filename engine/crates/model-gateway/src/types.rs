@@ -202,10 +202,22 @@ pub struct SchemaErrorSummary {
 }
 
 /// A repair turn appended by the gateway after an invalid structured output (GW-009).
+// Only `previous_output` and `errors` enter the request hash; `tool_use_id` is provider wire
+// detail (Anthropic needs it to answer the original `tool_use` block), so it is not part of the
+// exported contract either.
 #[derive(Debug, Clone, Serialize, JsonSchema)]
 pub struct RepairTurn {
     pub previous_output: serde_json::Value,
     pub errors: Vec<SchemaErrorSummary>,
+    #[serde(skip)]
+    #[schemars(skip)]
+    pub tool_use_id: Option<String>,
+}
+
+/// Caller-supplied semantic checks run after JSON Schema validation (GW-009), for example the
+/// reviewer ref-existence validator (REV-C-003). Errors must never echo instance values.
+pub trait OutputValidator: Send + Sync + fmt::Debug {
+    fn validate(&self, output: &serde_json::Value) -> Vec<SchemaErrorSummary>;
 }
 
 /// The input of a call. `Debug` prints only section names and byte lengths.
@@ -309,6 +321,10 @@ pub struct ModelRequest {
     pub tenant: TenantScope,
     pub trace: TraceContext,
     pub idempotency_hint: Option<String>,
+    /// Semantic output checks (GW-009). Not hashed and not serialised.
+    #[serde(skip)]
+    #[schemars(skip)]
+    pub validator: Option<Arc<dyn OutputValidator>>,
 }
 
 impl ModelRequest {
@@ -334,7 +350,13 @@ impl ModelRequest {
             tenant,
             trace: TraceContext::default(),
             idempotency_hint: None,
+            validator: None,
         }
+    }
+
+    pub fn with_validator(mut self, validator: Arc<dyn OutputValidator>) -> Self {
+        self.validator = Some(validator);
+        self
     }
 
     pub fn with_schema(mut self, schema: OutputSchema) -> Self {

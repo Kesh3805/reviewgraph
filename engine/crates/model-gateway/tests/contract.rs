@@ -110,6 +110,7 @@ fn gateway(counter: Arc<AtomicUsize>) -> model_gateway::Gateway {
         }],
     );
     GatewayBuilder::new()
+        .redactor(Arc::new(model_gateway::DefaultRedactor::new()))
         .adapter(Arc::new(CountingAdapter(counter)))
         .router(Arc::new(router))
         .build()

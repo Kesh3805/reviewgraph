@@ -44,9 +44,12 @@ regex.workspace = true
 tracing.workspace = true
 chrono.workspace = true
 reqwest = { workspace = true, features = ["http2"] }
+opentelemetry.workspace = true
 
 [dev-dependencies]
 tokio = { workspace = true, features = ["test-util"] }
+opentelemetry_sdk = { workspace = true, features = ["testing"] }
+tracing-subscriber.workspace = true
 proptest.workspace = true
 insta.workspace = true
 tempfile.workspace = true
@@ -64,4 +67,12 @@ harness = false
 
 [[bench]]
 name = "router_route"
+harness = false
+
+[[bench]]
+name = "validate_reviewer_output"
+harness = false
+
+[[bench]]
+name = "redact_40k"
 harness = false

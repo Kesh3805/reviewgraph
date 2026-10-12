@@ -3,7 +3,8 @@
 use serde::Deserialize;
 use serde_json::{json, Value};
 
-use crate::types::{CachePolicy, InputSection, ModelRequest, ReasoningLevel};
+use crate::types::{CachePolicy, InputSection, ModelRequest, ReasoningLevel, RepairTurn};
+use crate::validate::render_repair_errors;
 
 /// Name of the forced tool that carries structured output.
 pub const TOOL_NAME: &str = "emit_result";
@@ -72,6 +73,41 @@ pub fn thinking_budget(level: ReasoningLevel, max_tokens: u32) -> Option<u32> {
     (budget >= 1_024).then_some(budget)
 }
 
+/// Id used for the repaired `tool_use` block when the first response carried none (replay).
+pub const REPAIR_TOOL_USE_ID: &str = "toolu_repair";
+
+/// The repair turn (GW-009): the original `tool_use` block as an assistant turn, then a user
+/// turn with an error `tool_result` listing paths, keywords and messages only.
+pub fn repair_messages(repair: &RepairTurn) -> [Value; 2] {
+    let id = repair
+        .tool_use_id
+        .clone()
+        .unwrap_or_else(|| REPAIR_TOOL_USE_ID.to_owned());
+    [
+        json!({
+            "role": "assistant",
+            "content": [{
+                "type": "tool_use",
+                "id": id,
+                "name": TOOL_NAME,
+                "input": repair.previous_output,
+            }],
+        }),
+        json!({
+            "role": "user",
+            "content": [{
+                "type": "tool_result",
+                "tool_use_id": id,
+                "is_error": true,
+                "content": format!(
+                    "Validation failed: {}. Call {TOOL_NAME} again with a corrected, complete result.",
+                    render_repair_errors(&repair.errors)
+                ),
+            }],
+        }),
+    ]
+}
+
 /// Builds the Messages API request body.
 pub fn build_request(req: &ModelRequest, model: &str) -> Value {
     let cache_on = !matches!(req.cache, CachePolicy::Disabled);
@@ -94,7 +130,10 @@ pub fn build_request(req: &ModelRequest, model: &str) -> Value {
         content.push(block);
     }
 
-    let messages = vec![json!({ "role": "user", "content": content })];
+    let mut messages = vec![json!({ "role": "user", "content": content })];
+    if let Some(repair) = &req.input.repair {
+        messages.extend(repair_messages(repair));
+    }
 
     let mut body = json!({
         "model": model,
