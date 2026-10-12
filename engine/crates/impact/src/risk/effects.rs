@@ -5,7 +5,8 @@
 use std::collections::BTreeSet;
 
 use review_core::reviewer_type::ReviewerType;
-use serde::Serialize;
+use schemars::JsonSchema;
+use serde::{Deserialize, Serialize};
 
 use super::level::RiskLevel;
 use super::signal::RiskCategory;
@@ -13,7 +14,9 @@ use super::signal::RiskCategory;
 /// The suppression floor the confidence threshold never crosses.
 pub const CONFIDENCE_FLOOR: f32 = 0.55;
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize)]
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, JsonSchema,
+)]
 #[serde(rename_all = "snake_case")]
 pub enum ReviewDepth {
     Light,
@@ -21,7 +24,9 @@ pub enum ReviewDepth {
     Deep,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize)]
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, JsonSchema,
+)]
 #[serde(rename_all = "snake_case")]
 pub enum VerificationDepth {
     /// Stages 1-4.
@@ -33,7 +38,9 @@ pub enum VerificationDepth {
 }
 
 /// The model tier of the reviewer calls.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize)]
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, JsonSchema,
+)]
 #[serde(rename_all = "snake_case")]
 pub enum EffectTier {
     FastReasoner,
@@ -41,7 +48,9 @@ pub enum EffectTier {
 }
 
 /// Extra review focus handed to a reviewer.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize)]
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, JsonSchema,
+)]
 #[serde(rename_all = "snake_case")]
 pub enum FocusProfile {
     DatabaseSafety,
@@ -74,7 +83,8 @@ impl Default for EffectsConfig {
 }
 
 /// What the risk of one cluster (or the PR) changes.
-#[derive(Debug, Clone, PartialEq, Serialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
 pub struct RiskEffects {
     pub reviewers: BTreeSet<ReviewerType>,
     pub depth: ReviewDepth,

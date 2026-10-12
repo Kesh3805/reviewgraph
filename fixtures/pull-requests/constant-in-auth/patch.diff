@@ -1,0 +1,6 @@
+diff --git a/src/auth/limits.ts b/src/auth/limits.ts
+--- a/src/auth/limits.ts
++++ b/src/auth/limits.ts
+@@ -1 +1 @@
+-export const MAX_ATTEMPTS = 3;
++export const MAX_ATTEMPTS = 5;

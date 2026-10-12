@@ -1,0 +1,22 @@
+{
+  "scenario": "pure-rename",
+  "symbols": [
+    {
+      "file": "src/util/text.ts",
+      "name": "clean",
+      "verdict": {
+        "kind": null,
+        "overridden_by": null
+      }
+    },
+    {
+      "file": "src/util/text.ts",
+      "name": "normalizeInput",
+      "verdict": {
+        "kind": "pure_rename",
+        "overridden_by": null
+      }
+    }
+  ],
+  "files": []
+}

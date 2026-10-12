@@ -9,12 +9,19 @@ use std::collections::{BTreeMap, BTreeSet};
 use review_core::change::SymbolChange;
 use review_core::ids::SymbolKey;
 use review_core::location::RepoPath;
-use serde::Serialize;
+use schemars::JsonSchema;
+use serde::{Deserialize, Serialize};
 
+use super::level::RiskLevel;
+use super::policy::RiskPolicy;
+use super::signal::{RiskCategory, RiskSignal, SignalSubject};
+use crate::graph::{ImpactGraph, Relation};
 use crate::input::{facts, ChangeSet, FileDisposition, FileInput, SymbolInput};
 
 /// The kind of low-risk change.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize)]
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, JsonSchema,
+)]
 #[serde(rename_all = "snake_case")]
 pub enum LowRiskKind {
     FormattingOrComments,
@@ -26,7 +33,9 @@ pub enum LowRiskKind {
 }
 
 /// Why a nominally low-risk change is not low-risk.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize)]
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, JsonSchema,
+)]
 #[serde(rename_all = "snake_case")]
 pub enum OverrideReason {
     /// A public symbol renamed with callers outside the PR, or an API contract change.
@@ -42,7 +51,7 @@ pub enum OverrideReason {
 }
 
 /// The verdict for one symbol or file.
-#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize)]
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 pub struct LowRiskVerdict {
     pub kind: Option<LowRiskKind>,
     pub overridden_by: Option<OverrideReason>,
@@ -67,8 +76,77 @@ pub struct LowRiskContext {
     pub high_risk_path_files: BTreeSet<RepoPath>,
 }
 
+impl LowRiskContext {
+    /// Derives the context from the impact graph, the policy and the detected signals:
+    /// changed symbols with callers outside the PR, constants reached by authorization,
+    /// validation, cryptography or payment code (or by a config or environment node), and
+    /// files under a `high` or `critical` configured risk path.
+    pub fn derive(
+        changes: &ChangeSet,
+        impact: Option<&ImpactGraph>,
+        policy: &RiskPolicy,
+        signals: &[RiskSignal],
+    ) -> Self {
+        let mut context = Self::default();
+        for file in &changes.files {
+            let level = policy
+                .paths
+                .iter()
+                .find(|rule| rule.matches(&file.path))
+                .map(|rule| rule.level);
+            if level.is_some_and(|level| level >= RiskLevel::High) {
+                context.high_risk_path_files.insert(file.path.clone());
+            }
+        }
+        let Some(impact) = impact else {
+            return context;
+        };
+        let changed_ids: BTreeSet<&str> = changes.symbols.iter().map(SymbolInput::id).collect();
+        let sensitive_symbols: BTreeSet<SymbolKey> = signals
+            .iter()
+            .filter(|signal| {
+                matches!(
+                    signal.category,
+                    RiskCategory::Authorization
+                        | RiskCategory::Validation
+                        | RiskCategory::Cryptography
+                        | RiskCategory::Payments
+                )
+            })
+            .filter_map(|signal| match &signal.subject {
+                SignalSubject::Symbol(key) => Some(*key),
+                _ => None,
+            })
+            .collect();
+        let sensitive_ids: BTreeSet<&str> = changes
+            .symbols
+            .iter()
+            .filter(|symbol| sensitive_symbols.contains(&symbol.key()))
+            .map(SymbolInput::id)
+            .collect();
+        for symbol_impact in &impact.symbols {
+            let external_caller = symbol_impact
+                .of(Relation::Caller)
+                .any(|element| !changed_ids.contains(element.node_id.as_str()));
+            if external_caller {
+                context
+                    .symbols_with_external_callers
+                    .insert(symbol_impact.seed);
+            }
+            let sensitive_reader = symbol_impact.elements.iter().any(|element| {
+                sensitive_ids.contains(element.node_id.as_str())
+                    || matches!(element.relation, Relation::Config | Relation::EnvVar)
+            });
+            if sensitive_reader {
+                context.sensitive_constants.insert(symbol_impact.seed);
+            }
+        }
+        context
+    }
+}
+
 /// Verdicts per symbol and file.
-#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize)]
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 pub struct LowRiskReport {
     pub per_symbol: BTreeMap<SymbolKey, LowRiskVerdict>,
     pub per_file: BTreeMap<RepoPath, LowRiskVerdict>,

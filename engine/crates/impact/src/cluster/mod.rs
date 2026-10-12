@@ -21,6 +21,7 @@
 //!
 //! Semantic-similarity clustering (PRD §92) is deferred to IMP-011.
 
+pub mod plan;
 pub mod union_find;
 
 use std::collections::{BTreeMap, BTreeSet};
@@ -40,6 +41,10 @@ use crate::graph::{ImpactGraph, Relation};
 use crate::input::ChangeSet;
 use crate::metrics;
 
+pub use plan::{
+    plan_review, PlanBudget, PlanConfig, PlanInputs, PlannedUnit, ReviewPlan, UnreviewedReason,
+    UnreviewedRegion,
+};
 pub use union_find::UnionFind;
 
 /// Largest cluster before splitting: the correctness reviewer's 8 symbols × 1.5.

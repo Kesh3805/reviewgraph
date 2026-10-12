@@ -2499,14 +2499,17 @@ version = "0.1.0"
 dependencies = [
  "blake3",
  "codegraph",
+ "globset",
  "hex",
  "opentelemetry",
  "proptest",
  "rayon",
+ "regex",
  "review-core",
  "schemars",
  "serde",
  "serde_json",
+ "serde_yaml",
  "thiserror",
  "tracing",
 ]
