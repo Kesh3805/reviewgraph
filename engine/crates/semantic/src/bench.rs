@@ -414,7 +414,7 @@ impl Bench {
         ];
         let mut results = Vec::new();
         for (name, scope, kind, member) in &scenarios {
-            let subset: Vec<&BenchPoint> = points.iter().filter(|p| member(*p)).collect();
+            let subset: Vec<&BenchPoint> = points.iter().filter(|p| member(p)).collect();
             let vectors: Vec<&[f32]> = subset.iter().map(|p| p.vector.as_slice()).collect();
             let mut extra = ExtraFilter::new();
             if let Some(k) = kind {
@@ -432,7 +432,7 @@ impl Bench {
             let ids: Vec<Uuid> = points
                 .iter()
                 .enumerate()
-                .filter(|(_, p)| member(*p))
+                .filter(|(_, p)| member(p))
                 .map(|(i, _)| Uuid::from_u128(i as u128 + 1))
                 .collect();
             for ef in [64u32, 128, 256] {

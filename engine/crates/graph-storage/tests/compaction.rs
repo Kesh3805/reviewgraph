@@ -14,7 +14,6 @@ use graph_storage::mem::MemGraphStore;
 use graph_storage::model::{flatten, GraphDelta};
 use graph_storage::status::SnapshotStatus;
 use graph_storage::types::{NewSnapshot, SnapshotKind, SnapshotPurpose};
-use graph_storage::GraphStore;
 use repository::store::RepoScope;
 use review_core::ids::{OrganizationId, RepositoryId, SnapshotId};
 
