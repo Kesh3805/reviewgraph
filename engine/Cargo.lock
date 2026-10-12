@@ -3220,6 +3220,8 @@ dependencies = [
  "futures",
  "graph-storage",
  "hex",
+ "model-gateway",
+ "profile",
  "review-core",
  "review-test-support",
  "serde",

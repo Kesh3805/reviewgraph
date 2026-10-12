@@ -31,7 +31,10 @@ uuid.workspace = true
 chrono.workspace = true
 futures.workspace = true
 hex.workspace = true
+model-gateway.workspace = true
+profile.workspace = true
 
 [dev-dependencies]
+tokio = { workspace = true, features = ["test-util"] }
 tempfile.workspace = true
 review-test-support.workspace = true

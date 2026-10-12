@@ -1,6 +1,10 @@
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::{Arc, Mutex};
-use std::time::Instant;
+
+use model_gateway::types::{CallBudget, TaskType};
+use tokio::task::JoinHandle;
+use tokio::time::Instant;
+use tokio_util::sync::CancellationToken;
 
 use super::limits::{BudgetKind, ReviewBudget};
 
@@ -60,12 +64,21 @@ impl BudgetManager {
 
     /// Restore usage persisted at a previous stage boundary.
     pub fn resume(limits: ReviewBudget, usage: &BudgetUsage) -> Self {
+        Self::resume_with_events(limits, usage, Vec::new())
+    }
+
+    /// Like [`Self::resume`], also restoring the skipped units recorded so far.
+    pub fn resume_with_events(
+        limits: ReviewBudget,
+        usage: &BudgetUsage,
+        events: Vec<BudgetEvent>,
+    ) -> Self {
         let used = std::array::from_fn(|i| AtomicU64::new(usage.used[i]));
         Self(Arc::new(Inner {
             limits,
             used,
             start: Instant::now(),
-            events: Mutex::new(Vec::new()),
+            events: Mutex::new(events),
         }))
     }
 
@@ -116,6 +129,86 @@ impl BudgetManager {
 
     pub fn deadline_passed(&self) -> bool {
         Instant::now() >= self.deadline()
+    }
+
+    /// Cancels `token` (the run-level cancellation token) when the latency budget is spent.
+    /// Abort the returned handle once the run finishes.
+    pub fn watch_deadline(&self, token: CancellationToken) -> JoinHandle<()> {
+        let deadline = self.deadline();
+        tokio::spawn(async move {
+            tokio::time::sleep_until(deadline).await;
+            token.cancel();
+        })
+    }
+
+    /// Derives the budget of one model call from what is left of the run budget. The requested
+    /// `max_in` and `max_out` are clamped so a call can never be allowed to spend more than the
+    /// remaining tokens, and the call deadline is the run deadline. Fails when no model call or
+    /// no token is left (the orchestrator turns that into degradation, never a failure).
+    /// This does not reserve anything: reserve with [`Self::try_reserve`] before the call.
+    pub fn call_budget_for(
+        &self,
+        _task: TaskType,
+        max_in: u32,
+        max_out: u32,
+    ) -> Result<CallBudget, BudgetExceeded> {
+        let calls = self.remaining(BudgetKind::ModelCalls);
+        let tokens = self.remaining(BudgetKind::ModelTokens);
+        if calls == 0 || tokens == 0 {
+            let kind = if calls == 0 {
+                BudgetKind::ModelCalls
+            } else {
+                BudgetKind::ModelTokens
+            };
+            return Err(BudgetExceeded {
+                kind,
+                requested: 1,
+                remaining: 0,
+            });
+        }
+        if self.deadline_passed() {
+            return Err(BudgetExceeded {
+                kind: BudgetKind::Latency,
+                requested: 1,
+                remaining: 0,
+            });
+        }
+        let max_in = u64::from(max_in).min(tokens);
+        let max_out = u64::from(max_out).min(tokens.saturating_sub(max_in));
+        let limit = self.0.limits.limit(BudgetKind::ModelTokens).max(1);
+        Ok(CallBudget {
+            max_input_tokens: u32::try_from(max_in).unwrap_or(u32::MAX),
+            max_output_tokens: u32::try_from(max_out).unwrap_or(u32::MAX),
+            max_cost_usd_micros: None,
+            deadline: self.deadline(),
+            remaining_fraction: (tokens as f64 / limit as f64) as f32,
+            max_attempts: 3,
+        })
+    }
+
+    /// Applies the candidate cap to candidates already ranked best first. Candidates beyond
+    /// `max_candidate_findings` are returned (not discarded) so the caller can persist them as
+    /// `SUPPRESSED_POLICY { rule: "candidate_cap" }`, and each is recorded as a skipped unit.
+    pub fn cap_candidates<T>(
+        &self,
+        ranked: Vec<T>,
+        unit: impl Fn(&T) -> String,
+    ) -> (Vec<T>, Vec<T>) {
+        let mut kept = Vec::new();
+        let mut excess = Vec::new();
+        for candidate in ranked {
+            match self.try_reserve(BudgetKind::Candidates, 1) {
+                Ok(r) => {
+                    self.commit(r, 1);
+                    kept.push(candidate);
+                }
+                Err(_) => {
+                    self.record_skip(BudgetKind::Candidates, unit(&candidate));
+                    excess.push(candidate);
+                }
+            }
+        }
+        (kept, excess)
     }
 
     /// Record a skipped unit (exhaustion is degradation, never failure).
@@ -203,6 +296,75 @@ mod tests {
         assert_eq!(e.remaining, 0);
         m.record_skip(BudgetKind::ModelCalls, "cluster-7");
         assert_eq!(m.events()[0].skipped_unit, "cluster-7");
+    }
+
+    #[test]
+    fn call_budget_never_exceeds_remaining() {
+        let m = BudgetManager::new(small(1000, 10));
+        let _r = m.try_reserve(BudgetKind::ModelTokens, 900).unwrap();
+        let b = m
+            .call_budget_for(TaskType::CorrectnessReview, 800, 400)
+            .unwrap();
+        assert!(u64::from(b.max_input_tokens) + u64::from(b.max_output_tokens) <= 100);
+        assert!(b.remaining_fraction <= 0.11);
+    }
+
+    #[test]
+    fn zero_budget_yields_summary_only_review() {
+        let m = BudgetManager::new(small(0, 0));
+        let e = m
+            .call_budget_for(TaskType::CorrectnessReview, 10, 10)
+            .unwrap_err();
+        assert_eq!(e.remaining, 0);
+        let m = BudgetManager::new(small(1000, 0));
+        assert!(m
+            .call_budget_for(TaskType::CorrectnessReview, 10, 10)
+            .is_err());
+    }
+
+    #[test]
+    fn candidate_cap_returns_excess_for_suppression() {
+        let limits = ReviewBudget {
+            max_candidate_findings: 2,
+            ..ReviewBudget::DEFAULT
+        };
+        let m = BudgetManager::new(limits);
+        let (kept, excess) = m.cap_candidates(vec!["a", "b", "c", "d"], |c| (*c).to_owned());
+        assert_eq!(kept, ["a", "b"]);
+        assert_eq!(excess, ["c", "d"]);
+        assert_eq!(m.events().len(), 2);
+        assert_eq!(m.events()[0].kind, BudgetKind::Candidates);
+    }
+
+    #[test]
+    fn two_hundred_clusters_with_ten_call_budget_make_ten_calls() {
+        let m = BudgetManager::new(small(1_000_000, 10));
+        let mut calls = 0;
+        for i in 0..200 {
+            match m.try_reserve(BudgetKind::ModelCalls, 1) {
+                Ok(r) => {
+                    m.commit(r, 1);
+                    calls += 1;
+                }
+                Err(_) => m.record_skip(BudgetKind::ModelCalls, format!("cluster-{i}")),
+            }
+        }
+        assert_eq!(calls, 10);
+        assert_eq!(m.events().len(), 190);
+    }
+
+    #[tokio::test(start_paused = true)]
+    async fn deadline_cancels_run_token() {
+        let limits = ReviewBudget {
+            max_review_latency: std::time::Duration::from_secs(10),
+            ..ReviewBudget::DEFAULT
+        };
+        let m = BudgetManager::new(limits);
+        let token = CancellationToken::new();
+        let _watch = m.watch_deadline(token.clone());
+        assert!(!token.is_cancelled());
+        tokio::time::sleep(std::time::Duration::from_secs(11)).await;
+        assert!(token.is_cancelled());
     }
 
     #[test]

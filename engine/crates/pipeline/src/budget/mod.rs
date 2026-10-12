@@ -2,6 +2,7 @@
 
 mod limits;
 mod manager;
+pub mod persist;
 
 pub use limits::{BudgetKind, ReviewBudget};
 pub use manager::{BudgetEvent, BudgetExceeded, BudgetManager, BudgetUsage, Reservation};
