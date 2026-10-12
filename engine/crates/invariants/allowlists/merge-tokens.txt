@@ -1,0 +1,3 @@
+# INV-011 allowlist: engine source files that may contain merge/approve literals.
+# Format: `path relative to engine/ | reason`. One entry per line; the reason is mandatory.
+crates/review-core/src/publication.rs | doc and test asserting that APPROVE, REQUEST_CHANGES and merge do NOT deserialize
