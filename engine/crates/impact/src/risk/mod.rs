@@ -11,6 +11,7 @@ pub mod level;
 pub mod low_risk;
 pub mod policy;
 pub mod rules;
+pub mod run;
 pub mod score;
 pub mod signal;
 
@@ -30,6 +31,7 @@ pub use effects::{effects, EffectsConfig, RiskEffects};
 pub use level::RiskLevel;
 pub use policy::{infer_category, level_weight, PathRule, RiskPolicy};
 pub use rules::{render_markdown, rule_by_id, RiskRule, RISK_RULES_VERSION, RULES};
+pub use run::{assess_risk, cluster_members, RiskInputs};
 pub use score::{assess, RiskAssessment, ScoreInput, ScoredLevel};
 pub use signal::{
     dedup_signals, RiskCategory, RiskSignal, RuleSource, SignalEvidence, SignalSubject,

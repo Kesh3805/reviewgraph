@@ -4,7 +4,7 @@
 use std::collections::BTreeSet;
 
 use impact::risk::effects::{
-    effects, EffectTier, EffectsConfig, FocusProfile, ReviewDepth, VerificationDepth,
+    effects, EffectTier, EffectsConfig, FocusProfile, ReviewDepth, RiskEffects, VerificationDepth,
 };
 use impact::risk::{RiskCategory, RiskLevel};
 use review_core::reviewer_type::ReviewerType;
@@ -130,4 +130,58 @@ fn deep_reasoner_only_when_enabled_and_budgeted() {
         )
         .deep_reasoner
     );
+}
+
+#[test]
+fn intent_not_an_input_compile_check() {
+    // The effects of a cluster are a function of level, categories, test coverage, cosmetic-ness
+    // and configuration only: assigning `effects` to this exact signature fails to compile if
+    // another input (such as an intent assessment) is ever added.
+    let _signature: fn(
+        RiskLevel,
+        &BTreeSet<RiskCategory>,
+        bool,
+        bool,
+        &EffectsConfig,
+    ) -> RiskEffects = effects;
+
+    // Nor does any risk source file mention intent outside comments.
+    let dir = std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("src/risk");
+    for entry in std::fs::read_dir(&dir).unwrap() {
+        let path = entry.unwrap().path();
+        // `rules.rs` renders the prose of the generated document, which states the invariant.
+        let skip = path.extension().and_then(|e| e.to_str()) != Some("rs")
+            || path.file_name().and_then(|n| n.to_str()) == Some("rules.rs");
+        if skip {
+            continue;
+        }
+        let text = std::fs::read_to_string(&path).unwrap();
+        for (number, line) in text.lines().enumerate() {
+            let code = line.trim_start();
+            if code.starts_with("//") {
+                continue;
+            }
+            assert!(
+                !code.to_ascii_lowercase().contains("intent"),
+                "{}:{} mentions intent",
+                path.display(),
+                number + 1
+            );
+        }
+    }
+}
+
+#[test]
+fn effects_serialize_and_round_trip() {
+    let e = effects(
+        RiskLevel::High,
+        &cats(&[RiskCategory::SchemaChanges]),
+        true,
+        true,
+        &EffectsConfig::default(),
+    );
+    assert!(e.focus_profiles.contains(&FocusProfile::DatabaseSafety));
+    let json = serde_json::to_string(&e).unwrap();
+    let back: RiskEffects = serde_json::from_str(&json).unwrap();
+    assert_eq!(back, e);
 }
