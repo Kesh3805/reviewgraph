@@ -517,7 +517,7 @@ Status: ☐
 ---
 
 ### REV-P-002 — Deterministic N+1 and IO-in-loop detector
-Status: ☐
+Status: ◐
 
 - **Task ID:** REV-P-002
 - **Title:** Deterministic N+1 / IO-in-loop detector

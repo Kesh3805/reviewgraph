@@ -8,6 +8,7 @@
 //! - [`io_in_loop`]: I/O and queries inside loops (REV-P-002).
 
 pub mod boundaries;
+pub mod io_in_loop;
 pub mod tests_gap;
 
 use serde::{Deserialize, Serialize};
