@@ -11,7 +11,8 @@ const dash = (id, extra = {}) => ({ dashboardId: id, title: id, ...extra });
 function fixtureDir(dashboards) {
   const dir = mkdtempSync(join(tmpdir(), 'oo-'));
   mkdirSync(join(dir, 'dashboards'));
-  for (const d of dashboards) writeFileSync(join(dir, 'dashboards', `${d.dashboardId}.json`), JSON.stringify(d));
+  for (const d of dashboards)
+    writeFileSync(join(dir, 'dashboards', `${d.dashboardId}.json`), JSON.stringify(d));
   return dir;
 }
 
@@ -21,7 +22,12 @@ function mockServer(initial = []) {
   const writes = [];
   const fetchImpl = async (url, { method, body }) => {
     const path = new URL(url).pathname.replace('/api/default/', '');
-    const json = (o, status = 200) => ({ ok: status < 300, status, json: async () => o, text: async () => JSON.stringify(o) });
+    const json = (o, status = 200) => ({
+      ok: status < 300,
+      status,
+      json: async () => o,
+      text: async () => JSON.stringify(o),
+    });
     if (method === 'GET') return json({ dashboards: [...store.values()] });
     writes.push(method);
     if (method === 'POST') store.set(JSON.parse(body).dashboardId, JSON.parse(body));
@@ -32,7 +38,12 @@ function mockServer(initial = []) {
   return { fetchImpl, writes, store };
 }
 
-const opts = (dir, srv, extra = {}) => ({ baseUrl: 'http://localhost:25080', baseDir: dir, fetchImpl: srv.fetchImpl, ...extra });
+const opts = (dir, srv, extra = {}) => ({
+  baseUrl: 'http://localhost:25080',
+  baseDir: dir,
+  fetchImpl: srv.fetchImpl,
+  ...extra,
+});
 
 test('apply_creates_missing_dashboards', async () => {
   const srv = mockServer();
@@ -66,7 +77,10 @@ test('prune_only_removes_rg_prefixed_dashboards', async () => {
 
 test('apply_refuses_remote_endpoint_without_flag', async () => {
   const srv = mockServer();
-  await assert.rejects(apply(opts(fixtureDir([]), srv, { baseUrl: 'https://oo.example.com' })), /non-loopback/);
+  await assert.rejects(
+    apply(opts(fixtureDir([]), srv, { baseUrl: 'https://oo.example.com' })),
+    /non-loopback/,
+  );
 });
 
 test('validate_accepts_all_committed_dashboards', () => {
@@ -75,7 +89,11 @@ test('validate_accepts_all_committed_dashboards', () => {
 
 test('validate_rejects_unknown_metric_reference', () => {
   const dir = fixtureDir([
-    dash('rg-x', { tabs: [{ panels: [{ queries: [{ fields: { stream: 'nope_total', stream_type: 'metrics' } }] }] }] }),
+    dash('rg-x', {
+      tabs: [
+        { panels: [{ queries: [{ fields: { stream: 'nope_total', stream_type: 'metrics' } }] }] },
+      ],
+    }),
   ]);
   assert.match(validate({ baseDir: dir }).join('\n'), /unknown metric nope_total/);
 });

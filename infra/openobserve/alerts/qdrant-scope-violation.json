@@ -1,0 +1,20 @@
+{
+  "name": "rg-qdrant-scope-violation",
+  "metric": "qdrant_scope_violation_total",
+  "query": "increase(qdrant_scope_violation_total)",
+  "threshold": {
+    "operator": ">",
+    "value": 0
+  },
+  "for": "0m",
+  "frequency_minutes": 1,
+  "severity": "page",
+  "destination": "default-webhook",
+  "labels": {
+    "dashboard": "rg-qdrant-latency"
+  },
+  "annotations": {
+    "runbook_url": "docs/operations/runbooks/qdrant-scope-violation.md",
+    "summary": "Qdrant scope violation"
+  }
+}

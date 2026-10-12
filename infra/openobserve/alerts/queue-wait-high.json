@@ -1,0 +1,20 @@
+{
+  "name": "rg-queue-wait-high",
+  "metric": "queue_wait_seconds",
+  "query": "p95 of queue_wait_seconds",
+  "threshold": {
+    "operator": ">",
+    "value": 60
+  },
+  "for": "10m",
+  "frequency_minutes": 2,
+  "severity": "ticket",
+  "destination": "local-log",
+  "labels": {
+    "dashboard": "rg-queue-depth"
+  },
+  "annotations": {
+    "runbook_url": "docs/operations/runbooks/queue-wait-high.md",
+    "summary": "Queue wait p95 above 60 s"
+  }
+}

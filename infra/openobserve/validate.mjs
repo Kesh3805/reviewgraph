@@ -29,7 +29,11 @@ const readJsonDir = (dir) =>
         .map((f) => ({ file: f, path: join(dir, f) }))
     : [];
 
-export function validate({ baseDir = ROOT, repoDir = REPO, names = catalogNames(join(repoDir, 'docs/operations/metrics-catalog.md')) } = {}) {
+export function validate({
+  baseDir = ROOT,
+  repoDir = REPO,
+  names = catalogNames(join(repoDir, 'docs/operations/metrics-catalog.md')),
+} = {}) {
   const errors = [];
   const ids = new Set();
   for (const { file, path } of readJsonDir(join(baseDir, 'dashboards'))) {
@@ -69,10 +73,14 @@ export function validate({ baseDir = ROOT, repoDir = REPO, names = catalogNames(
     if (alertNames.has(a.name)) errors.push(`${file}: duplicate alert ${a.name}`);
     alertNames.add(a.name);
     if (!names.has(a.metric)) errors.push(`${file}: unknown metric ${a.metric}`);
-    if (typeof a.threshold?.value !== 'number' || !['>', '>=', '<', '<=', '='].includes(a.threshold?.operator)) {
+    if (
+      typeof a.threshold?.value !== 'number' ||
+      !['>', '>=', '<', '<=', '='].includes(a.threshold?.operator)
+    ) {
       errors.push(`${file}: threshold must be {operator, value:number}`);
     }
-    if (!['page', 'ticket'].includes(a.severity)) errors.push(`${file}: severity must be page|ticket`);
+    if (!['page', 'ticket'].includes(a.severity))
+      errors.push(`${file}: severity must be page|ticket`);
     const rb = a.annotations?.runbook_url;
     if (!rb || !existsSync(join(repoDir, rb))) errors.push(`${file}: runbook missing (${rb})`);
     else referenced.add(rb.replaceAll('\\', '/'));
@@ -84,15 +92,21 @@ export function validate({ baseDir = ROOT, repoDir = REPO, names = catalogNames(
       if (!referenced.has(rel)) errors.push(`${rel}: not referenced by any alert`);
       const text = readFileSync(join(rbDir, f), 'utf8');
       for (const h of REQUIRED_RUNBOOK_HEADINGS) {
-        if (!new RegExp(`^##\\s+${h}\\s*$`, 'm').test(text)) errors.push(`${rel}: missing heading "${h}"`);
+        if (!new RegExp(`^##\\s+${h}\\s*$`, 'm').test(text))
+          errors.push(`${rel}: missing heading "${h}"`);
       }
     }
   }
   for (const spec of ['destinations', 'templates']) {
     for (const { file, path } of readJsonDir(join(baseDir, spec))) {
       const text = readFileSync(path, 'utf8');
-      if (/https?:\/\/(?!localhost|127\.0\.0\.1)[^\s"]+/.test(text) || /(token|secret|password)"\s*:\s*"[^"$]/i.test(text)) {
-        errors.push(`${spec}/${file}: contains a remote URL or literal secret; use env placeholders`);
+      if (
+        /https?:\/\/(?!localhost|127\.0\.0\.1)[^\s"]+/.test(text) ||
+        /(token|secret|password)"\s*:\s*"[^"$]/i.test(text)
+      ) {
+        errors.push(
+          `${spec}/${file}: contains a remote URL or literal secret; use env placeholders`,
+        );
       }
     }
   }

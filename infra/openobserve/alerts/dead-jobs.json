@@ -1,0 +1,20 @@
+{
+  "name": "rg-dead-jobs",
+  "metric": "queue_depth",
+  "query": "queue_depth{state=\"dead\"}",
+  "threshold": {
+    "operator": ">",
+    "value": 0
+  },
+  "for": "0m",
+  "frequency_minutes": 1,
+  "severity": "page",
+  "destination": "default-webhook",
+  "labels": {
+    "dashboard": "rg-queue-depth"
+  },
+  "annotations": {
+    "runbook_url": "docs/operations/runbooks/dead-jobs.md",
+    "summary": "Dead jobs present"
+  }
+}

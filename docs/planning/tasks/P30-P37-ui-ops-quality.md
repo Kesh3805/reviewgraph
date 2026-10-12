@@ -1000,7 +1000,7 @@ Status: ☑
 ---
 
 ### OBS-008 — Alerts and runbooks
-Status: ☐
+Status: ☑
 
 - **Task ID:** OBS-008
 - **Title:** OpenObserve alert definitions as code plus one runbook per alert

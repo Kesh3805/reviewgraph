@@ -12,9 +12,27 @@ const IGNORED = new Set(['updatedAt', 'updated_at', 'owner', 'created', 'created
 
 // kind -> { dir, api path, key extractor for local and remote items, list unwrapper }
 export const KINDS = [
-  { kind: 'templates', dir: 'templates', path: 'alerts/templates', key: (o) => o.name, unwrap: (r) => r },
-  { kind: 'destinations', dir: 'destinations', path: 'alerts/destinations', key: (o) => o.name, unwrap: (r) => r },
-  { kind: 'dashboards', dir: 'dashboards', path: 'dashboards', key: (o) => o.dashboardId, unwrap: (r) => r.dashboards ?? r },
+  {
+    kind: 'templates',
+    dir: 'templates',
+    path: 'alerts/templates',
+    key: (o) => o.name,
+    unwrap: (r) => r,
+  },
+  {
+    kind: 'destinations',
+    dir: 'destinations',
+    path: 'alerts/destinations',
+    key: (o) => o.name,
+    unwrap: (r) => r,
+  },
+  {
+    kind: 'dashboards',
+    dir: 'dashboards',
+    path: 'dashboards',
+    key: (o) => o.dashboardId,
+    unwrap: (r) => r.dashboards ?? r,
+  },
   { kind: 'alerts', dir: 'alerts', path: 'alerts', key: (o) => o.name, unwrap: (r) => r.list ?? r },
 ];
 
@@ -31,7 +49,10 @@ export function normalize(obj) {
   return obj;
 }
 
-export const hashOf = (o) => createHash('sha256').update(JSON.stringify(normalize(o))).digest('hex');
+export const hashOf = (o) =>
+  createHash('sha256')
+    .update(JSON.stringify(normalize(o)))
+    .digest('hex');
 
 export function isLoopback(url) {
   const host = new URL(url).hostname;
@@ -85,10 +106,10 @@ export async function apply({
     if (local.length === 0 && !prune) continue;
     const remoteRaw = await call('GET', spec.path);
     const remote = new Map(
-      [spec.unwrap(remoteRaw)].flat().filter((o) => o && typeof o === 'object').map((o) => [
-        spec.key(o) ?? o.dashboard_id ?? o.v5?.dashboardId,
-        o,
-      ]),
+      [spec.unwrap(remoteRaw)]
+        .flat()
+        .filter((o) => o && typeof o === 'object')
+        .map((o) => [spec.key(o) ?? o.dashboard_id ?? o.v5?.dashboardId, o]),
     );
     const localKeys = new Set();
     for (const item of local) {
@@ -109,11 +130,16 @@ export async function apply({
   }
 
   const changes = plan.create.length + plan.update.length + plan.delete.length;
-  log(`plan: ${plan.create.length} create, ${plan.update.length} update, ${plan.delete.length} delete, ${plan.skip.length} unchanged`);
+  log(
+    `plan: ${plan.create.length} create, ${plan.update.length} update, ${plan.delete.length} delete, ${plan.skip.length} unchanged`,
+  );
   if (dryRun) return { plan, changes, applied: false };
-  for (const { spec, key, item } of plan.create) await call('POST', spec.path, item).catch(wrap(spec, key));
-  for (const { spec, key, item } of plan.update) await call('PUT', `${spec.path}/${encodeURIComponent(key)}`, item).catch(wrap(spec, key));
-  for (const { spec, key } of plan.delete) await call('DELETE', `${spec.path}/${encodeURIComponent(key)}`).catch(wrap(spec, key));
+  for (const { spec, key, item } of plan.create)
+    await call('POST', spec.path, item).catch(wrap(spec, key));
+  for (const { spec, key, item } of plan.update)
+    await call('PUT', `${spec.path}/${encodeURIComponent(key)}`, item).catch(wrap(spec, key));
+  for (const { spec, key } of plan.delete)
+    await call('DELETE', `${spec.path}/${encodeURIComponent(key)}`).catch(wrap(spec, key));
   return { plan, changes, applied: true };
 }
 
@@ -123,7 +149,8 @@ const wrap = (spec, key) => (e) => {
 
 if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
   const args = new Set(process.argv.slice(2));
-  const endpoint = process.env.RG_OO_URL ?? process.env.OTEL_EXPORTER_OTLP_ENDPOINT ?? 'http://localhost:25080';
+  const endpoint =
+    process.env.RG_OO_URL ?? process.env.OTEL_EXPORTER_OTLP_ENDPOINT ?? 'http://localhost:25080';
   const baseUrl = new URL(endpoint).origin;
   try {
     const { changes } = await apply({

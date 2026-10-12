@@ -1,0 +1,5 @@
+{
+  "name": "rg-default-template",
+  "body": "{\"alert\":\"{alert_name}\",\"severity\":\"{severity}\",\"value\":\"{alert_threshold}\",\"runbook\":\"{runbook_url}\"}",
+  "type": "http"
+}
