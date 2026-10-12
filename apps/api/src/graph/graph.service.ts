@@ -7,7 +7,6 @@ import { ProblemException } from '../common/problem.filter';
 import { REDIS } from '../common/redis.module';
 import { TRACER_NAME } from '../telemetry/tracer.service';
 import type {
-  GraphResponse,
   ImpactResponse,
   NeighborsQuery,
   PathQuery,
