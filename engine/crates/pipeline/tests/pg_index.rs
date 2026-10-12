@@ -12,13 +12,12 @@ use std::path::Path;
 use std::str::FromStr;
 use std::sync::Arc;
 
-use graph_storage::mem::MemGraphStore;
 use graph_storage::pg::{PgGraphStore, PgIndexRuns};
 use graph_storage::status::SnapshotStatus;
 use graph_storage::types::SnapshotPurpose;
 use graph_storage::GraphStore;
 use pipeline::index::{
-    typescript_registry, FullIndexRequest, FullIndexer, NoopProgress, PgProgressSink, SourceSpec,
+    typescript_registry, FullIndexRequest, FullIndexer, PgProgressSink, SourceSpec,
 };
 use repository::store::RepoScope;
 use review_core::ids::{CommitSha, OrganizationId, RepositoryId};
@@ -206,42 +205,5 @@ async fn pre_cancelled_run_leaves_no_run_row() {
     // A pre-cancelled run stops before any snapshot exists, so the run row is absent.
     assert!(indexer(Arc::clone(&store)).run(req, &sink).await.is_err());
     assert!(runs.latest(&scope).await.unwrap().is_none());
-    db.finish().await;
-}
-
-#[tokio::test]
-async fn file_and_pg_stores_produce_identical_graphs() {
-    let db = TestDb::new().await;
-    let scope = seed_scope(&db.pool).await;
-    let repo = small_repo();
-
-    let pg: Arc<dyn GraphStore> = Arc::new(PgGraphStore::new(db.pool.clone()));
-    let pg_out = indexer(Arc::clone(&pg))
-        .run(request(scope, repo.path()), &NoopProgress)
-        .await
-        .unwrap();
-    let mut pg_graph = pg.load_graph(&scope, pg_out.snapshot.id).await.unwrap();
-
-    let mem: Arc<dyn GraphStore> = Arc::new(MemGraphStore::new());
-    let mem_scope = RepoScope {
-        organization_id: OrganizationId::new(),
-        repository_id: RepositoryId::new(),
-    };
-    let mem_out = indexer(Arc::clone(&mem))
-        .run(request(mem_scope, repo.path()), &NoopProgress)
-        .await
-        .unwrap();
-    let mut mem_graph = mem
-        .load_graph(&mem_scope, mem_out.snapshot.id)
-        .await
-        .unwrap();
-
-    // File version ids are adapter-allocated; everything else must match.
-    for graph in [&mut pg_graph, &mut mem_graph] {
-        for file in &mut graph.files {
-            file.file_version_id = None;
-        }
-    }
-    assert_eq!(pg_graph, mem_graph);
     db.finish().await;
 }

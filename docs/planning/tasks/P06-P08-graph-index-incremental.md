@@ -1903,7 +1903,7 @@ impl GraphCache {
 ---
 
 ### IDX-001 — Full index pipeline
-Status: ◐ - missing: GitTree source, committed goldens, store-failure test, benchmark, file store (GS-006)
+Status: ◐ - missing: mem-vs-PG graph parity (loaded graphs differ, uninvestigated), GitTree source, committed goldens, store-failure test, benchmark, file store (GS-006)
 
 **Task ID:** IDX-001
 
