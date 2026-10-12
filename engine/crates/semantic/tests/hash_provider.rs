@@ -9,7 +9,7 @@ fn cosine(a: &[f32], b: &[f32]) -> f32 {
 }
 
 /// blake3 of the little-endian f32 bytes of the golden texts' vectors (768 dims).
-const GOLDEN: &str = "pending";
+const GOLDEN: &str = "38e53c58a842e2df2ac50e9ca450b3a3e932cc2e8a7e06e203f56a9624d2739a";
 
 fn golden_digest() -> String {
     let mut hasher = blake3::Hasher::new();

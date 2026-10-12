@@ -193,7 +193,7 @@ impl Ctx<'_> {
                 report.skipped_unchanged += 1;
                 for (c, m) in &existing {
                     let current = m.get(id).map(|p| p.snapshot_ids.as_slice()).unwrap_or(&[]);
-                    if current.iter().any(|s| *s == self.snapshot) {
+                    if current.contains(&self.snapshot) {
                         continue;
                     }
                     appends

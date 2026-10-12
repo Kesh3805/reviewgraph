@@ -44,14 +44,14 @@ Rules version: 1
 | `dep.removed` | dependency_updates | manifest | 0.25 | — | Dependency removed |
 | `dep.lock_drift` | dependency_updates | manifest | 0.20 | — | Lockfile changed without a manifest change |
 | `migration.added` | database_migrations | manifest | 0.55 | — | Migration added |
-| `migration.destructive` | database_migrations | manifest | 0.75 | — | Destructive migration (drop, narrowing type change, NOT NULL without default, rename) |
+| `migration.destructive` | database_migrations | manifest | 0.75 | high | Destructive migration (drop, narrowing type change, NOT NULL without default, rename) |
 | `migration.edited_existing` | database_migrations | manifest | 0.70 | — | An existing migration was edited |
 | `schema.entity_changed` | schema_changes | manifest | 0.50 | — | ORM entity columns or relations changed |
-| `secrets.literal_added` | secrets | secrets | 0.90 | — | Secret-like literal added (key, token, private key, high-entropy string) |
+| `secrets.literal_added` | secrets | secrets | 0.90 | critical | Secret-like literal added (key, token, private key, high-entropy string) |
 | `secrets.env_file` | secrets | secrets | 0.80 | — | Environment file committed |
-| `authz.call_removed` | authorization | change | 0.85 | — | An authorization call was removed |
+| `authz.call_removed` | authorization | change | 0.85 | high | An authorization call was removed |
 | `authz.direct_role_check` | authorization | change | 0.60 | — | A direct role or permission comparison was added |
-| `authz.guard_removed` | authorization | change | 0.85 | — | A guard was removed from an endpoint |
+| `authz.guard_removed` | authorization | change | 0.85 | high | A guard was removed from an endpoint |
 | `authz.guard_added` | authorization | change | 0.40 | — | A guard was added to an endpoint |
 | `authz.logic_changed` | authorization | change | 0.70 | — | Authorization logic changed |
 | `validation.removed` | validation | change | 0.65 | — | Input validation was removed |
@@ -67,7 +67,7 @@ Rules version: 1
 | `external.call_added` | external_network_calls | framework | 0.40 | — | An outbound network call was added |
 | `fs.access_changed` | filesystem_access | framework | 0.40 | — | Filesystem access changed |
 | `crypto.changed` | cryptography | framework | 0.60 | — | Cryptographic calls changed (crypto, bcrypt, argon2, jsonwebtoken, jose) |
-| `auth.jwt_verify_removed` | authentication | framework | 0.80 | — | A JWT verification call was removed |
+| `auth.jwt_verify_removed` | authentication | framework | 0.80 | high | A JWT verification call was removed |
 | `auth.authn_changed` | authentication | framework | 0.70 | — | Authentication strategy or guard changed |
 | `serialization.changed` | serialization | framework | 0.40 | — | Serialization behaviour changed |
 | `payments.changed` | payments | framework | 0.65 | — | Payment code changed |
