@@ -198,6 +198,7 @@ pub fn effects(
         verification = VerificationDepth::Full;
     }
 
+    let delta: f32 = delta;
     // Never lower the effective threshold below the suppression floor.
     let min_delta = CONFIDENCE_FLOOR - config.minimum_publish_confidence;
     let confidence_threshold_delta = if delta < 0.0 {

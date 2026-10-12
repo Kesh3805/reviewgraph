@@ -101,6 +101,7 @@ impl BindingTable {
 }
 
 /// Shared state for one file's adapters.
+#[derive(Debug)]
 pub struct FrameworkCtx<'a> {
     pub src: &'a Source<'a>,
     pub bindings: BindingTable,
