@@ -3,3 +3,4 @@
 *.png binary
 *.zst binary
 fixtures/repositories/** -text
+fixtures/pull-requests/** -text

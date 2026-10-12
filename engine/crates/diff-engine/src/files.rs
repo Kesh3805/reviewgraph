@@ -4,15 +4,26 @@
 //! *merge base* of base and head, not from the provider-supplied base tip. Rename and
 //! copy detection runs in-process through gix with explicitly configured thresholds, so
 //! no user git configuration can alter the result.
+//!
+//! After the tree walk every file is classified (DIFF-004, [`crate::disposition`]) and, when it
+//! is analysable, diffed line by line (DIFF-003, [`crate::hunks`]). Files are processed in
+//! parallel on the rayon pool and stay in path order.
+
+use std::collections::{BTreeMap, HashMap};
 
 use globset::{Glob, GlobSet, GlobSetBuilder};
-use review_core::change::{ChangedFile, FileChangeStatus};
+use rayon::prelude::*;
+use review_core::change::{ChangedFile, FileChangeStatus, Hunk};
 use review_core::ids::CommitSha;
 use review_core::{Classify, ErrorClass};
 
 use repository::git::{diff_trees, RawKind, RawTreeChange, TreeDiffOptions};
 
-use crate::git::{GitError, GitRepo, MergeBase};
+use crate::disposition::{
+    classify_file, CompiledRules, CoverageEntry, DispositionRules, FileDisposition, PROBE_BYTES,
+};
+use crate::git::{GitError, GitRepo, MergeBase, ObjectHeader};
+use crate::hunks::{compute_hunks, HunkError, HunkOptions, LineStats};
 use crate::metrics;
 use crate::model::{DiffModel, DiffStats, FileDiff};
 
@@ -36,6 +47,14 @@ pub struct DiffOptions {
     /// Maximum number of files in the result; further files are dropped and the model is
     /// flagged [`DiffStats::truncated`]. `0` means unlimited.
     pub max_files: u32,
+    /// Classify files and compute hunks (`true`). `false` returns the file list only, every
+    /// file left at the default `Analyze` disposition without line detail.
+    pub line_detail: bool,
+    /// Hunk options (context 3, histogram); `max_lines` is further capped by
+    /// [`DispositionRules::max_diff_lines`].
+    pub hunks: HunkOptions,
+    /// File classification rules.
+    pub dispositions: DispositionRules,
 }
 
 impl Default for DiffOptions {
@@ -48,6 +67,9 @@ impl Default for DiffOptions {
             include_globs: Vec::new(),
             exclude_globs: Vec::new(),
             max_files: 20_000,
+            line_detail: true,
+            hunks: HunkOptions::default(),
+            dispositions: DispositionRules::default(),
         }
     }
 }
@@ -97,6 +119,7 @@ pub fn diff_commits(
         copied = tracing::field::Empty,
         filtered = tracing::field::Empty,
         truncated = tracing::field::Empty,
+        dispositions = tracing::field::Empty,
     );
     let _enter = span.enter();
     let started = std::time::Instant::now();
@@ -163,6 +186,25 @@ pub fn diff_commits(
     files.sort_by(|a, b| a.file.path.as_str().cmp(b.file.path.as_str()));
     stats.files = files.len() as u32;
 
+    let coverage = if opts.line_detail {
+        let rules = opts
+            .dispositions
+            .compile()
+            .map_err(|e| DiffError::Invariant(format!("invalid disposition glob: {e}")))?;
+        apply_line_detail(repo, &mut files, &rules, opts, &mut stats)?
+    } else {
+        Vec::new()
+    };
+    let mut dispositions: BTreeMap<&'static str, u32> = BTreeMap::new();
+    for file in &files {
+        *dispositions.entry(file.disposition.label()).or_insert(0) += 1;
+    }
+    let summary: Vec<String> = dispositions
+        .iter()
+        .map(|(label, n)| format!("{label}={n}"))
+        .collect();
+    span.record("dispositions", summary.join(",").as_str());
+
     span.record("files", stats.files);
     span.record("renamed", stats.renamed);
     span.record("copied", stats.copied);
@@ -179,6 +221,7 @@ pub fn diff_commits(
         merge_base,
         files,
         stats,
+        coverage,
     })
 }
 
@@ -245,4 +288,218 @@ fn map_change(change: &RawTreeChange) -> Result<FileDiff, DiffError> {
         change.new_oid,
         similarity,
     ))
+}
+
+/// Classify every file, then compute hunks for the analysable ones (DIFF-003/DIFF-004).
+fn apply_line_detail(
+    repo: &GitRepo,
+    files: &mut [FileDiff],
+    rules: &CompiledRules,
+    opts: &DiffOptions,
+    stats: &mut DiffStats,
+) -> Result<Vec<CoverageEntry>, DiffError> {
+    let span = tracing::info_span!(
+        "diff.hunks",
+        files = files.len(),
+        hunks = tracing::field::Empty,
+        additions = tracing::field::Empty,
+        deletions = tracing::field::Empty,
+    );
+    let _enter = span.enter();
+    let started = std::time::Instant::now();
+    let mut hunk_opts = opts.hunks;
+    hunk_opts.max_lines = hunk_opts.max_lines.min(opts.dispositions.max_diff_lines);
+
+    let outcomes: Vec<Result<bool, DiffError>> = files
+        .par_iter_mut()
+        .map(|file| process_file(repo, file, rules, &hunk_opts))
+        .collect();
+    for outcome in outcomes {
+        if outcome? {
+            stats.hunked_files += 1;
+        }
+    }
+    let mut too_large = 0u64;
+    let mut coverage = Vec::new();
+    for file in files.iter() {
+        metrics::record_disposition(file.disposition.label());
+        if matches!(file.disposition, FileDisposition::TooLarge { .. }) {
+            too_large += 1;
+        }
+        stats.hunks += file.hunks.len() as u32;
+        if let Some(lines) = file.lines {
+            stats.additions += lines.additions;
+            stats.deletions += lines.deletions;
+        }
+        if !file.disposition.is_analyze() {
+            coverage.push(CoverageEntry {
+                path: file.file.path.clone(),
+                disposition: file.disposition,
+            });
+        }
+    }
+    span.record("hunks", stats.hunks);
+    span.record("additions", stats.additions);
+    span.record("deletions", stats.deletions);
+    metrics::record_too_large(too_large);
+    metrics::record_hunks_duration(started.elapsed().as_secs_f64());
+    Ok(coverage)
+}
+
+/// Content of one side, or why it was not read.
+enum Side {
+    Absent,
+    Loaded(Vec<u8>),
+    /// Larger than the git read limit: classified from the header only.
+    Oversize,
+    Unreadable,
+}
+
+impl Side {
+    fn bytes(&self) -> &[u8] {
+        match self {
+            Side::Loaded(data) => data,
+            Side::Absent | Side::Oversize | Side::Unreadable => &[],
+        }
+    }
+}
+
+fn header(repo: &GitRepo, oid: Option<gix::ObjectId>) -> Result<Option<ObjectHeader>, DiffError> {
+    match oid {
+        None => Ok(None),
+        Some(oid) => repo.blob_header(&oid).map(Some).map_err(DiffError::Git),
+    }
+}
+
+fn load(
+    repo: &GitRepo,
+    oid: Option<gix::ObjectId>,
+    header: Option<&ObjectHeader>,
+) -> Result<Side, DiffError> {
+    let (Some(oid), Some(header)) = (oid, header) else {
+        return Ok(Side::Absent);
+    };
+    if header.size > repo.limits().max_blob_bytes {
+        return Ok(Side::Oversize);
+    }
+    match repo.read_blob_by_oid(&oid) {
+        Ok(blob) => Ok(Side::Loaded(blob.data)),
+        // A missing object means a stale or shallow mirror: the whole diff is unusable.
+        Err(e @ (GitError::ObjectNotFound(_) | GitError::ShallowBoundary { .. })) => {
+            Err(DiffError::Git(e))
+        }
+        Err(e) => {
+            tracing::warn!(error = %e, "blob unreadable; file listed without analysis");
+            Ok(Side::Unreadable)
+        }
+    }
+}
+
+/// Classify one file and fill its line detail. Returns whether hunks were computed.
+fn process_file(
+    repo: &GitRepo,
+    file: &mut FileDiff,
+    rules: &CompiledRules,
+    hunk_opts: &HunkOptions,
+) -> Result<bool, DiffError> {
+    let old_header = header(repo, file.base_oid)?;
+    let new_header = header(repo, file.head_oid)?;
+    let old = load(repo, file.base_oid, old_header.as_ref())?;
+    let new = load(repo, file.head_oid, new_header.as_ref())?;
+
+    let unreadable = matches!(old, Side::Unreadable) || matches!(new, Side::Unreadable);
+    let new_absent = matches!(new, Side::Absent);
+    let primary = if new_absent { old.bytes() } else { new.bytes() };
+    let probe = &primary[..primary.len().min(PROBE_BYTES)];
+    let secondary: &[u8] = if new_absent {
+        &[]
+    } else {
+        &old.bytes()[..old.bytes().len().min(PROBE_BYTES)]
+    };
+    let mut disposition = if unreadable {
+        FileDisposition::Unreadable
+    } else {
+        classify_file(
+            &file.file.path,
+            old_header.as_ref(),
+            new_header.as_ref(),
+            probe,
+            secondary,
+            rules,
+        )
+    };
+    let oversize = matches!(old, Side::Oversize) || matches!(new, Side::Oversize);
+    if oversize && disposition.is_analyze() {
+        disposition = FileDisposition::TooLarge {
+            bytes: largest(old_header.as_ref(), new_header.as_ref()),
+            lines: None,
+        };
+    }
+
+    let mut hunked = false;
+    let classified = disposition;
+    match classified {
+        FileDisposition::Analyze => match compute_hunks(old.bytes(), new.bytes(), hunk_opts) {
+            Ok(set) => {
+                file.lines = Some(set.stats);
+                file.hunks = set.hunks;
+                hunked = true;
+            }
+            Err(HunkError::TooLarge { lines, .. }) => {
+                disposition = FileDisposition::TooLarge {
+                    bytes: largest(old_header.as_ref(), new_header.as_ref()),
+                    lines: Some(lines),
+                };
+            }
+        },
+        FileDisposition::Generated { .. }
+        | FileDisposition::Vendored
+        | FileDisposition::Minified
+        | FileDisposition::LockfileSummary { .. } => {
+            if !oversize {
+                file.lines = Some(approximate_stats(old.bytes(), new.bytes()));
+            }
+        }
+        FileDisposition::Binary
+        | FileDisposition::TooLarge { .. }
+        | FileDisposition::Unreadable => {}
+    }
+    file.disposition = disposition;
+
+    let headers: Vec<Hunk> = file.hunks.iter().map(|h| h.header).collect();
+    file.file = ChangedFile::new(
+        file.file.path.clone(),
+        file.file.old_path.clone(),
+        file.file.status,
+        disposition == FileDisposition::Binary,
+        headers,
+    )
+    .map_err(|e| DiffError::Invariant(e.to_string()))?;
+    Ok(hunked)
+}
+
+fn largest(old: Option<&ObjectHeader>, new: Option<&ObjectHeader>) -> u64 {
+    old.map_or(0, |h| h.size).max(new.map_or(0, |h| h.size))
+}
+
+/// Cheap line statistics for files that are listed but not diffed: the multiset difference of
+/// lines. Exact for pure additions and deletions, an approximation when lines move.
+fn approximate_stats(old: &[u8], new: &[u8]) -> LineStats {
+    let mut counts: HashMap<&[u8], i64> = HashMap::new();
+    for line in old.split_inclusive(|b| *b == b'\n') {
+        *counts.entry(line).or_insert(0) -= 1;
+    }
+    for line in new.split_inclusive(|b| *b == b'\n') {
+        *counts.entry(line).or_insert(0) += 1;
+    }
+    let mut stats = LineStats::default();
+    for delta in counts.values() {
+        let n = u32::try_from(delta.unsigned_abs()).unwrap_or(u32::MAX);
+        if *delta > 0 {
+            stats.additions += n;
+        } else {
+            stats.deletions += n;
+        }
+    }
+    stats
 }

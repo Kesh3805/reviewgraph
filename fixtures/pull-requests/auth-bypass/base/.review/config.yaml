@@ -1,0 +1,3 @@
+risk:
+  paths:
+    "src/auth/**": critical

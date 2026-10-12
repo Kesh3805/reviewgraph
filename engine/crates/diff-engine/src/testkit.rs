@@ -11,6 +11,12 @@ use review_core::ids::CommitSha;
 
 use crate::git::{GitError, GitRepo, ReadLimits};
 
+pub mod scenario;
+pub mod units;
+
+pub use scenario::{apply_patch, Scenario, ScenarioError};
+pub use units::UnitBuilder;
+
 /// Commit timestamp used by every fixture commit: `2026-01-01T00:00:00Z`.
 pub const FIXTURE_EPOCH_SECONDS: i64 = 1_767_225_600;
 

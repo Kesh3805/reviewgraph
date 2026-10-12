@@ -810,7 +810,6 @@ dependencies = [
  "blake3",
  "gix",
  "globset",
- "imara-diff",
  "insta",
  "lang-typescript",
  "once_cell",
@@ -2485,15 +2484,6 @@ dependencies = [
  "same-file",
  "walkdir",
  "winapi-util",
-]
-
-[[package]]
-name = "imara-diff"
-version = "0.1.8"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "17d34b7d42178945f775e84bc4c36dde7c1c6cdfea656d3354d009056f2bb3d2"
-dependencies = [
- "hashbrown 0.15.5",
 ]
 
 [[package]]
