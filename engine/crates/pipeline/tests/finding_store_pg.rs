@@ -466,7 +466,8 @@ async fn bulk_invalidate_skips_terminal() {
     );
     // Audited with the state each candidate actually left.
     let from: String = sqlx::query_scalar(
-        "SELECT from_state FROM finding_state_transitions WHERE candidate_finding_id = $1",
+        "SELECT from_state FROM finding_state_transitions
+          WHERE candidate_finding_id = $1 AND to_state = 'INVALIDATED'",
     )
     .bind(evidence.id)
     .fetch_one(&db.pool)
