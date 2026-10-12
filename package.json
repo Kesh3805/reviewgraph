@@ -7,6 +7,8 @@
   },
   "scripts": {
     "dev:up": "node scripts/rg.mjs compose dev up -d --wait",
+    "dev:tunnel": "node scripts/dev/tunnel.mjs",
+    "dev:replay": "node tools/dev/replay-webhook/index.mjs",
     "dev:down": "node scripts/rg.mjs compose dev down",
     "dev:reset": "node scripts/rg.mjs compose dev down -v",
     "cargo": "node scripts/rg.mjs cargo",

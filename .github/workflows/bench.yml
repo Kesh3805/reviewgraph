@@ -1,0 +1,65 @@
+name: bench
+
+on:
+  pull_request:
+    paths: ['engine/**', 'benchmarks/**', 'scripts/ci/bench-*', '.github/workflows/bench.yml']
+  schedule:
+    - cron: '17 2 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: bench-${{ github.event_name == 'schedule' && 'nightly' || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  smoke:
+    name: smoke
+    if: github.event_name != 'schedule'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: '1.97'
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: engine
+      - name: Benches compile
+        working-directory: engine
+        run: cargo bench --workspace --no-run --locked
+      - name: Compare-script tests
+        run: node --test scripts/ci/bench-compare.test.mjs
+      # Quality smoke (review-eval, replay adapter, no network/keys) is enabled once EVAL-004 lands:
+      #   review-eval run --set benchmarks/quality/smoke-set.txt --adapter replay --output eval-smoke.json
+
+  nightly:
+    name: nightly
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: '1.97'
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: engine
+      - name: Criterion full run
+        working-directory: engine
+        run: cargo bench --workspace --locked -- --save-baseline nightly
+      - name: Record CPU model
+        run: lscpu | grep 'Model name' >> "$GITHUB_STEP_SUMMARY"
+      - name: Compare with baselines
+        run: |
+          [ -f perf-current.json ] && node scripts/ci/bench-compare.mjs perf benchmarks/baselines/perf.json perf-current.json || echo "no perf-current.json produced yet"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: criterion
+          path: engine/target/criterion
+          if-no-files-found: ignore
