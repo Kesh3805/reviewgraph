@@ -28,6 +28,7 @@ telemetry = { path = "crates/telemetry" }
 repository = { path = "crates/repository" }
 analysis-ir = { path = "crates/analysis-ir" }
 lang-typescript = { path = "crates/lang-typescript" }
+lang-python = { path = "crates/lang-python" }
 codegraph = { path = "crates/codegraph" }
 graph-storage = { path = "crates/graph-storage" }
 incremental = { path = "crates/incremental" }
@@ -60,6 +61,7 @@ tracing-subscriber = { version = "0.3", features = ["env-filter", "json", "fmt"]
 clap = { version = "4", features = ["derive", "env"] }
 tree-sitter = "0.25"
 tree-sitter-typescript = "0.23"
+tree-sitter-python = "0.23"
 ignore = "0.4"
 globset = "0.4"
 rayon = "1"

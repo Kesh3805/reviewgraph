@@ -15,6 +15,7 @@ pub const ALLOWED: &[(&str, &[&str])] = &[
         "lang-typescript",
         &["review-core", "analysis-ir", "telemetry"],
     ),
+    ("lang-python", &["review-core", "analysis-ir", "telemetry"]),
     ("codegraph", &["review-core", "analysis-ir", "telemetry"]),
     (
         "graph-storage",

@@ -1,0 +1,38 @@
+//! `lang-python` crate. See docs/architecture/target-architecture.md §2 and docs/languages/python.md.
+//!
+//! The Python analyzer: tree-sitter parsing (ADR-007), IR extraction (ADR-006), a first slice of
+//! framework adapters and the module resolver. This is the only crate that knows Python. Source
+//! is parsed, never executed or imported.
+
+pub mod adapters;
+pub mod analyzer;
+pub mod diagnostics;
+pub mod error;
+pub mod exprs;
+pub mod facts;
+pub mod hashing;
+pub mod imports;
+pub mod ordinals;
+pub mod parser_pool;
+pub mod refs;
+pub mod resolver;
+pub mod symbols;
+pub mod text;
+
+use review_core::version::AnalyzerVersion;
+
+pub use analyzer::PythonAnalyzer;
+pub use error::{Error, Result};
+pub use resolver::PythonModuleResolver;
+
+/// Registered name of the analyzer in `AnalyzerId`.
+pub const ANALYZER_NAME: &str = "lang-python";
+
+/// Minor: new facts extracted. Major: identity or hash rule change (forces a re-parse of Python
+/// files only, ADR-015).
+pub const ANALYZER_VERSION: AnalyzerVersion = AnalyzerVersion::new(0, 1, 0);
+
+/// Exact versions of the parser stack, part of the repository fingerprint (INIT-012).
+/// `tests/parser_versions.rs` checks them against `engine/Cargo.lock`.
+pub const PARSER_VERSIONS: &[(&str, &str)] =
+    &[("tree-sitter", "0.25.10"), ("tree-sitter-python", "0.23.6")];

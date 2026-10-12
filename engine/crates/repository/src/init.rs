@@ -69,7 +69,11 @@ impl InitOptions {
             allow_non_git: false,
             provider_default_branch: None,
             walk: WalkOptions::default(),
-            analyzable_languages: vec![Language::Typescript, Language::Javascript],
+            analyzable_languages: vec![
+                Language::Typescript,
+                Language::Javascript,
+                Language::Python,
+            ],
             write_review_dir: true,
             fingerprint: None,
         }
