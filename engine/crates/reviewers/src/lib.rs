@@ -11,6 +11,7 @@
 //! - [`normalize`], [`claim_text`]: candidate normalisation (REV-C-003).
 //! - [`security`]: security prompt v1 and schema (REV-S-001).
 
+pub mod architecture;
 pub mod claim_text;
 pub mod context;
 pub mod correctness;

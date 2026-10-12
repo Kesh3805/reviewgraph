@@ -358,7 +358,7 @@ Status: ◐
 ---
 
 ### REV-A-001 — Architecture reviewer using profile and rules
-Status: ☐
+Status: ◐
 
 - **Task ID:** REV-A-001
 - **Title:** Architecture reviewer using profile and rules
