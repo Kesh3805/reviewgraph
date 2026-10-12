@@ -1,0 +1,17 @@
+name: exported-rename
+description: >-
+  RISK-006 contract override: an exported function is renamed while src/user/profile.ts,
+  outside the pull request, still imports the old name. A nominally pure rename of public
+  API is not low-risk.
+base_ref: base
+head_ref: head
+provider:
+  name: generic
+  pr_number: 1
+  base_sha: <base>
+  head_sha: <head>
+files:
+  base: base/
+  patch: patch.diff
+expected:
+  low_risk: expected/low-risk.json

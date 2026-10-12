@@ -1,6 +1,9 @@
 //! Index progress reporting (IDX-002).
 
 use async_trait::async_trait;
+use review_core::ids::SnapshotId;
+
+use super::full::IndexStats;
 
 /// Phases of an index run, in order.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
@@ -34,6 +37,12 @@ impl IndexPhase {
 pub trait ProgressSink: Send + Sync {
     async fn phase(&self, phase: IndexPhase);
     async fn files(&self, done: u64, total: u64);
+    /// The snapshot row this run writes exists now (default: ignored).
+    async fn started(&self, _snapshot: SnapshotId) {}
+    /// The run succeeded with these counters (default: ignored).
+    async fn finish(&self, _stats: &IndexStats) {}
+    /// The run failed with this redacted message (default: ignored).
+    async fn failed(&self, _error: &str) {}
 }
 
 /// Sink that discards everything (CLI and tests).

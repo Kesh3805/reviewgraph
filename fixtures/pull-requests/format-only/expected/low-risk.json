@@ -1,0 +1,14 @@
+{
+  "scenario": "format-only",
+  "symbols": [
+    {
+      "file": "src/util/greet.ts",
+      "name": "greet",
+      "verdict": {
+        "kind": "formatting_or_comments",
+        "overridden_by": null
+      }
+    }
+  ],
+  "files": []
+}

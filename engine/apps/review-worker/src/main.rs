@@ -1,4 +1,5 @@
 use clap::{Parser, Subcommand};
+use review_worker::index_local::{self, IndexLocalArgs};
 use review_worker::migrate;
 
 #[derive(Debug, Parser)]
@@ -16,6 +17,8 @@ enum Command {
         #[arg(long, env = "DATABASE_URL", hide_env_values = true)]
         database_url: String,
     },
+    /// Index a local checkout (development driver, IDX-001).
+    IndexLocal(IndexLocalArgs),
 }
 
 #[tokio::main]
@@ -30,6 +33,21 @@ async fn main() -> anyhow::Result<()> {
             } else {
                 println!("applied {} migration(s)", applied.len());
             }
+            Ok(())
+        }
+        Command::IndexLocal(args) => {
+            let stats = index_local::run(args).await?;
+            println!(
+                "indexed {} files ({} ok, {} partial, {} failed, {} skipped): {} nodes, {} edges, {} unresolved",
+                stats.files_walked,
+                stats.files_ok,
+                stats.files_partial,
+                stats.files_failed,
+                stats.files_skipped,
+                stats.nodes,
+                stats.edges,
+                stats.unresolved
+            );
             Ok(())
         }
     }

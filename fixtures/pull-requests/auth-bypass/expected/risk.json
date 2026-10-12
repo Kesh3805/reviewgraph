@@ -1,0 +1,161 @@
+{
+  "score": 0.993,
+  "level": "critical",
+  "signals": [
+    {
+      "rule_id": "authz.call_removed",
+      "category": "authorization",
+      "subject": {
+        "kind": "symbol",
+        "id": "97ac70ec2191e38555c6678614fc4699"
+      },
+      "source": "change",
+      "weight": 0.85,
+      "confidence": 1.0,
+      "floor_level": "high",
+      "evidence": [
+        {
+          "file": "src/auth/auth.service.ts",
+          "symbol": "97ac70ec2191e38555c6678614fc4699",
+          "node_id": "ts:src/auth/auth.service#AuthService.authorize/method",
+          "detail": "change class authorization_changed"
+        }
+      ],
+      "explanation": "An authorization call was removed",
+      "contribution": 0.95
+    },
+    {
+      "rule_id": "path.configured",
+      "category": "authentication",
+      "subject": {
+        "kind": "file",
+        "id": "src/auth/auth.service.ts"
+      },
+      "source": "path",
+      "weight": 0.8,
+      "confidence": 1.0,
+      "floor_level": "critical",
+      "evidence": [
+        {
+          "file": "src/auth/auth.service.ts",
+          "detail": "matches risk path src/auth/** (critical)"
+        }
+      ],
+      "explanation": "File matches a configured risk path; weight by level (critical 0.8, high 0.6, medium 0.4, low 0.1), category inferred from the glob, floor = configured level",
+      "contribution": 0.8
+    },
+    {
+      "rule_id": "authz.direct_role_check",
+      "category": "authorization",
+      "subject": {
+        "kind": "symbol",
+        "id": "97ac70ec2191e38555c6678614fc4699"
+      },
+      "source": "change",
+      "weight": 0.6,
+      "confidence": 1.0,
+      "evidence": [
+        {
+          "file": "src/auth/auth.service.ts",
+          "symbol": "97ac70ec2191e38555c6678614fc4699",
+          "node_id": "ts:src/auth/auth.service#AuthService.authorize/method",
+          "detail": "change class authorization_changed"
+        }
+      ],
+      "explanation": "A direct role or permission comparison was added",
+      "contribution": 0.69
+    },
+    {
+      "rule_id": "endpoint.reachable",
+      "category": "public_api_contracts",
+      "subject": {
+        "kind": "symbol",
+        "id": "97ac70ec2191e38555c6678614fc4699"
+      },
+      "source": "graph",
+      "weight": 0.3,
+      "confidence": 1.0,
+      "evidence": [
+        {
+          "file": "src/auth/auth.service.ts",
+          "symbol": "97ac70ec2191e38555c6678614fc4699",
+          "node_id": "ts:src/auth/auth.service#AuthService.authorize/method",
+          "detail": "an HTTP endpoint reaches this symbol"
+        }
+      ],
+      "explanation": "The change reaches a public HTTP endpoint (amplifies authorization, authentication and validation by 1.15)",
+      "contribution": 0.3
+    }
+  ],
+  "per_symbol": {
+    "97ac70ec2191e38555c6678614fc4699": {
+      "score": 0.993,
+      "level": "critical"
+    }
+  },
+  "per_cluster": {
+    "7ed568db8f948c82f6fc73ae86c4e51f": {
+      "score": 0.993,
+      "level": "critical"
+    },
+    "95a07c901bd59f6dfb3ec14f21bd5816": {
+      "score": 0.0,
+      "level": "low"
+    }
+  },
+  "effects": {
+    "reviewers": [
+      "correctness",
+      "security",
+      "architecture"
+    ],
+    "depth": "deep",
+    "context_budget_multiplier": 1.5,
+    "impact_budget_multiplier": 2.0,
+    "model_tier": "review_reasoner",
+    "deep_reasoner": false,
+    "verification_depth": "full",
+    "confidence_threshold_delta": -0.03,
+    "test_inspection": true,
+    "focus_profiles": [
+      "authz"
+    ],
+    "disabled_by_config": []
+  },
+  "cluster_effects": {
+    "7ed568db8f948c82f6fc73ae86c4e51f": {
+      "reviewers": [
+        "correctness",
+        "security",
+        "architecture"
+      ],
+      "depth": "deep",
+      "context_budget_multiplier": 1.5,
+      "impact_budget_multiplier": 2.0,
+      "model_tier": "review_reasoner",
+      "deep_reasoner": false,
+      "verification_depth": "full",
+      "confidence_threshold_delta": -0.03,
+      "test_inspection": true,
+      "focus_profiles": [
+        "authz"
+      ],
+      "disabled_by_config": []
+    },
+    "95a07c901bd59f6dfb3ec14f21bd5816": {
+      "reviewers": [],
+      "depth": "light",
+      "context_budget_multiplier": 0.5,
+      "impact_budget_multiplier": 0.5,
+      "model_tier": "fast_reasoner",
+      "deep_reasoner": false,
+      "verification_depth": "structural",
+      "confidence_threshold_delta": 0.05,
+      "test_inspection": false,
+      "focus_profiles": [],
+      "disabled_by_config": []
+    }
+  },
+  "rules_version": 1,
+  "input_hash": "a71ea8b271e0372531c6f436e20b6705e1cefb71c179c209a6390b539c543e09"
+}

@@ -124,6 +124,8 @@ pub mod facts {
     pub const REQUEST_DERIVED_PATH: &str = "request_derived_path";
     /// `JSON.parse` on external input was added.
     pub const JSON_PARSE_EXTERNAL: &str = "json_parse_external";
+    /// The symbol is (or configures) an authentication strategy or an `AuthGuard`.
+    pub const AUTHN_STRATEGY: &str = "authn_strategy";
 }
 
 /// One classified change of a symbol.

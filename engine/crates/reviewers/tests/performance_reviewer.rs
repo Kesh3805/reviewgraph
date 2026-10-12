@@ -44,7 +44,7 @@ fn performance_prompt_requires_concrete_path() {
     prompts::self_test().expect("prompts match the lock");
     let r = performance_reviewer().expect("reviewer");
     assert_eq!(r.kind(), ReviewerKind::Performance);
-    assert_eq!(r.prompt().lock_key(), "performance/v1");
-    let text = prompts::prompt("performance", 1).unwrap().render(&[]);
+    assert_eq!(r.prompt().lock_key(), "performance/v2");
+    let text = prompts::prompt("performance", 2).unwrap().render(&[]);
     assert!(text.contains("concrete execution path"));
 }

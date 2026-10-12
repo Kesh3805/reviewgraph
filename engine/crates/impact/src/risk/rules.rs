@@ -389,6 +389,10 @@ const SCORING: &str = "\
 * A cluster combines the category maxima of its members by the same noisy-OR. The pull request
   score is the maximum over clusters (a large PR is not riskier per se), plus 0.1 when more
   than 50 files changed. No signal means score 0.0, level low.
+* Contributions are rounded to four decimals. The assessment carries the effects of the pull
+  request and of every cluster (below) and an `input_hash`: `blake3` over the change, impact and
+  policy hashes, the rules version, the effects configuration and the signals, so a changed
+  input never reuses a cached assessment.
 * Worked example (PRD §151): `authz.call_removed` 0.85 × 1.15 → 0.95 (clamped),
   `path.configured` (`src/auth/**: critical`) 0.8, `endpoint.reachable` 0.3:
   `1 − 0.05 × 0.2 × 0.7 = 0.993` → critical.

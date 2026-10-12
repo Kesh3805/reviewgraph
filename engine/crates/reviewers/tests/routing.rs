@@ -186,7 +186,7 @@ fn unimplemented_reviewers_reported_as_skipped() {
         &[c],
         Some(&risk(RiskBand::High)),
         &ReviewersConfig::default(),
-        &ReviewerRegistry::current(),
+        &ReviewerRegistry::new([ReviewerKind::Correctness]),
     );
     assert_eq!(kinds(&plan), [ReviewerKind::Correctness]);
     let skipped: Vec<ReviewerKind> = plan
@@ -259,4 +259,13 @@ fn deep_reasoner_requested_only_for_critical_multi_module() {
     r.modules_touched = 1;
     let plan = plan_reviewers(&[c], Some(&r), &ReviewersConfig::default(), &all());
     assert_eq!(plan.entries[0].tier, ModelTier::ReviewReasoner);
+}
+
+#[test]
+fn current_registry_registers_every_reviewer() {
+    let current = ReviewerRegistry::current();
+    for kind in ReviewerKind::ALL {
+        assert!(current.is_implemented(kind), "{kind:?}");
+    }
+    assert_eq!(reviewers::registry::build_reviewers().unwrap().len(), 6);
 }

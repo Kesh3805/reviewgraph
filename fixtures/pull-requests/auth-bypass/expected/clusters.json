@@ -1,0 +1,40 @@
+{
+  "clusters": [
+    {
+      "id": "7ed568db8f948c82f6fc73ae86c4e51f",
+      "kind": "change",
+      "members": [
+        "97ac70ec2191e38555c6678614fc4699"
+      ],
+      "modules": [
+        "src/auth"
+      ],
+      "apis": [],
+      "entities": [],
+      "files": [
+        "src/auth/auth.service.ts"
+      ],
+      "reason": [
+        "singleton"
+      ],
+      "size_lines": 6
+    },
+    {
+      "id": "95a07c901bd59f6dfb3ec14f21bd5816",
+      "kind": "low_risk",
+      "members": [],
+      "modules": [],
+      "apis": [],
+      "entities": [],
+      "files": [
+        "src/util/format.ts"
+      ],
+      "reason": [
+        "low_risk"
+      ],
+      "size_lines": 2
+    }
+  ],
+  "degraded": false,
+  "splits": 0
+}

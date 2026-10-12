@@ -1,0 +1,17 @@
+name: pure-rename
+description: >-
+  RISK-006: a module-private helper is renamed together with its only call site. A rename
+  of a symbol that is not exported has no outside callers, so it stays low-risk. The caller
+  changes its call target and is not low-risk itself.
+base_ref: base
+head_ref: head
+provider:
+  name: generic
+  pr_number: 1
+  base_sha: <base>
+  head_sha: <head>
+files:
+  base: base/
+  patch: patch.diff
+expected:
+  low_risk: expected/low-risk.json

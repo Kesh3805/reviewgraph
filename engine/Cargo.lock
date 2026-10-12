@@ -812,6 +812,7 @@ version = "0.1.0"
 dependencies = [
  "analysis-ir",
  "blake3",
+ "codegraph",
  "gix",
  "globset",
  "insta",
@@ -2066,10 +2067,12 @@ dependencies = [
 name = "graph-storage"
 version = "0.1.0"
 dependencies = [
+ "analysis-ir",
  "async-trait",
  "bincode",
  "blake3",
  "chrono",
+ "codegraph",
  "criterion",
  "fs2",
  "futures",
@@ -2496,14 +2499,17 @@ version = "0.1.0"
 dependencies = [
  "blake3",
  "codegraph",
+ "globset",
  "hex",
  "opentelemetry",
  "proptest",
  "rayon",
+ "regex",
  "review-core",
  "schemars",
  "serde",
  "serde_json",
+ "serde_yaml",
  "thiserror",
  "tracing",
 ]
@@ -3217,11 +3223,15 @@ dependencies = [
  "async-trait",
  "blake3",
  "chrono",
+ "codegraph",
  "futures",
  "graph-storage",
  "hex",
+ "lang-typescript",
  "model-gateway",
  "profile",
+ "rayon",
+ "repository",
  "review-core",
  "review-test-support",
  "serde",
@@ -3891,7 +3901,11 @@ name = "review-worker"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "blake3",
  "clap",
+ "graph-storage",
+ "pipeline",
+ "repository",
  "review-core",
  "serde_json",
  "sqlx",
@@ -3908,6 +3922,7 @@ version = "0.1.0"
 dependencies = [
  "async-trait",
  "blake3",
+ "codegraph",
  "globset",
  "insta",
  "model-gateway",

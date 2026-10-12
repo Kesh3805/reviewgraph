@@ -41,3 +41,20 @@ bit-exact across runs. A repository with privacy `no_external` always uses `hash
 managed with `review semantic collections|activate|retire`; see
 [semantic-reembed.md](semantic-reembed.md). Qdrant tests are behind the `semantic` crate's
 `integration` feature and need `QDRANT_URL`.
+
+## Indexing a checkout locally (`index-local`)
+
+`review-worker index-local` runs the full index pipeline (walk, parse, link, build, validate,
+persist) over a checkout on disk. It is the driver used by the fixture tests, the parity run and
+benchmarks.
+
+```sh
+# Dry run into the in-memory store; prints counts, optionally writes them as JSON.
+cargo run -p review-worker -- index-local --repo fixtures/repositories/ts-basic-calls/steps/001-initial --json-stats stats.json
+
+# Postgres store (the organization and repository rows must exist).
+cargo run -p review-worker -- index-local --repo <path> --store pg --database-url <url> --organization-id <uuid> --repository-id <uuid>
+```
+
+`--store file` is reserved for the CLI file adapter (GS-006) and is refused until it exists.
+Without `--commit`, the snapshot records a digest of the repository path as its commit marker.

@@ -11,6 +11,7 @@ workspace = true
 
 [dependencies]
 review-core.workspace = true
+codegraph.workspace = true
 model-gateway.workspace = true
 thiserror.workspace = true
 serde.workspace = true

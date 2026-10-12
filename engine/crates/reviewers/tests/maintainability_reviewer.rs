@@ -51,7 +51,7 @@ fn maintainability_threshold_floor_085() {
 #[test]
 fn complexity_crossed_threshold_qualifies() {
     let cx = ContextSnapshot {
-        changed_symbols: vec![symbol(&branchy(3), &branchy(20))],
+        changed_symbols: vec![symbol(&branchy(3), &branchy(30))],
         ..ContextSnapshot::default()
     };
     assert_eq!(seed(&cx, &MetricThresholds::default(), &[]).len(), 1);
@@ -60,12 +60,12 @@ fn complexity_crossed_threshold_qualifies() {
 #[test]
 fn complexity_preexisting_not_qualify() {
     let cx = ContextSnapshot {
-        changed_symbols: vec![symbol(&branchy(18), &branchy(20))],
+        changed_symbols: vec![symbol(&branchy(28), &branchy(30))],
         ..ContextSnapshot::default()
     };
     assert!(seed(&cx, &MetricThresholds::default(), &[]).is_empty());
-    let head = metrics_of(&branchy(20));
-    let base = metrics_of(&branchy(18));
+    let head = metrics_of(&branchy(30));
+    let base = metrics_of(&branchy(28));
     assert!(metric_crossed(Some(base), head, &MetricThresholds::default()).is_none());
 }
 
@@ -99,5 +99,5 @@ fn maintainability_prompt_binds_lock() {
     prompts::self_test().expect("prompts match the lock");
     let r = maintainability_reviewer().expect("reviewer");
     assert_eq!(r.kind(), ReviewerKind::Maintainability);
-    assert_eq!(r.prompt().lock_key(), "maintainability/v1");
+    assert_eq!(r.prompt().lock_key(), "maintainability/v2");
 }

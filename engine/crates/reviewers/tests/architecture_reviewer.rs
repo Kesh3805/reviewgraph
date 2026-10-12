@@ -60,7 +60,7 @@ fn architecture_requires_basis_in_prompt() {
     prompts::self_test().expect("prompts match the lock");
     let r = architecture_reviewer().expect("reviewer");
     assert_eq!(r.kind(), ReviewerKind::Architecture);
-    assert_eq!(r.prompt().lock_key(), "architecture/v1");
-    let text = prompts::prompt("architecture", 1).unwrap().render(&[]);
+    assert_eq!(r.prompt().lock_key(), "architecture/v2");
+    let text = prompts::prompt("architecture", 2).unwrap().render(&[]);
     assert!(text.contains("A finding without a basis"));
 }

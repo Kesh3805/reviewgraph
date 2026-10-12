@@ -19,6 +19,8 @@ conformance = []
 
 [dependencies]
 review-core.workspace = true
+analysis-ir.workspace = true
+codegraph.workspace = true
 repository.workspace = true
 thiserror.workspace = true
 sqlx.workspace = true

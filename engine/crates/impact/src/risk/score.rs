@@ -10,8 +10,10 @@ use std::collections::{BTreeMap, BTreeSet};
 use review_core::change::ChangeClusterKey;
 use review_core::ids::SymbolKey;
 use review_core::location::RepoPath;
-use serde::Serialize;
+use schemars::JsonSchema;
+use serde::{Deserialize, Serialize};
 
+use super::effects::{effects, EffectsConfig, RiskEffects};
 use super::level::RiskLevel;
 use super::rules::RISK_RULES_VERSION;
 use super::signal::{RiskCategory, RiskSignal, RuleSource, SignalSubject};
@@ -33,6 +35,10 @@ const PR_SIZE_WEIGHT: f32 = 0.1;
 pub struct ClusterMembers {
     pub symbols: BTreeSet<SymbolKey>,
     pub files: BTreeSet<RepoPath>,
+    /// A member has no covering test (impact `untested`).
+    pub untested: bool,
+    /// A member is more than cosmetic or low-risk.
+    pub non_cosmetic: bool,
 }
 
 /// Everything scoring reads.
@@ -45,17 +51,31 @@ pub struct ScoreInput {
     /// Files classified low-risk (RISK-006).
     pub low_risk_files: BTreeSet<RepoPath>,
     pub files_changed: usize,
+    /// The file of each changed symbol: file-subject signals (paths, manifests, secrets) apply
+    /// to the symbols of that file.
+    pub symbol_files: BTreeMap<SymbolKey, RepoPath>,
+    /// PR-level effects inputs, for changes without clusters.
+    pub has_untested: bool,
+    pub non_cosmetic: bool,
+    pub effects_config: EffectsConfig,
+    /// The change model's input hash.
+    pub change_input_hash: String,
+    /// The impact graph's input hash.
+    pub impact_input_hash: String,
+    /// [`RiskPolicy::policy_hash`](super::policy::RiskPolicy::policy_hash).
+    pub policy_hash: String,
 }
 
 /// A score with its level.
-#[derive(Debug, Clone, Copy, PartialEq, Serialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize, JsonSchema)]
 pub struct ScoredLevel {
     pub score: f32,
     pub level: RiskLevel,
 }
 
 /// The risk assessment of one PR.
-#[derive(Debug, Clone, PartialEq, Serialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
 pub struct RiskAssessment {
     pub score: f32,
     pub level: RiskLevel,
@@ -63,7 +83,14 @@ pub struct RiskAssessment {
     pub signals: Vec<RiskSignal>,
     pub per_symbol: BTreeMap<SymbolKey, ScoredLevel>,
     pub per_cluster: BTreeMap<ChangeClusterKey, ScoredLevel>,
+    /// What the pull request's risk changes (RISK-005), over every category present.
+    pub effects: RiskEffects,
+    /// The effects of each cluster, from its own level and categories.
+    pub cluster_effects: BTreeMap<ChangeClusterKey, RiskEffects>,
     pub rules_version: u32,
+    /// `blake3(change, impact, policy, rules version, effects configuration, signals)`,
+    /// 64 lowercase hex characters.
+    pub input_hash: String,
 }
 
 fn round4(value: f32) -> f32 {
@@ -106,8 +133,10 @@ fn with_contributions(input: &ScoreInput) -> Vec<RiskSignal> {
                 1.0
             };
             let mut out = signal.clone();
-            out.contribution = (signal.weight * signal.confidence * amplifier * dampening)
-                .clamp(0.0, MAX_CONTRIBUTION);
+            out.contribution = round4(
+                (signal.weight * signal.confidence * amplifier * dampening)
+                    .clamp(0.0, MAX_CONTRIBUTION),
+            );
             out
         })
         .collect()
@@ -160,21 +189,36 @@ pub fn assess(input: &ScoreInput) -> RiskAssessment {
             .then_with(|| a.subject.cmp(&b.subject))
     });
 
-    let symbols: BTreeSet<SymbolKey> = signals
+    let signal_files: BTreeSet<&RepoPath> = signals
+        .iter()
+        .filter_map(|s| match &s.subject {
+            SignalSubject::File(path) => Some(path),
+            _ => None,
+        })
+        .collect();
+    let mut symbols: BTreeSet<SymbolKey> = signals
         .iter()
         .filter_map(|s| match &s.subject {
             SignalSubject::Symbol(key) => Some(*key),
             _ => None,
         })
         .collect();
+    symbols.extend(
+        input
+            .symbol_files
+            .iter()
+            .filter(|(_, path)| signal_files.contains(path))
+            .map(|(key, _)| *key),
+    );
     let per_symbol: BTreeMap<SymbolKey, ScoredLevel> = symbols
         .into_iter()
         .map(|key| {
-            let scored = score_signals(
-                signals
-                    .iter()
-                    .filter(|s| matches!(&s.subject, SignalSubject::Symbol(k) if *k == key)),
-            );
+            let file = input.symbol_files.get(&key);
+            let scored = score_signals(signals.iter().filter(|s| match &s.subject {
+                SignalSubject::Symbol(k) => *k == key,
+                SignalSubject::File(path) => file == Some(path),
+                _ => false,
+            }));
             (key, scored)
         })
         .collect();
@@ -212,12 +256,75 @@ pub fn assess(input: &ScoreInput) -> RiskAssessment {
         };
     }
 
+    let cluster_effects: BTreeMap<ChangeClusterKey, RiskEffects> = input
+        .clusters
+        .iter()
+        .map(|(key, members)| {
+            let categories: BTreeSet<RiskCategory> = signals
+                .iter()
+                .filter(|s| belongs_to_cluster(&s.subject, key, members))
+                .map(|s| s.category)
+                .collect();
+            let level = per_cluster.get(key).map_or(RiskLevel::Low, |s| s.level);
+            (
+                *key,
+                effects(
+                    level,
+                    &categories,
+                    members.untested,
+                    members.non_cosmetic,
+                    &input.effects_config,
+                ),
+            )
+        })
+        .collect();
+    let all_categories: BTreeSet<RiskCategory> = signals.iter().map(|s| s.category).collect();
+    let has_untested = input.has_untested || input.clusters.values().any(|m| m.untested);
+    let non_cosmetic = input.non_cosmetic || input.clusters.values().any(|m| m.non_cosmetic);
+    let pr_effects = effects(
+        best.level,
+        &all_categories,
+        has_untested,
+        non_cosmetic,
+        &input.effects_config,
+    );
+    let input_hash = compute_input_hash(input, &signals);
+
     RiskAssessment {
         score: best.score,
         level: best.level,
         signals,
         per_symbol,
         per_cluster,
+        effects: pr_effects,
+        cluster_effects,
         rules_version: RISK_RULES_VERSION,
+        input_hash,
     }
+}
+
+/// The risk input hash: change, impact and policy identities, the rules version, the effects
+/// configuration and the signals themselves, length-prefixed so fields cannot run together.
+pub fn compute_input_hash(input: &ScoreInput, signals: &[RiskSignal]) -> String {
+    let mut hasher = blake3::Hasher::new();
+    let mut put = |part: &[u8]| {
+        hasher.update(&(part.len() as u64).to_le_bytes());
+        hasher.update(part);
+    };
+    put(input.change_input_hash.as_bytes());
+    put(input.impact_input_hash.as_bytes());
+    put(input.policy_hash.as_bytes());
+    put(&RISK_RULES_VERSION.to_le_bytes());
+    let config = &input.effects_config;
+    for reviewer in &config.enabled_reviewers {
+        put(reviewer.as_str().as_bytes());
+    }
+    put(&[
+        u8::from(config.deep_reasoner_enabled),
+        u8::from(config.deep_reasoner_budget_available),
+    ]);
+    put(&config.minimum_publish_confidence.to_le_bytes());
+    put(format!("{:?}", config.max_verification_depth).as_bytes());
+    put(&serde_json::to_vec(signals).unwrap_or_default());
+    hasher.finalize().to_hex().to_string()
 }

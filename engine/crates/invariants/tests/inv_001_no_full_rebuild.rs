@@ -15,8 +15,14 @@ const FULL_INDEX_ENTRY: &str = "FullIndexer";
 fn inv_001_pr_path_has_no_reference_to_full_indexer() -> TestResult {
     let mut offenders = Vec::new();
     for file in rust_files(&crate_src("pipeline"))? {
+        // `pipeline::index` defines the full indexer (IDX-001); it is the PR path (review,
+        // incremental) that must never reach for it.
+        let path = rel(&file);
+        if path.starts_with("crates/pipeline/src/index/") {
+            continue;
+        }
         if fs::read_to_string(&file)?.contains(FULL_INDEX_ENTRY) {
-            offenders.push(rel(&file));
+            offenders.push(path);
         }
     }
     assert!(

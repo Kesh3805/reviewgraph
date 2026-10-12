@@ -45,6 +45,8 @@ pub struct Collected {
 pub struct VisitCtx<'a> {
     pub source: Source<'a>,
     pub module_name: String,
+    /// Repo-relative path of the file, for path-based heuristics such as test-file detection.
+    pub file_path: &'a str,
     /// Ranges of ERROR/MISSING nodes; symbols overlapping one get `has_errors`.
     pub error_ranges: &'a [SourceRange],
     pub cfg: &'a AnalyzerConfig,
@@ -90,7 +92,13 @@ pub fn run(
         &module_facts.bindings,
         sink,
     );
-    let framework = crate::frameworks::run(root, &ctx.source, &table.symbols, ctx.cfg, sink);
+    let file = crate::frameworks::FileInfo {
+        path: ctx.file_path,
+        symbols: &table.symbols,
+        imports: &module_facts.imports,
+        bindings: &module_facts.bindings,
+    };
+    let framework = crate::frameworks::run(root, &ctx.source, file, ctx.cfg, sink);
     let mut symbols = table.symbols;
     crate::hashing::assign_hashes(&mut symbols, &ctx.source);
     Collected {
