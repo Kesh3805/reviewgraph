@@ -3,6 +3,7 @@
 
 #![allow(dead_code, clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 
+pub mod inc;
 pub mod lineage_harness;
 
 use analysis_ir::identity::symbol_id_of;
