@@ -179,7 +179,7 @@ pub fn collect(ctx: &mut FrameworkCtx<'_>) {
         for prop in symbols.iter().filter(|p| {
             p.parent == Some(class.local_id)
                 && matches!(p.kind, SymbolKind::Property | SymbolKind::Field)
-                && p.attrs.get("from_constructor_param").is_none()
+                && !p.attrs.contains_key("from_constructor_param")
         }) {
             let token = classify(ctx, &prop.decorators);
             if !token.explicit {
