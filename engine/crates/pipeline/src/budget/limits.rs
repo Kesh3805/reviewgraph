@@ -62,6 +62,18 @@ impl ReviewBudget {
     /// Plan defaults (equal to the hard caps in v1).
     pub const DEFAULT: ReviewBudget = Self::HARD_CAPS;
 
+    /// Applies the repository `.review/config.yaml` budgets (`budgets.max_symbols`,
+    /// `max_model_calls`, `max_review_seconds`) on top of `self`. The result must still be
+    /// clamped to the deployment hard caps with [`Self::clamp_to`].
+    pub fn with_repo_budgets(self, repo: &profile::config::Budgets) -> ReviewBudget {
+        ReviewBudget {
+            max_reviewed_symbols: repo.max_symbols,
+            max_model_calls: repo.max_model_calls,
+            max_review_latency: Duration::from_secs(u64::from(repo.max_review_seconds)),
+            ..self
+        }
+    }
+
     /// Clamp a repository override to `caps`. Returns the clamped budget and the names of the
     /// fields that were clamped (the caller logs a config warning, not an error).
     pub fn clamp_to(self, caps: &ReviewBudget) -> (ReviewBudget, Vec<&'static str>) {
@@ -101,5 +113,25 @@ impl ReviewBudget {
             BudgetKind::ModelCalls => self.max_model_calls.into(),
             BudgetKind::Latency => self.max_review_latency.as_millis() as u64,
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn repo_override_clamped_to_hard_cap() {
+        let repo = profile::config::Budgets {
+            max_model_calls: 500,
+            max_symbols: 50,
+            ..profile::config::Budgets::default()
+        };
+        let (b, clamped) = ReviewBudget::DEFAULT
+            .with_repo_budgets(&repo)
+            .clamp_to(&ReviewBudget::HARD_CAPS);
+        assert_eq!(b.max_model_calls, 40);
+        assert_eq!(b.max_reviewed_symbols, 50);
+        assert_eq!(clamped, ["max_model_calls"]);
     }
 }

@@ -3222,13 +3222,19 @@ dependencies = [
  "analysis-ir",
  "async-trait",
  "blake3",
+ "chrono",
  "codegraph",
+ "futures",
  "graph-storage",
+ "hex",
  "lang-typescript",
+ "model-gateway",
  "opentelemetry",
+ "profile",
  "rayon",
  "repository",
  "review-core",
+ "review-test-support",
  "serde",
  "serde_json",
  "sqlx",
@@ -3239,6 +3245,7 @@ dependencies = [
  "tracing",
  "uuid",
  "verification",
+ "zstd",
 ]
 
 [[package]]

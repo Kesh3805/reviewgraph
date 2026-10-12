@@ -3546,7 +3546,7 @@ Status: ◐
 ---
 
 ### PIPE-001 — `jobs` table migration and Rust JobQueue
-Status: ◐
+Status: ◐ PgJobQueue implemented and tested in CI; missing: criterion benchmark, metrics counters
 
 - **Task ID:** PIPE-001
 - **Title:** `jobs` table migration and the Rust `JobQueue` (enqueue, claim with SKIP LOCKED, heartbeat, complete, fail with backoff, dead)
@@ -3616,7 +3616,7 @@ Status: ◐
 ---
 
 ### PIPE-002 — Lease reaper and LISTEN/NOTIFY wake-up
-Status: ☐
+Status: ◐ reaper, waker and claim loop implemented and tested in CI; missing: depth gauge export, latency smoke
 
 - **Task ID:** PIPE-002
 - **Title:** Lease reaper (requeue expired leases, dead-letter after `max_attempts`) and LISTEN/NOTIFY wake-up with a polling fallback
@@ -3781,7 +3781,7 @@ Status: ☐
 ---
 
 ### PIPE-005 — stage_outputs persistence for idempotent resume
-Status: ☐
+Status: ◐ stage_outputs store, input hash and run claims done; missing: docs/architecture/pipeline.md
 
 - **Task ID:** PIPE-005
 - **Title:** `stage_outputs` keyed `(review_run_id, stage, input_hash)` for idempotent resume, plus the one-run-per-head claim key
@@ -3841,7 +3841,7 @@ Status: ☐
 ---
 
 ### PIPE-006 — Budget manager
-Status: ◐
+Status: ◐ call budgets, deadline cancel, candidate cap, persistence done; missing: orchestrator wiring
 
 - **Task ID:** PIPE-006
 - **Title:** Review budget manager (PRD §90): symbols, graph expansion, tokens, candidates, model calls, latency
@@ -3903,7 +3903,7 @@ Status: ◐
 ---
 
 ### PIPE-007 — Review state machine CAS transitions
-Status: ☐
+Status: ◐ CAS store with audit done; missing: randomized race test, benchmark
 
 - **Task ID:** PIPE-007
 - **Title:** Persisted `ReviewState` transitions as compare-and-set, with a transition audit and the duplicate-delivery rule

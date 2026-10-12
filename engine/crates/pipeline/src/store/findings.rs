@@ -12,7 +12,7 @@ use verification::store::{
     FindingStore, NewCandidate, NewEvidence, NewVerification, Transition, TransitionError,
 };
 
-use super::metrics;
+use super::finding_metrics as metrics;
 
 /// Reason code recorded by bulk invalidation on supersession.
 pub const HEAD_SUPERSEDED: &str = "HEAD_SUPERSEDED";

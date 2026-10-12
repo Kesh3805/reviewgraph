@@ -22,6 +22,18 @@ impl Queue {
         }
     }
 
+    pub const ALL: [Queue; 5] = [
+        Self::RepositoryIndex,
+        Self::IncrementalIndex,
+        Self::PrReview,
+        Self::ReviewPublish,
+        Self::HistoryIngest,
+    ];
+
+    pub fn parse(name: &str) -> Option<Queue> {
+        Self::ALL.into_iter().find(|q| q.as_str() == name)
+    }
+
     /// NOTIFY channel: `jobs_<queue>`.
     pub fn channel(self) -> String {
         format!("jobs_{}", self.as_str())
@@ -38,13 +50,17 @@ pub struct NewJob {
     pub priority: i32,
     pub max_attempts: i32,
     pub trace_parent: Option<String>,
+    /// Not claimable before `now() + delay`. `None` means immediately.
+    pub delay: Option<Duration>,
 }
 
 #[derive(Debug, Clone)]
 pub struct Job {
     pub id: String,
     pub queue: Queue,
+    pub organization_id: String,
     pub payload: String,
+    pub trace_parent: Option<String>,
     pub attempts: i32,
     pub max_attempts: i32,
     pub locked_by: String,
@@ -78,7 +94,7 @@ impl FailKind {
             Self::Permanent => FailOutcome::Dead,
             Self::Transient if attempts >= max_attempts => FailOutcome::Dead,
             Self::Transient => FailOutcome::Requeued,
-            Self::RateLimited { .. } if rate_limit_requeues + 1 > MAX_RATE_LIMIT_REQUEUES => {
+            Self::RateLimited { .. } if rate_limit_requeues + 1 >= MAX_RATE_LIMIT_REQUEUES => {
                 FailOutcome::Dead
             }
             Self::RateLimited { .. } => FailOutcome::Requeued,
@@ -93,6 +109,30 @@ pub enum JobError {
     LeaseLost,
     #[error("database error: {0}")]
     Db(String),
+    #[error("invalid job: {0}")]
+    Invalid(String),
+}
+
+impl From<sqlx::Error> for JobError {
+    fn from(e: sqlx::Error) -> Self {
+        Self::Db(e.to_string())
+    }
+}
+
+/// Which queued jobs to cancel. At least one selector is required; selectors combine with AND.
+#[derive(Debug, Clone, Default)]
+pub struct CancelPredicate {
+    pub queue: Option<Queue>,
+    /// Jobs whose payload names one of these review runs.
+    pub review_run_ids: Option<Vec<String>>,
+    /// Jobs whose idempotency key starts with this prefix.
+    pub key_prefix: Option<String>,
+}
+
+impl CancelPredicate {
+    pub fn is_empty(&self) -> bool {
+        self.queue.is_none() && self.review_run_ids.is_none() && self.key_prefix.is_none()
+    }
 }
 
 /// Durable at-least-once queue (ADR-012). `PgJobQueue` implements this over PostgreSQL with
@@ -112,6 +152,8 @@ pub trait JobQueue {
     async fn complete(&self, job: &Job) -> Result<(), JobError>;
     async fn fail(&self, job: &Job, kind: FailKind, error: &str) -> Result<FailOutcome, JobError>;
     async fn release_worker(&self, worker_id: &str) -> Result<u64, JobError>;
+    /// Cancels matching `queued` jobs only (running jobs observe their own cancellation).
+    async fn cancel_where(&self, predicate: CancelPredicate) -> Result<u64, JobError>;
 }
 
 #[cfg(test)]
@@ -127,7 +169,8 @@ mod tests {
             retry_after: Duration::from_secs(1),
         };
         assert_eq!(rl.outcome(5, 5, 0), FailOutcome::Requeued);
-        assert_eq!(rl.outcome(1, 5, 50), FailOutcome::Dead);
+        assert_eq!(rl.outcome(1, 5, 49), FailOutcome::Dead);
+        assert_eq!(rl.outcome(1, 5, 48), FailOutcome::Requeued);
     }
 
     #[test]
