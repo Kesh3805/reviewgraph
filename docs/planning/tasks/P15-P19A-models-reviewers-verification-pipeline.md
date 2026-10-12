@@ -3546,7 +3546,7 @@ Status: ☑
 ---
 
 ### PIPE-001 — `jobs` table migration and Rust JobQueue
-Status: ☐
+Status: ☑
 
 - **Task ID:** PIPE-001
 - **Title:** `jobs` table migration and the Rust `JobQueue` (enqueue, claim with SKIP LOCKED, heartbeat, complete, fail with backoff, dead)
