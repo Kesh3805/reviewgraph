@@ -6,6 +6,8 @@
 
 pub mod build;
 pub mod case;
+pub mod category_compat;
+pub mod matcher;
 
 use std::path::PathBuf;
 

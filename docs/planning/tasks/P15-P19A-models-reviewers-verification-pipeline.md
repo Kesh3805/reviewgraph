@@ -1175,7 +1175,7 @@ synthetic_fixtures: true               # replay fixtures are hand-authored (see 
 ---
 
 ### EVAL-002 — Matcher
-Status: ☐
+Status: ☑
 
 **Task ID:** EVAL-002
 
