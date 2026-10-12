@@ -1,0 +1,20 @@
+{
+  "name": "rg-model-error-rate",
+  "metric": "llm_requests_total",
+  "query": "ratio of llm_requests_total{outcome!=\"ok\"} over 15m, min volume 20",
+  "threshold": {
+    "operator": ">",
+    "value": 0.05
+  },
+  "for": "15m",
+  "frequency_minutes": 5,
+  "severity": "ticket",
+  "destination": "local-log",
+  "labels": {
+    "dashboard": "rg-model-usage-cost"
+  },
+  "annotations": {
+    "runbook_url": "docs/operations/runbooks/model-error-rate.md",
+    "summary": "Model error rate above 5 percent"
+  }
+}

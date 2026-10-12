@@ -1,0 +1,20 @@
+{
+  "name": "rg-qdrant-latency-high",
+  "metric": "qdrant_query_duration_seconds",
+  "query": "p95 of qdrant_query_duration_seconds",
+  "threshold": {
+    "operator": ">",
+    "value": 0.5
+  },
+  "for": "10m",
+  "frequency_minutes": 2,
+  "severity": "ticket",
+  "destination": "local-log",
+  "labels": {
+    "dashboard": "rg-qdrant-latency"
+  },
+  "annotations": {
+    "runbook_url": "docs/operations/runbooks/qdrant-latency-high.md",
+    "summary": "Qdrant p95 above 500 ms"
+  }
+}

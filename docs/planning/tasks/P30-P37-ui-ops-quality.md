@@ -850,7 +850,7 @@ Status: ☐
 ---
 
 ### OBS-005 — Metrics instruments
-Status: ☐
+Status: ◐ (metrics-catalog.md contract done; Rust/TS instrument registries pending)
 
 - **Task ID:** OBS-005
 - **Title:** Central metric registries (Rust and TypeScript) for the full PRD §115 / master-plan metric set, with bounded label cardinality
@@ -902,7 +902,7 @@ Status: ☐
 ---
 
 ### OBS-006 — Redaction layers and tests
-Status: ☐
+Status: ◐ (TypeScript redaction and shared corpus done; Rust `telemetry::redact` layer pending)
 
 - **Task ID:** OBS-006
 - **Title:** Redaction in the Rust `tracing` pipeline and the NestJS log formatter, sharing one pattern set and a shared test corpus
@@ -958,7 +958,7 @@ Status: ☐
 ---
 
 ### OBS-007 — OpenObserve dashboards as code
-Status: ☐
+Status: ☑
 
 - **Task ID:** OBS-007
 - **Title:** Versioned OpenObserve dashboards in `infra/openobserve/dashboards/` and an idempotent apply script
@@ -1010,7 +1010,7 @@ Status: ☐
 ---
 
 ### OBS-008 — Alerts and runbooks
-Status: ☐
+Status: ☑
 
 - **Task ID:** OBS-008
 - **Title:** OpenObserve alert definitions as code plus one runbook per alert
@@ -1589,7 +1589,7 @@ Status: ☐
 ---
 
 ### SEC-010 — Threat model document and dependency scanning
-Status: ☐
+Status: ☑
 
 - **Task ID:** SEC-010
 - **Title:** STRIDE threat model for ReviewGraph and an SBOM plus dependency/image scanning policy

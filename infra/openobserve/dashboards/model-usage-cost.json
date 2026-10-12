@@ -1,0 +1,178 @@
+{
+  "version": 5,
+  "dashboardId": "rg-model-usage-cost",
+  "title": "ReviewGraph: Model usage and cost",
+  "description": "Source metrics: llm_input_tokens_total, llm_output_tokens_total, llm_cached_tokens_total, llm_cost_estimate, llm_requests_total",
+  "role": "",
+  "owner": "",
+  "created": "",
+  "tabs": [
+    {
+      "tabId": "default",
+      "name": "Default",
+      "panels": [
+        {
+          "id": "Panel_1",
+          "type": "line",
+          "title": "Input tokens",
+          "description": "",
+          "config": {
+            "show_legends": true
+          },
+          "queryType": "sql",
+          "queries": [
+            {
+              "query": "SELECT histogram(_timestamp) AS x, sum(value) AS y FROM \"llm_input_tokens_total\" GROUP BY x ORDER BY x",
+              "customQuery": true,
+              "fields": {
+                "stream": "llm_input_tokens_total",
+                "stream_type": "metrics"
+              },
+              "config": {}
+            }
+          ],
+          "layout": {
+            "x": 0,
+            "y": 0,
+            "w": 96,
+            "h": 9,
+            "i": 1
+          }
+        },
+        {
+          "id": "Panel_2",
+          "type": "line",
+          "title": "Output tokens",
+          "description": "",
+          "config": {
+            "show_legends": true
+          },
+          "queryType": "sql",
+          "queries": [
+            {
+              "query": "SELECT histogram(_timestamp) AS x, sum(value) AS y FROM \"llm_output_tokens_total\" GROUP BY x ORDER BY x",
+              "customQuery": true,
+              "fields": {
+                "stream": "llm_output_tokens_total",
+                "stream_type": "metrics"
+              },
+              "config": {}
+            }
+          ],
+          "layout": {
+            "x": 96,
+            "y": 0,
+            "w": 96,
+            "h": 9,
+            "i": 2
+          }
+        },
+        {
+          "id": "Panel_3",
+          "type": "line",
+          "title": "Cached tokens",
+          "description": "",
+          "config": {
+            "show_legends": true
+          },
+          "queryType": "sql",
+          "queries": [
+            {
+              "query": "SELECT histogram(_timestamp) AS x, sum(value) AS y FROM \"llm_cached_tokens_total\" GROUP BY x ORDER BY x",
+              "customQuery": true,
+              "fields": {
+                "stream": "llm_cached_tokens_total",
+                "stream_type": "metrics"
+              },
+              "config": {}
+            }
+          ],
+          "layout": {
+            "x": 0,
+            "y": 9,
+            "w": 96,
+            "h": 9,
+            "i": 3
+          }
+        },
+        {
+          "id": "Panel_4",
+          "type": "line",
+          "title": "Cost (usd micros)",
+          "description": "",
+          "config": {
+            "show_legends": true
+          },
+          "queryType": "sql",
+          "queries": [
+            {
+              "query": "SELECT histogram(_timestamp) AS x, sum(value) AS y FROM \"llm_cost_estimate\" GROUP BY x ORDER BY x",
+              "customQuery": true,
+              "fields": {
+                "stream": "llm_cost_estimate",
+                "stream_type": "metrics"
+              },
+              "config": {}
+            }
+          ],
+          "layout": {
+            "x": 96,
+            "y": 9,
+            "w": 96,
+            "h": 9,
+            "i": 4
+          }
+        },
+        {
+          "id": "Panel_5",
+          "type": "line",
+          "title": "Requests",
+          "description": "",
+          "config": {
+            "show_legends": true
+          },
+          "queryType": "sql",
+          "queries": [
+            {
+              "query": "SELECT histogram(_timestamp) AS x, sum(value) AS y FROM \"llm_requests_total\" GROUP BY x ORDER BY x",
+              "customQuery": true,
+              "fields": {
+                "stream": "llm_requests_total",
+                "stream_type": "metrics"
+              },
+              "config": {}
+            }
+          ],
+          "layout": {
+            "x": 0,
+            "y": 18,
+            "w": 96,
+            "h": 9,
+            "i": 5
+          }
+        }
+      ]
+    }
+  ],
+  "variables": {
+    "list": [
+      {
+        "name": "reviewer_type",
+        "label": "reviewer_type"
+      },
+      {
+        "name": "model",
+        "label": "model"
+      },
+      {
+        "name": "queue",
+        "label": "queue"
+      }
+    ]
+  },
+  "defaultDatetimeDuration": {
+    "type": "relative",
+    "relativeTimePeriod": "6h"
+  },
+  "refreshInterval": 30
+}

@@ -1,0 +1,20 @@
+{
+  "name": "rg-pg-connection-saturation",
+  "metric": "queue_depth",
+  "query": "pg connections as a fraction of max_connections",
+  "threshold": {
+    "operator": ">",
+    "value": 0.8
+  },
+  "for": "5m",
+  "frequency_minutes": 1,
+  "severity": "page",
+  "destination": "default-webhook",
+  "labels": {
+    "dashboard": "rg-postgres-latency"
+  },
+  "annotations": {
+    "runbook_url": "docs/operations/runbooks/pg-connection-saturation.md",
+    "summary": "PostgreSQL connections above 80 percent"
+  }
+}

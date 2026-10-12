@@ -1,0 +1,7 @@
+{
+  "name": "local-log",
+  "url": "http://localhost:25081/alerts-log",
+  "method": "post",
+  "template": "rg-default-template",
+  "headers": {}
+}

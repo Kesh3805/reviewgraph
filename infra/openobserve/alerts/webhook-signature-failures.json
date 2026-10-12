@@ -1,0 +1,20 @@
+{
+  "name": "rg-webhook-signature-failures",
+  "metric": "webhook_signature_failures_total",
+  "query": "increase(webhook_signature_failures_total) per 5m",
+  "threshold": {
+    "operator": ">",
+    "value": 10
+  },
+  "for": "5m",
+  "frequency_minutes": 1,
+  "severity": "page",
+  "destination": "default-webhook",
+  "labels": {
+    "dashboard": "rg-worker-health"
+  },
+  "annotations": {
+    "runbook_url": "docs/operations/runbooks/webhook-signature-failures.md",
+    "summary": "Webhook signature failure spike"
+  }
+}

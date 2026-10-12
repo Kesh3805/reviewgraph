@@ -1,0 +1,20 @@
+{
+  "name": "rg-false-positive-rate-high",
+  "metric": "finding_false_positive_rate",
+  "query": "finding_false_positive_rate, 7d, min 20 feedback items",
+  "threshold": {
+    "operator": ">",
+    "value": 0.15
+  },
+  "for": "0m",
+  "frequency_minutes": 5,
+  "severity": "ticket",
+  "destination": "local-log",
+  "labels": {
+    "dashboard": "rg-false-positive-feedback"
+  },
+  "annotations": {
+    "runbook_url": "docs/operations/runbooks/false-positive-rate-high.md",
+    "summary": "False-positive feedback rate above 15 percent"
+  }
+}

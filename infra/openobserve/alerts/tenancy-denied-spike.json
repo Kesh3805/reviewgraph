@@ -1,0 +1,20 @@
+{
+  "name": "rg-tenancy-denied-spike",
+  "metric": "tenancy_denied_total",
+  "query": "increase(tenancy_denied_total) per 5m",
+  "threshold": {
+    "operator": ">",
+    "value": 50
+  },
+  "for": "5m",
+  "frequency_minutes": 1,
+  "severity": "page",
+  "destination": "default-webhook",
+  "labels": {
+    "dashboard": "rg-worker-health"
+  },
+  "annotations": {
+    "runbook_url": "docs/operations/runbooks/tenancy-denied-spike.md",
+    "summary": "Tenancy denied anomaly"
+  }
+}

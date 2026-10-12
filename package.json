@@ -25,6 +25,8 @@
     "db:types": "node scripts/db-types.mjs",
     "db:types:check": "node scripts/db-types.mjs --check",
     "test:integration:api": "pnpm -F @reviewgraph/api test:integration",
+    "security:scan": "node scripts/security/check-exceptions.mjs && pnpm audit --audit-level=high --prod",
+    "obs:apply": "node infra/openobserve/apply.mjs",
     "contracts:export": "node scripts/rg.mjs cargo run -q -p review-cli -- contracts export",
     "contracts:generate": "pnpm -F @reviewgraph/contracts generate",
     "contracts:check": "pnpm -F @reviewgraph/contracts check"

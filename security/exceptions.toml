@@ -1,0 +1,7 @@
+# Accepted advisories. Each entry needs id, reason, owner, added and expires (max 90 days).
+# [[exception]]
+# id = "RUSTSEC-0000-0000"
+# reason = "not reachable"
+# owner = "security"
+# added = "2026-01-01"
+# expires = "2026-03-01"

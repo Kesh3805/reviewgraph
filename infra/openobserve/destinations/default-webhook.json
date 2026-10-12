@@ -1,0 +1,9 @@
+{
+  "name": "default-webhook",
+  "url": "${RG_ALERT_WEBHOOK_URL}",
+  "method": "post",
+  "template": "rg-default-template",
+  "headers": {
+    "authorization": "${RG_ALERT_WEBHOOK_AUTH}"
+  }
+}
