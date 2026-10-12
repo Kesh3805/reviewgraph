@@ -1411,7 +1411,7 @@ Status: ☐
 ---
 
 ### RISK-004 — Risk scoring (0..1, level)
-Status: ☐
+Status: ☑
 
 - **Task ID:** RISK-004
 - **Title:** Deterministic risk score in [0,1] and level per symbol, cluster and PR
@@ -1445,7 +1445,7 @@ Status: ☐
 ---
 
 ### RISK-005 — Risk effects
-Status: ☐
+Status: ☑
 
 - **Task ID:** RISK-005
 - **Title:** Map risk level and categories to effects: reviewers, depth, context budget, model tier, verification depth, confidence threshold, test inspection
@@ -1487,7 +1487,7 @@ Status: ☐
 ---
 
 ### RISK-006 — Low-risk change detection with contract-change override
-Status: ☐
+Status: ☑
 
 - **Task ID:** RISK-006
 - **Title:** Detect formatting/comment-only, pure rename, generated, import-sort and simple-constant changes, overridden when contracts or behaviour change
