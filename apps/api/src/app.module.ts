@@ -16,7 +16,9 @@ import { AuthModule } from './auth/auth.module';
 import { TenancyModule } from './tenancy/tenancy.module';
 import { InternalModule } from './internal/internal.module';
 import { HealthModule } from './health/health.module';
+import { BitbucketModule } from './providers/bitbucket/bitbucket.module';
 import { GithubModule } from './providers/github/github.module';
+import { GitlabModule } from './providers/gitlab/gitlab.module';
 import { ProvidersModule } from './providers/provider.registry';
 import { PublisherModule } from './publisher/publisher.module';
 import { WebhooksModule } from './webhooks/webhooks.module';
@@ -35,6 +37,8 @@ import { TelemetryModule } from './telemetry/telemetry.module';
     InternalModule,
     ProvidersModule,
     GithubModule,
+    GitlabModule,
+    BitbucketModule,
     WebhooksModule,
     PublisherModule,
     RepositoriesModule,

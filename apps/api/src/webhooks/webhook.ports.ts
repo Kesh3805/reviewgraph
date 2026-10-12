@@ -3,11 +3,14 @@ import type {
   InstallationEvent,
   NormalizeResult,
   ProviderEvent,
+  ProviderKind,
   ReviewCommandEvent,
 } from '../providers/ports';
 
 /** What the webhook endpoint knows about a verified delivery. */
 export interface DeliveryRecord {
+  /** Provider the delivery came from; GitHub when absent. */
+  provider?: ProviderKind;
   deliveryId: string;
   eventName: string;
   action?: string;

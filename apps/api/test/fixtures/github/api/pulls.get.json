@@ -7,7 +7,10 @@
   "title": "Charge the invoice total once",
   "user": { "login": "octo-dev", "id": 5001, "type": "User" },
   "body": "Fixes the double charge. Internal notes: do not store me.",
-  "labels": [{ "id": 1, "name": "billing" }, { "id": 2, "name": "bug" }],
+  "labels": [
+    { "id": 1, "name": "billing" },
+    { "id": 2, "name": "bug" }
+  ],
   "created_at": "2026-10-01T09:00:00Z",
   "updated_at": "2026-10-02T10:30:00Z",
   "closed_at": null,

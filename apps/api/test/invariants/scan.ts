@@ -6,7 +6,12 @@ import ts from 'typescript';
 export const FORBIDDEN: { name: string; pattern: RegExp }[] = [
   { name: 'pulls.merge', pattern: /pulls\.merge/ },
   { name: '.merge(', pattern: /\.merge\(/ },
-  { name: '/merge', pattern: /\/merge/ },
+  // `/merge_requests/...` is GitLab's resource collection, not the merge action.
+  { name: '/merge', pattern: /\/merge(?!_requests)/ },
+  // Review-state endpoints of GitLab and Bitbucket that would approve or merge on a condition.
+  { name: '/approve', pattern: /\/(un)?approve/ },
+  { name: 'request-changes endpoint', pattern: /\/request-changes/ },
+  { name: 'merge_when_pipeline_succeeds', pattern: /merge_when_pipeline_succeeds/ },
   { name: 'merge_method', pattern: /merge_method/ },
   { name: 'squash', pattern: /squash/i },
   { name: 'rebase_merge', pattern: /rebase_merge/ },

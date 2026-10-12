@@ -1,7 +1,9 @@
 import { Module } from '@nestjs/common';
 import { GithubCommandAcknowledger } from '../providers/github/command-reaction';
 import { GithubEventNormalizer } from '../providers/github/event-normalizer.service';
+import { BitbucketModule } from '../providers/bitbucket/bitbucket.module';
 import { GithubModule } from '../providers/github/github.module';
+import { GitlabModule } from '../providers/gitlab/gitlab.module';
 import { InstallationService } from '../providers/github/installation.service';
 import { GithubReconciler } from '../providers/github/reconciler.service';
 import { RepositoriesModule } from '../repositories/repositories.module';
@@ -9,6 +11,7 @@ import { ReviewOrchestrationModule } from '../reviews/orchestration.module';
 import { ReviewOrchestrator } from '../reviews/review-orchestrator';
 import { PgDeliveryStore } from './delivery-store';
 import { GithubWebhookController } from './github-webhook.controller';
+import { ProviderWebhookController } from './provider-webhook.controller';
 import { ReplayGuard } from './replay-guard';
 import {
   DELIVERY_STORE,
@@ -19,8 +22,14 @@ import {
 } from './webhook.ports';
 
 @Module({
-  imports: [GithubModule, RepositoriesModule, ReviewOrchestrationModule],
-  controllers: [GithubWebhookController],
+  imports: [
+    GithubModule,
+    GitlabModule,
+    BitbucketModule,
+    RepositoriesModule,
+    ReviewOrchestrationModule,
+  ],
+  controllers: [GithubWebhookController, ProviderWebhookController],
   providers: [
     // GH-012: feeds the same sink as the webhook endpoint, so it lives next to it.
     GithubReconciler,

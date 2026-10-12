@@ -9,6 +9,9 @@ export const JSON_BODY_LIMIT = '1mb';
 export const WEBHOOK_BODY_LIMIT = '25mb';
 
 export const GITHUB_WEBHOOK_PATH = '/api/v1/webhooks/github';
+export const GITLAB_WEBHOOK_PATH = '/api/v1/webhooks/gitlab';
+export const BITBUCKET_WEBHOOK_PATH = '/api/v1/webhooks/bitbucket';
+const WEBHOOK_PATHS = [GITHUB_WEBHOOK_PATH, GITLAB_WEBHOOK_PATH, BITBUCKET_WEBHOOK_PATH];
 
 export interface AppSetupOptions {
   /** Raw-body limit for the webhook route; defaults to 25 MiB. */
@@ -25,10 +28,9 @@ export function configureApp(
   // The Nest default parser is disabled in main/test bootstrap so the limit is explicit.
   // The webhook HMAC is computed over the exact bytes received, so this route gets a raw
   // parser (registered first; the JSON parsers skip a request whose body is already read).
-  app.use(
-    GITHUB_WEBHOOK_PATH,
-    raw({ type: () => true, limit: options.webhookBodyLimit ?? WEBHOOK_BODY_LIMIT }),
-  );
+  for (const path of WEBHOOK_PATHS) {
+    app.use(path, raw({ type: () => true, limit: options.webhookBodyLimit ?? WEBHOOK_BODY_LIMIT }));
+  }
   express.useBodyParser('json', { limit: JSON_BODY_LIMIT });
   express.useBodyParser('urlencoded', { limit: JSON_BODY_LIMIT, extended: true });
   app.use(helmet());

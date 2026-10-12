@@ -79,6 +79,31 @@ const baseShape = {
   GITHUB_OAUTH_URL: url(['http:', 'https:']).default('https://github.com'),
   /** Optional explicit OAuth redirect_uri; otherwise GitHub uses the callback configured on the App. */
   GITHUB_OAUTH_REDIRECT_URI: url(['http:', 'https:']).optional(),
+  /** GitLab adapter (MP-001). Off unless enabled; self-managed servers set GITLAB_BASE_URL. */
+  GITLAB_ENABLED: boolFromString.default(false),
+  GITLAB_BASE_URL: url(['http:', 'https:']).default('https://gitlab.com'),
+  /** Group/project access token (or service-account token) used for API calls. */
+  GITLAB_TOKEN: nonEmpty.optional(),
+  /** Optional read-only (`read_repository`) token for clones; defaults to GITLAB_TOKEN. */
+  GITLAB_CLONE_TOKEN: nonEmpty.optional(),
+  /** Shared secret compared with `X-Gitlab-Token`. */
+  GITLAB_WEBHOOK_SECRET: nonEmpty.optional(),
+  GITLAB_WEBHOOK_SECRET_PREVIOUS: nonEmpty.optional(),
+  /** Comma-separated host allow-list for GITLAB_BASE_URL (empty: any public host). */
+  GITLAB_ALLOWED_HOSTS: z.string().optional(),
+  /** Explicit opt-in for a base URL on a private network or plain http (on-premises). */
+  GITLAB_ALLOW_PRIVATE_NETWORKS: boolFromString.default(false),
+  /** Bitbucket adapter (MP-002). Off unless enabled. */
+  BITBUCKET_ENABLED: boolFromString.default(false),
+  /** Cloud REST 2.0 root; Data Center installs point this at their own server. */
+  BITBUCKET_API_URL: url(['http:', 'https:']).default('https://api.bitbucket.org/2.0'),
+  /** Repository/workspace access token (scopes: repository, pullrequest, pullrequest:write). */
+  BITBUCKET_ACCESS_TOKEN: nonEmpty.optional(),
+  /** HMAC-SHA256 secret for `X-Hub-Signature`; webhooks are rejected without it. */
+  BITBUCKET_WEBHOOK_SECRET: nonEmpty.optional(),
+  BITBUCKET_WEBHOOK_SECRET_PREVIOUS: nonEmpty.optional(),
+  BITBUCKET_ALLOWED_HOSTS: z.string().optional(),
+  BITBUCKET_ALLOW_PRIVATE_NETWORKS: boolFromString.default(false),
   /**
    * Polling reconciler (GH-012). Unset: on in development without a webhook secret (no public
    * ingress), off otherwise.
@@ -102,6 +127,26 @@ const GITHUB_REQUIRED = [
 ] as const;
 
 export const envSchema = z.object(baseShape).superRefine((env, ctx) => {
+  // A webhook endpoint with no secret must never accept traffic (MP-001/MP-002).
+  const requiredWhen = (
+    flag: 'GITLAB_ENABLED' | 'BITBUCKET_ENABLED',
+    keys: readonly (
+      | 'GITLAB_TOKEN'
+      | 'GITLAB_WEBHOOK_SECRET'
+      | 'BITBUCKET_ACCESS_TOKEN'
+      | 'BITBUCKET_WEBHOOK_SECRET'
+    )[],
+  ): void => {
+    if (!env[flag]) return;
+    for (const key of keys) {
+      if (!env[key]) {
+        ctx.addIssue({ code: 'custom', path: [key], message: `required when ${flag} is true` });
+      }
+    }
+  };
+  requiredWhen('GITLAB_ENABLED', ['GITLAB_TOKEN', 'GITLAB_WEBHOOK_SECRET']);
+  requiredWhen('BITBUCKET_ENABLED', ['BITBUCKET_ACCESS_TOKEN', 'BITBUCKET_WEBHOOK_SECRET']);
+
   if (!env.GITHUB_ENABLED) return;
   for (const key of GITHUB_REQUIRED) {
     if (!env[key]) {

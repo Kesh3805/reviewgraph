@@ -5,6 +5,7 @@ import { sql } from 'kysely';
 import { incCounter } from '../common/metrics';
 import { REDIS } from '../common/redis.module';
 import { DbService } from '../db/db.module';
+import type { ProviderKind } from '../providers/ports';
 import type {
   DeliveryContext,
   DeliveryOutcome,
@@ -13,10 +14,12 @@ import type {
   DeliveryWorkResult,
 } from './webhook.ports';
 
-export const DELIVERY_PROVIDER = 'github';
+export const DELIVERY_PROVIDER: ProviderKind = 'github';
 /** Redis keeps a delivery id for 72 h (GitHub redelivers within that window). */
 export const DELIVERY_KEY_TTL_SECONDS = 259_200;
-export const deliveryKey = (deliveryId: string): string => `rg:wh:gh:${deliveryId}`;
+const KEY_PREFIX = { github: 'gh', gitlab: 'gl', bitbucket: 'bb' } as const;
+export const deliveryKey = (deliveryId: string, provider: ProviderKind = 'github'): string =>
+  `rg:wh:${KEY_PREFIX[provider]}:${deliveryId}`;
 
 /**
  * Delivery idempotency (GH-003):
@@ -42,10 +45,11 @@ export class PgDeliveryStore implements DeliveryStore {
     delivery: DeliveryRecord,
     work: (ctx: DeliveryContext) => Promise<DeliveryWorkResult<A>>,
   ): Promise<DeliveryOutcome<A>> {
-    const key = deliveryKey(delivery.deliveryId);
+    const provider = delivery.provider ?? DELIVERY_PROVIDER;
+    const key = deliveryKey(delivery.deliveryId, provider);
     const claimedInRedis = await this.claim(key);
 
-    if (!claimedInRedis && (await this.existsInPg(delivery.deliveryId))) {
+    if (!claimedInRedis && (await this.existsInPg(provider, delivery.deliveryId))) {
       return this.duplicate();
     }
 
@@ -54,14 +58,14 @@ export class PgDeliveryStore implements DeliveryStore {
       result = await this.dbs.withTx(null, async (trx) => {
         const { rows } = await sql<{ inserted: boolean }>`
           select rg_record_webhook_delivery(
-            ${DELIVERY_PROVIDER}, ${delivery.deliveryId}, ${delivery.eventName},
+            ${provider}, ${delivery.deliveryId}, ${delivery.eventName},
             ${delivery.action ?? null}::text, ${delivery.installationId ?? null}::bigint,
             ${delivery.payloadSha256}, true) as inserted`.execute(trx);
         if (!rows[0]?.inserted) return 'duplicate' as const;
         const outcome = await work({ trx });
         await sql`
           select rg_finish_webhook_delivery(
-            ${DELIVERY_PROVIDER}, ${delivery.deliveryId}, ${outcome.status}, ${null}::text,
+            ${provider}, ${delivery.deliveryId}, ${outcome.status}, ${null}::text,
             ${outcome.organizationId ?? null}::uuid)`.execute(trx);
         return outcome;
       });
@@ -108,12 +112,10 @@ export class PgDeliveryStore implements DeliveryStore {
     }
   }
 
-  private async existsInPg(deliveryId: string): Promise<boolean> {
+  private async existsInPg(provider: ProviderKind, deliveryId: string): Promise<boolean> {
     const { rows } = await this.dbs.withTx(null, (trx) =>
       sql<{ seen: boolean }>`
-        select rg_webhook_delivery_exists(${DELIVERY_PROVIDER}, ${deliveryId}) as seen`.execute(
-        trx,
-      ),
+        select rg_webhook_delivery_exists(${provider}, ${deliveryId}) as seen`.execute(trx),
     );
     return rows[0]?.seen === true;
   }
