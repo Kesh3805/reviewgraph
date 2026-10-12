@@ -118,13 +118,13 @@ Linker confidences (`import` 0.95, `this_member` 0.95, `di_constructor` 0.85, `t
 | TSA-008 | Golden IR test suite | TSA-003..007 | ☐ |
 | TSA-009 | Module resolver | TSA-004, INIT-005, INIT-007 | ☐ |
 | TSA-010 | ts-semantic helper behind `SemanticProvider` | TSA-001, TSA-005 | ☐ |
-| NEST-001 | NestJS `@Module` facts | TSA-005 | ☐ |
-| NEST-002 | Controllers + HTTP routes | NEST-001 | ☐ |
-| NEST-003 | DI injection facts | TSA-005 | ☐ |
-| NEST-004 | Guards/interceptors/pipes + global providers | NEST-001, NEST-002 | ☐ |
-| NEST-005 | TypeORM entities + repository access | NEST-003, TSA-006 | ☐ |
-| NEST-006 | BullMQ processors + producers | NEST-003 | ☐ |
-| NEST-007 | Jest suites/cases + config/env reads | TSA-005 | ☐ |
+| NEST-001 | NestJS `@Module` facts | TSA-005 | ◐ |
+| NEST-002 | Controllers + HTTP routes | NEST-001 | ◐ |
+| NEST-003 | DI injection facts | TSA-005 | ◐ |
+| NEST-004 | Guards/interceptors/pipes + global providers | NEST-001, NEST-002 | ◐ |
+| NEST-005 | TypeORM entities + repository access | NEST-003, TSA-006 | ◐ |
+| NEST-006 | BullMQ processors + producers | NEST-003 | ◐ |
+| NEST-007 | Jest suites/cases + config/env reads | TSA-005 | ◐ |
 | SID-001 | `SymbolId` canonical form + `SymbolKey` | TSA-001 | ☐ |
 | SID-002 | TS qualified-name rules | SID-001, TSA-002 | ☐ |
 | SID-003 | Overload/duplicate ordinal determinism | SID-002 | ☐ |
@@ -2111,7 +2111,7 @@ Status: ☐
 
 ### NEST-001 — NestJS adapter foundation and @Module facts
 
-Status: ◐
+Status: ◐ — facts, dynamic modules, tests and docs done; missing: nest-api fixture, golden snapshots, framework_facts metrics.
 
 - **Task ID:** NEST-001
 - **Title:** NestJS `@Module` facts (imports / providers / controllers / exports, dynamic modules, `@Global`) and the adapter scaffolding (`FrameworkCtx`, decorator-origin resolution)
@@ -2156,7 +2156,7 @@ Status: ◐
 
 ### NEST-002 — Controllers and route decorators → HttpRoute facts
 
-Status: ☐
+Status: ◐ — facts and tests done; missing: nest-api fixture, codegraph end-to-end inventory test, versioning-aware endpoint ids, reference-repo check.
 
 - **Task ID:** NEST-002
 - **Title:** Controllers and route decorators (`@Controller` prefix, `@Get/@Post/@Put/@Patch/@Delete/@All/@Options/@Head/@Sse`, versioning, global prefix) → `Controller`/`HttpRoute`/`HttpGlobalConfig` facts feeding `APIEndpoint` + `HANDLED_BY`/`ROUTES_TO`
@@ -2197,7 +2197,7 @@ Status: ☐
 
 ### NEST-003 — Dependency injection facts and references
 
-Status: ☐
+Status: ◐ — facts and tests done; missing: IrReference DiInjection emission and TypeRef de-duplication (no reference pass exists yet), property-symbol di_entity attr, per-parameter ranges.
 
 - **Task ID:** NEST-003
 - **Title:** DI: constructor parameter types and `@Inject` / `@InjectRepository` / `@InjectQueue` / `@InjectDataSource` tokens → `DiInjection` facts and `RefKind::DiInjection` references (`resolved_by = di_constructor`)
@@ -2237,7 +2237,7 @@ Status: ☐
 
 ### NEST-004 — Guards, interceptors, pipes → Middleware facts
 
-Status: ☐
+Status: ◐ — facts and tests done; missing: nest-api fixture, codegraph fan-out test respecting Public, VALIDATES mapping for pipes.
 
 - **Task ID:** NEST-004
 - **Title:** Guards / interceptors / pipes / filters (`@UseGuards`, `@UseInterceptors`, `@UsePipes`, `@UseFilters`, `APP_GUARD`-style global providers, `useGlobal*`, public/role metadata) → `Middleware`, `MiddlewareBinding`, `GlobalProvider`, `RouteMetadata` facts (`AUTHORIZES` / `VALIDATES`)
@@ -2278,7 +2278,7 @@ Status: ☐
 
 ### NEST-005 — TypeORM entities, relations and repository access heuristics
 
-Status: ☐
+Status: ◐ — facts and tests done; missing: codegraph db_access test, labelled expected db-access.json set.
 
 - **Task ID:** NEST-005
 - **Title:** TypeORM `@Entity/@Column/relations` + repository call heuristics (save/update/delete/insert/createQueryBuilder/query) → `OrmEntity`/`OrmColumn`/`OrmRelation`/`OrmAccess` facts → `DatabaseEntity`/`DatabaseTable`, `READS_TABLE`/`WRITES_TABLE`
@@ -2319,7 +2319,7 @@ Status: ☐
 
 ### NEST-006 — BullMQ processors, workers and producers
 
-Status: ☐
+Status: ◐ — facts and tests done; missing: codegraph producer-consumer node test, orphan-producer query.
 
 - **Task ID:** NEST-006
 - **Title:** BullMQ `@Processor` / `@Process` / `WorkerHost` + `queue.add` / `addBulk` → `QueueRegistration`/`QueueConsumer`/`QueueJobHandler`/`QueueProducer` facts → `Queue`, `QueueProducer`, `QueueConsumer`, `JobHandler` nodes, `PRODUCES_JOB`/`CONSUMES_JOB`
@@ -2360,7 +2360,7 @@ Status: ☐
 
 ### NEST-007 — Jest tests and configuration reads
 
-Status: ☐
+Status: ◐ — facts and tests done; missing: push_config_read extension of TSA-006 ConfigRead, codegraph env_read test, nest-api spec fixtures.
 
 - **Task ID:** NEST-007
 - **Title:** Jest `describe` / `it` / `test` → `TestSuite`/`TestCase`/`TestMock` facts; `ConfigService.get` / `process.env` reads → `ConfigRead` facts (`EnvironmentVariable`, `READS_CONFIG`)
