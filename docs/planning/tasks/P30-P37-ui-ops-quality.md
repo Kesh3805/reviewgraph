@@ -590,7 +590,7 @@ Status: ☑
 ---
 
 ### GX-003 — Impact path view
-Status: ☑
+Status: ◐
 > **Implementation note:** The explorer has Explore / Path / Impact-for-review tabs (`?mode=`). `PathFinder` calls `GET /graph/path` with `all=true&max_paths=5` and shows alternatives as tabs rendered by `ImpactPathFlow`; `ImpactGroups` renders the ImpactGraph categories plus the entrypoint path. The path and impact response shapes (`PathResponse`, `ImpactResponse`) are assumed in `pending.ts` until API-013 fixes them, and the API path route does not yet accept `kinds`/`all`/`max_paths`. The CLI-output comparison test waits for CLI-009.
 
 - **Task ID:** GX-003
@@ -2377,7 +2377,7 @@ Status: ☐
 ---
 
 ### CI-003 — TypeScript lint, typecheck and test
-Status: ☑
+Status: ◐
 
 - **Task ID:** CI-003
 - **Title:** `ts.yml` workflow: pnpm install with frozen lockfile, ESLint, `tsc --noEmit`, Prettier check, unit tests for `apps/api`, `apps/web` and `packages/*`
@@ -2423,7 +2423,7 @@ Status: ☑
 ---
 
 ### CI-004 — Integration tests with services
-Status: ☑
+Status: ◐
 
 - **Task ID:** CI-004
 - **Title:** `integration.yml`: Rust and TypeScript integration suites against PostgreSQL, Redis, Qdrant and the object store, including the tenant-isolation suites
@@ -2572,7 +2572,7 @@ Status: ☐
 ---
 
 ### CI-007 — Benchmark smoke
-Status: ☑
+Status: ◐
 
 - **Task ID:** CI-007
 - **Title:** Fast benchmark smoke on pull requests (criterion compile and quick run, 5-case quality subset under replay) and a nightly full benchmark with regression thresholds
@@ -2622,7 +2622,7 @@ Status: ☑
 ---
 
 ### CI-008 — Docker builds
-Status: ☑
+Status: ◐
 
 - **Task ID:** CI-008
 - **Title:** Build the `engine`, `api` and `web` images in CI with layer caching, image hardening checks and optional registry push on tagged releases
@@ -2670,7 +2670,7 @@ Status: ☑
 ---
 
 ### CI-009 — Windows CLI build (MSVC runner)
-Status: ☑
+Status: ◐
 
 - **Task ID:** CI-009
 - **Title:** Build and smoke-test the `review` CLI natively on a Windows MSVC runner and publish a release artifact

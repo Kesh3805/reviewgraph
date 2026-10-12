@@ -1068,7 +1068,7 @@ pub struct RedactionReport { pub replacements: u32, pub by_pattern: BTreeMap<&'s
 ---
 
 ### EVAL-001 — Benchmark case format
-Status: ☑
+Status: ◐
 
 **Task ID:** EVAL-001
 
@@ -1175,7 +1175,7 @@ synthetic_fixtures: true               # replay fixtures are hand-authored (see 
 ---
 
 ### EVAL-002 — Matcher
-Status: ☑
+Status: ◐
 
 **Task ID:** EVAL-002
 
@@ -1353,7 +1353,7 @@ budgets: { max_model_calls: 40, max_model_tokens: 400000 }
 ---
 
 ### EVAL-004 — Metrics
-Status: ☑
+Status: ◐
 
 **Task ID:** EVAL-004
 
@@ -3335,7 +3335,7 @@ CREATE TABLE verification_cache (
 ---
 
 ### DED-001 — Root-cause fingerprint (symbol + category + normalized claim)
-Status: ☑
+Status: ◐
 
 - **Task ID:** DED-001
 - **Title:** Root-cause fingerprint v2: `symbol + category + normalized claim`, excluding severity, line numbers and reviewer
@@ -3391,7 +3391,7 @@ Status: ☑
 ---
 
 ### DED-002 — Cross-reviewer merge with persisted merge record
-Status: ☑
+Status: ◐
 
 - **Task ID:** DED-002
 - **Title:** Cross-reviewer merge: group duplicate verified findings, keep the strongest explanation, persist a merge record
@@ -3444,7 +3444,7 @@ Status: ☑
 ---
 
 ### DED-003 — Cross-run identity via symbol lineage
-Status: ☑
+Status: ◐
 
 - **Task ID:** DED-003
 - **Title:** Cross-run finding identity through `symbol_lineage` (re-review classification: persisting / fixed / new); dedup applied after the verdict
@@ -3494,7 +3494,7 @@ Status: ☑
 ---
 
 ### DED-004 — Prioritization score
-Status: ☑
+Status: ◐
 
 - **Task ID:** DED-004
 - **Title:** Finding prioritization score (PRD §57) with a bounded, non-inflating blast-radius term
@@ -3546,7 +3546,7 @@ Status: ☑
 ---
 
 ### PIPE-001 — `jobs` table migration and Rust JobQueue
-Status: ☑
+Status: ◐
 
 - **Task ID:** PIPE-001
 - **Title:** `jobs` table migration and the Rust `JobQueue` (enqueue, claim with SKIP LOCKED, heartbeat, complete, fail with backoff, dead)

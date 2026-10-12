@@ -1411,7 +1411,7 @@ Status: ☐
 ---
 
 ### RISK-004 — Risk scoring (0..1, level)
-Status: ☑
+Status: ◐
 
 - **Task ID:** RISK-004
 - **Title:** Deterministic risk score in [0,1] and level per symbol, cluster and PR
@@ -1445,7 +1445,7 @@ Status: ☑
 ---
 
 ### RISK-005 — Risk effects
-Status: ☑
+Status: ◐
 
 - **Task ID:** RISK-005
 - **Title:** Map risk level and categories to effects: reviewers, depth, context budget, model tier, verification depth, confidence threshold, test inspection
@@ -1487,7 +1487,7 @@ Status: ☑
 ---
 
 ### RISK-006 — Low-risk change detection with contract-change override
-Status: ☑
+Status: ◐
 
 - **Task ID:** RISK-006
 - **Title:** Detect formatting/comment-only, pure rename, generated, import-sort and simple-constant changes, overridden when contracts or behaviour change
@@ -1878,7 +1878,7 @@ Status: ☑
 ---
 
 ### CTX-001 — ContextPackage / ContextItem model
-Status: ☑
+Status: ◐
 
 - **Task ID:** CTX-001
 - **Title:** `ContextPackage` and `ContextItem` model with source locations, provenance per item and an omitted-with-reason list
@@ -2024,7 +2024,7 @@ Status: ☐
 ---
 
 ### CTX-005 — Ranking
-Status: ☑
+Status: ◐
 
 - **Task ID:** CTX-005
 - **Title:** Relevance ranking from 10 PRD §33 signals with per-reviewer weights (no weight > 0.35) and the §34 distance heuristic
@@ -2075,7 +2075,7 @@ Status: ☑
 ---
 
 ### CTX-006 — Budgeting
-Status: ☑
+Status: ◐
 
 - **Task ID:** CTX-006
 - **Title:** Per-reviewer budgets with greedy selection by score per token
