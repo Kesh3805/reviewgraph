@@ -2111,7 +2111,7 @@ Status: ☐
 
 ### NEST-001 — NestJS adapter foundation and @Module facts
 
-Status: ☐
+Status: ◐
 
 - **Task ID:** NEST-001
 - **Title:** NestJS `@Module` facts (imports / providers / controllers / exports, dynamic modules, `@Global`) and the adapter scaffolding (`FrameworkCtx`, decorator-origin resolution)

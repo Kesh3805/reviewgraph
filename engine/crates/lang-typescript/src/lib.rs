@@ -8,6 +8,7 @@ pub mod analyzer;
 pub mod bindings;
 pub mod diagnostics;
 pub mod error;
+pub mod frameworks;
 pub mod hashing;
 pub mod kinds;
 pub mod naming;

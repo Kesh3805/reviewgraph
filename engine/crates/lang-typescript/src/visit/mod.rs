@@ -79,12 +79,14 @@ pub fn run(
         Vec::new()
     };
     let module_facts = modules::collect(root, &ctx.source, &table, sink);
+    let framework = crate::frameworks::run(root, &ctx.source, &table.symbols, ctx.cfg, sink);
     Collected {
         symbols: table.symbols,
         facts,
         imports: module_facts.imports,
         exports: module_facts.exports,
         bindings: module_facts.bindings,
+        framework,
         ..Collected::default()
     }
 }
