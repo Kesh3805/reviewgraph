@@ -114,7 +114,7 @@ Status: ☑
 ---
 
 ### REV-S-002 — Security reviewer with trust-boundary context selection
-Status: ☐
+Status: ◐
 
 - **Task ID:** REV-S-002
 - **Title:** Security reviewer with trust-boundary context selection

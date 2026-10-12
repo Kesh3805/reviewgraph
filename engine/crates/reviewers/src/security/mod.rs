@@ -3,6 +3,7 @@
 //! (REV-S-003) are separate tasks.
 
 pub mod categories;
+pub mod reviewer;
 
 use std::sync::LazyLock;
 
@@ -11,6 +12,9 @@ use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 
 pub use categories::{MissingControl, SecurityCategory, TrustSource};
+pub use reviewer::{
+    security_applies, security_budget, security_reviewer, SECURITY_REVIEWER_VERSION,
+};
 
 use crate::context::ReviewContext;
 use crate::error::ReviewerError;
