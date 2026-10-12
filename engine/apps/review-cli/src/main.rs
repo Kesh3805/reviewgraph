@@ -1,4 +1,5 @@
 mod contracts;
+mod eval;
 
 use std::path::PathBuf;
 
@@ -17,6 +18,11 @@ enum Command {
     Contracts {
         #[command(subcommand)]
         action: ContractsAction,
+    },
+    /// Quality benchmark tooling (developer use).
+    Eval {
+        #[command(subcommand)]
+        action: eval::EvalAction,
     },
 }
 
@@ -45,5 +51,6 @@ fn main() -> anyhow::Result<()> {
             }
             Ok(())
         }
+        Command::Eval { action } => eval::run(action),
     }
 }

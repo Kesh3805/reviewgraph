@@ -1068,7 +1068,7 @@ pub struct RedactionReport { pub replacements: u32, pub by_pattern: BTreeMap<&'s
 ---
 
 ### EVAL-001 — Benchmark case format
-Status: ☐
+Status: ☑
 
 **Task ID:** EVAL-001
 

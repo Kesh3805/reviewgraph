@@ -1,0 +1,16 @@
+id: example-000-template
+version: 1
+title: "Template case: comment-only change"
+classes: [safe_change]
+language: typescript
+frameworks: [nestjs]
+pr:
+  title: "Add a comment"
+  description: "Documentation only."
+  base_branch: main
+required_reviewers: [correctness]
+expected_findings: []
+forbidden_findings: []
+optional_findings: []
+expect_no_published_findings: true
+synthetic_fixtures: true

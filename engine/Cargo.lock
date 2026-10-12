@@ -3786,11 +3786,14 @@ name = "review-cli"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "blake3",
  "clap",
  "repository",
  "review-core",
  "schemars",
+ "serde",
  "serde_json",
+ "serde_yaml",
  "sha2 0.10.9",
  "telemetry",
  "tempfile",

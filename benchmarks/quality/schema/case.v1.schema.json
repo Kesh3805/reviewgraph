@@ -1,0 +1,65 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "case.v1.schema.json",
+  "title": "Benchmark case v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "version", "title", "classes", "language", "pr", "required_reviewers"],
+  "properties": {
+    "id": { "type": "string", "pattern": "^[a-z]+-[0-9]{3}-[a-z0-9-]+$" },
+    "version": { "const": 1 },
+    "title": { "type": "string", "minLength": 1 },
+    "classes": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "enum": ["correctness_regression", "safe_change", "security", "architecture", "fp_trap",
+                 "test_gap", "concurrency", "transaction", "api_contract"]
+      }
+    },
+    "language": { "type": "string" },
+    "frameworks": { "type": "array", "items": { "type": "string" } },
+    "pr": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["title", "base_branch"],
+      "properties": {
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "base_branch": { "type": "string" }
+      }
+    },
+    "required_reviewers": { "type": "array", "items": { "type": "string" } },
+    "expected_findings": { "type": "array", "items": { "$ref": "#/definitions/expectation" } },
+    "forbidden_findings": { "type": "array", "items": { "$ref": "#/definitions/expectation" } },
+    "optional_findings": { "type": "array", "items": { "$ref": "#/definitions/expectation" } },
+    "expect_no_published_findings": { "type": "boolean" },
+    "synthetic_fixtures": { "type": "boolean" }
+  },
+  "definitions": {
+    "expectation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "categories"],
+      "properties": {
+        "id": { "type": "string" },
+        "categories": { "type": "array", "minItems": 1, "items": { "type": "string" } },
+        "severity_at_least": { "enum": ["info", "low", "medium", "high", "critical"] },
+        "symbol": { "type": "string" },
+        "location": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["path", "line"],
+          "properties": {
+            "path": { "type": "string" },
+            "line": { "type": "integer", "minimum": 1 },
+            "window": { "type": "integer", "minimum": 0 }
+          }
+        },
+        "claim_any_of": { "type": "array", "items": { "type": "string" } },
+        "must_publish": { "type": "boolean" },
+        "reason": { "type": "string" }
+      }
+    }
+  }
+}
