@@ -547,7 +547,11 @@ checksum = "3d52eff69cd5e647efe296129160853a42795992097e8af39800e1060caeea9b"
 name = "context-engine"
 version = "0.1.0"
 dependencies = [
+ "blake3",
+ "hex",
  "review-core",
+ "serde",
+ "serde_json",
  "thiserror",
 ]
 
@@ -2509,6 +2513,7 @@ name = "incremental"
 version = "0.1.0"
 dependencies = [
  "analysis-ir",
+ "codegraph",
  "criterion",
  "lang-typescript",
  "proptest",
@@ -5182,7 +5187,9 @@ version = "0.1.0"
 dependencies = [
  "blake3",
  "review-core",
+ "serde_json",
  "thiserror",
+ "uuid",
 ]
 
 [[package]]
