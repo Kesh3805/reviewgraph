@@ -1263,7 +1263,7 @@ Status: ◐
 ---
 
 ### EVAL-003 — Runner across model configurations
-Status: ☐
+Status: ◐ not started
 
 **Task ID:** EVAL-003
 
@@ -1441,7 +1441,7 @@ Status: ◐
 ---
 
 ### EVAL-005 — Report generation and model_eval_results table
-Status: ☐
+Status: ◐ not started
 
 **Task ID:** EVAL-005
 
@@ -1530,7 +1530,7 @@ CREATE TABLE model_eval_results (
 ---
 
 ### EVAL-006 — Initial corpus (≥ 20 cases)
-Status: ☐
+Status: ◐ not started
 
 **Task ID:** EVAL-006
 
@@ -1984,7 +1984,7 @@ Status: ☑
 ---
 
 ### REV-C-002 — Correctness reviewer implementation
-Status: ☐
+Status: ◐ not started: fanout, ReviewerRunSink and ledger missing
 
 **Task ID:** REV-C-002
 
@@ -2170,7 +2170,7 @@ Status: ☑
 ---
 
 ### REV-C-004 — Correctness replay-fixture tests
-Status: ☐
+Status: ◐ not started
 
 **Task ID:** REV-C-004
 

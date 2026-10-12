@@ -14,6 +14,7 @@ use tokio_util::sync::CancellationToken;
 use tracing::Instrument;
 
 use crate::error::ReviewerError;
+use crate::gates::apply_gates;
 use crate::input::build_input;
 use crate::normalize::RefValidator;
 use crate::output::{parse_output, ModelResponseMeta, ReviewerOutput};
@@ -31,6 +32,10 @@ pub type AppliesFn = fn(&RoutingInput<'_>) -> Applicability;
 /// Extra (reviewer specific) input sections.
 pub type ExtraSectionsFn = fn(&ReviewRequest<'_>) -> Vec<InputSection>;
 
+/// Precondition checked before any model call. A reviewer that must not call the model without
+/// a deterministic seed (maintainability) fails here, so no tokens are spent.
+pub type ReadyFn = fn(&ReviewRequest<'_>) -> Result<(), ReviewerError>;
+
 /// A reviewer defined by data and a few small functions.
 #[derive(Debug, Clone)]
 pub struct SpecialistReviewer {
@@ -41,6 +46,7 @@ pub struct SpecialistReviewer {
     schema: OutputSchema,
     applies: AppliesFn,
     extra: ExtraSectionsFn,
+    ready: ReadyFn,
     budget: fn(&RiskAssessment) -> ContextBudget,
 }
 
@@ -52,6 +58,7 @@ pub struct SpecialistSpec {
     pub version: &'static str,
     pub applies: AppliesFn,
     pub extra: ExtraSectionsFn,
+    pub ready: ReadyFn,
     pub budget: fn(&RiskAssessment) -> ContextBudget,
 }
 
@@ -65,6 +72,7 @@ impl SpecialistReviewer {
             schema,
             applies: spec.applies,
             extra: spec.extra,
+            ready: spec.ready,
             budget: spec.budget,
         }
     }
@@ -136,6 +144,7 @@ impl Reviewer for SpecialistReviewer {
                 "the context package has no items".into(),
             ));
         }
+        (self.ready)(&req)?;
         let span = tracing::info_span!(
             "reviewer_execution",
             reviewer_type = self.kind.as_str(),
@@ -161,11 +170,23 @@ impl Reviewer for SpecialistReviewer {
                 Some("model returned no structured output".into()),
             ),
         };
+        // Reviewer-specific gates (evidence, basis, path, seed): a candidate that fails one is
+        // dropped and recorded, never published (silence over speculation).
+        let (raw, gated) = apply_gates(self.kind, raw, req.context, &refs);
+        let no_findings_reason = match no_findings_reason {
+            None if raw.is_empty() && !gated.is_empty() => Some(format!(
+                "{} candidate(s) dropped by the {} reviewer gates",
+                gated.len(),
+                self.kind.as_str()
+            )),
+            other => other,
+        };
         Ok(ReviewerOutput {
             raw,
             no_findings_reason,
             model_response_meta: ModelResponseMeta::of(&resp),
             ref_table: refs,
+            gated,
         })
     }
 }
@@ -173,6 +194,11 @@ impl Reviewer for SpecialistReviewer {
 /// For reviewers that add no sections beyond the common ones.
 pub fn no_extra_sections(_req: &ReviewRequest<'_>) -> Vec<InputSection> {
     Vec::new()
+}
+
+/// For reviewers that need no precondition beyond a non-empty context.
+pub fn always_ready(_req: &ReviewRequest<'_>) -> Result<(), ReviewerError> {
+    Ok(())
 }
 
 /// True when the cluster carries any of the named signals.

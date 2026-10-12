@@ -53,5 +53,5 @@ fn tests_reviewer_binds_locked_prompt() {
     prompts::self_test().expect("prompts match the lock");
     let r = tests_reviewer().expect("reviewer");
     assert_eq!(r.kind(), ReviewerKind::Test);
-    assert_eq!(r.prompt().lock_key(), "tests/v1");
+    assert_eq!(r.prompt().lock_key(), "tests/v2");
 }
