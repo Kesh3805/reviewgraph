@@ -752,6 +752,55 @@ export interface SourceExcerpt {
   redacted: boolean;
 }
 
+/** `GET /repositories/:id/graph/path?from&to&max_depth&kinds&all&max_paths` (GX-003, assumed shape). */
+export interface PathQuery {
+  from: string;
+  to: string;
+  /** 1..6 */
+  max_depth: number;
+  kinds?: string[];
+  snapshot?: string;
+}
+
+export interface PathResponse {
+  /** Shortest first; at most 5 with `all=true&max_paths=5`. Empty when nothing is reachable. */
+  paths: GraphPath[];
+  snapshot_id?: string;
+  truncated?: boolean;
+}
+
+export type ImpactCategory =
+  | 'callers'
+  | 'callees'
+  | 'implementations'
+  | 'interfaces'
+  | 'overrides'
+  | 'related_types'
+  | 'tests'
+  | 'entrypoints'
+  | 'config'
+  | 'database'
+  | 'queues';
+
+export interface ImpactItem {
+  key: string;
+  name: string;
+  qualified_name?: string;
+  kind: string;
+  path: string | null;
+  distance: number;
+  min_confidence: number;
+}
+
+/** `GET /reviews/:id/impact/:symbolKey` (GX-003, assumed shape): the ImpactGraph of a symbol. */
+export interface ImpactResponse {
+  symbol_key: string;
+  categories: Partial<Record<ImpactCategory, ImpactItem[]>>;
+  /** Entrypoint to the changed symbol. */
+  path: GraphPath | null;
+  truncated: boolean;
+}
+
 // ---------------------------------------------------------------------------------------------
 // Paths
 // ---------------------------------------------------------------------------------------------
@@ -866,6 +915,26 @@ export interface PendingPaths {
   };
   '/api/v1/repositories/{repoId}/graph/subgraph': {
     post: BodyOp<Subgraph, SubgraphRequest, PathParams<'repoId'>>;
+  };
+  '/api/v1/repositories/{repoId}/graph/path': {
+    get: GetOp<
+      PathResponse,
+      {
+        path: { repoId: string };
+        query: {
+          from: string;
+          to: string;
+          max_depth: number;
+          kinds?: string;
+          snapshot?: string;
+          all?: boolean;
+          max_paths?: number;
+        };
+      }
+    >;
+  };
+  '/api/v1/reviews/{reviewId}/impact/{symbolKey}': {
+    get: GetOp<ImpactResponse, { path: { reviewId: string; symbolKey: string }; query?: never }>;
   };
   /** API-011. */
   '/api/v1/repositories/{repoId}/source': {

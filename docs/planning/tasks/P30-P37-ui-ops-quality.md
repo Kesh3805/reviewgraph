@@ -590,7 +590,8 @@ Status: ☑
 ---
 
 ### GX-003 — Impact path view
-Status: ☐
+Status: ☑
+> **Implementation note:** The explorer has Explore / Path / Impact-for-review tabs (`?mode=`). `PathFinder` calls `GET /graph/path` with `all=true&max_paths=5` and shows alternatives as tabs rendered by `ImpactPathFlow`; `ImpactGroups` renders the ImpactGraph categories plus the entrypoint path. The path and impact response shapes (`PathResponse`, `ImpactResponse`) are assumed in `pending.ts` until API-013 fixes them, and the API path route does not yet accept `kinds`/`all`/`max_paths`. The CLI-output comparison test waits for CLI-009.
 
 - **Task ID:** GX-003
 - **Title:** Impact path view

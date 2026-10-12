@@ -6,6 +6,9 @@
  */
 import { api } from '../api-client';
 import type {
+  ImpactResponse,
+  PathQuery,
+  PathResponse,
   Subgraph,
   SubgraphRequest,
   SymbolDetail,
@@ -436,6 +439,42 @@ export async function fetchSubgraph(
     signal: opts.signal,
   });
   return required(data, 'subgraph');
+}
+
+/** Up to five alternative paths, shortest first (`all=true&max_paths=5`). */
+export async function fetchPaths(
+  repoId: string,
+  query: PathQuery,
+  opts: Signal = {},
+): Promise<PathResponse> {
+  const { data } = await api.GET('/api/v1/repositories/{repoId}/graph/path', {
+    params: {
+      path: { repoId },
+      query: {
+        from: query.from,
+        to: query.to,
+        max_depth: query.max_depth,
+        kinds: query.kinds && query.kinds.length > 0 ? query.kinds.join(',') : undefined,
+        snapshot: query.snapshot,
+        all: true,
+        max_paths: 5,
+      },
+    },
+    signal: opts.signal,
+  });
+  return required(data, 'path');
+}
+
+export async function fetchImpact(
+  reviewId: string,
+  symbolKey: string,
+  opts: Signal = {},
+): Promise<ImpactResponse> {
+  const { data } = await api.GET('/api/v1/reviews/{reviewId}/impact/{symbolKey}', {
+    params: { path: { reviewId, symbolKey } },
+    signal: opts.signal,
+  });
+  return required(data, 'impact');
 }
 
 /** Redacted excerpt; the API caps it at 200 lines. */
