@@ -68,7 +68,11 @@ impl BudgetManager {
         }))
     }
 
-    pub fn try_reserve(&self, kind: BudgetKind, amount: u64) -> Result<Reservation, BudgetExceeded> {
+    pub fn try_reserve(
+        &self,
+        kind: BudgetKind,
+        amount: u64,
+    ) -> Result<Reservation, BudgetExceeded> {
         let limit = self.0.limits.limit(kind);
         let slot = &self.0.used[kind.index()];
         let mut cur = slot.load(Ordering::Acquire);

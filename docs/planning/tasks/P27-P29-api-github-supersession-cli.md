@@ -1761,7 +1761,7 @@ Status: ◐
 ---
 
 ### CLI-001 — clap skeleton and output (human/json)
-Status: ☐
+Status: ◐
 
 - **Task ID:** CLI-001
 - **Title:** clap skeleton + output (human/json)

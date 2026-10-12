@@ -1,62 +1,62 @@
+#![allow(dead_code)]
+
+mod cli;
+mod context;
 mod contracts;
+mod exit;
+mod output;
 mod semantic_cmd;
 
-use std::path::PathBuf;
+use clap::Parser;
 
-use clap::{Parser, Subcommand};
+use crate::cli::{Cli, Command, ContractsAction};
+use crate::exit::{CliError, ExitCode};
+use crate::output::Output;
 
-#[derive(Debug, Parser)]
-#[command(name = "review", about = "ReviewGraph command line")]
-struct Cli {
-    #[command(subcommand)]
-    command: Command,
-}
-
-#[derive(Debug, Subcommand)]
-enum Command {
-    /// Contract (Rust -> JSON Schema -> TypeScript) tooling.
-    Contracts {
-        #[command(subcommand)]
-        action: ContractsAction,
-    },
-    /// Semantic (vector) collection registry and cut-over.
-    Semantic {
-        /// Postgres connection string.
-        #[arg(long, env = "DATABASE_URL", hide_env_values = true)]
-        database_url: String,
-        #[command(subcommand)]
-        action: semantic_cmd::SemanticAction,
-    },
-}
-
-#[derive(Debug, Subcommand)]
-enum ContractsAction {
-    /// Write JSON Schemas for every registered contract type.
-    Export {
-        /// Output directory (default: ../packages/contracts/schemas, relative to engine/).
-        #[arg(long, default_value = "../packages/contracts/schemas")]
-        out: PathBuf,
-    },
-}
-
-fn main() -> anyhow::Result<()> {
-    let _telemetry = telemetry::init(telemetry::TelemetryConfig::from_env_with_format(
-        "review-cli",
-        telemetry::LogFormat::Pretty,
-    )?)?;
-    match Cli::parse().command {
+fn run(cli: Cli, out: &Output) -> Result<(), CliError> {
+    let internal = |e: anyhow::Error| CliError::new(ExitCode::Internal, format!("{e:#}"));
+    match cli.command {
         Command::Contracts {
-            action: ContractsAction::Export { out },
+            action: ContractsAction::Export { out: dir },
         } => {
-            let written = contracts::export(&out)?;
-            for path in written {
-                println!("{}", path.display());
-            }
-            Ok(())
+            let written = contracts::export(&dir).map_err(internal)?;
+            let paths: Vec<String> = written.iter().map(|p| p.display().to_string()).collect();
+            out.emit(
+                "contracts export",
+                serde_json::json!({ "written": paths }),
+                vec![],
+                &paths.join("\n"),
+            )
+            .map_err(internal)
         }
-        Command::Semantic {
-            database_url,
-            action,
-        } => semantic_cmd::run(&database_url, action),
+        Command::Semantic { action } => {
+            let database_url = cli.database_url.as_deref().ok_or_else(|| {
+                CliError::new(
+                    ExitCode::Usage,
+                    "--database-url or DATABASE_URL is required for semantic commands",
+                )
+            })?;
+            semantic_cmd::run(database_url, action).map_err(internal)
+        }
+    }
+}
+
+fn main() {
+    let cli = match Cli::try_parse() {
+        Ok(cli) => cli,
+        Err(e) => {
+            let code = if e.use_stderr() {
+                ExitCode::Usage.code()
+            } else {
+                0
+            };
+            let _ = e.print();
+            std::process::exit(code);
+        }
+    };
+    let out = Output::new(cli.format);
+    if let Err(err) = run(cli, &out) {
+        out.error(&err);
+        std::process::exit(err.exit.code());
     }
 }

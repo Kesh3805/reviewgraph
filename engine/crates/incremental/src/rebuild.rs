@@ -117,8 +117,12 @@ pub fn evaluate(inp: &RebuildInputs<'_>) -> RebuildDecision {
     if linker_changed {
         reasons.push(RebuildReason::LinkerVersionChanged);
     }
-    let components: std::collections::BTreeSet<&String> =
-        inp.base.config.keys().chain(inp.head.config.keys()).collect();
+    let components: std::collections::BTreeSet<&String> = inp
+        .base
+        .config
+        .keys()
+        .chain(inp.head.config.keys())
+        .collect();
     for component in components {
         if inp.base.config.get(component) != inp.head.config.get(component) {
             reasons.push(RebuildReason::ConfigChanged {
@@ -205,7 +209,13 @@ mod tests {
     #[test]
     fn schema_bump_forces_full_reparse() {
         let d = run(|h, _, _, _| h.graph_schema = 2);
-        assert!(matches!(d, RebuildDecision::Full { mode: FullMode::Reparse, .. }));
+        assert!(matches!(
+            d,
+            RebuildDecision::Full {
+                mode: FullMode::Reparse,
+                ..
+            }
+        ));
     }
 
     #[test]
@@ -213,13 +223,25 @@ mod tests {
         let d = run(|h, _, _, _| {
             h.analyzers.insert("typescript".into(), "1.1.0".into());
         });
-        assert!(matches!(d, RebuildDecision::Full { mode: FullMode::Reparse, .. }));
+        assert!(matches!(
+            d,
+            RebuildDecision::Full {
+                mode: FullMode::Reparse,
+                ..
+            }
+        ));
     }
 
     #[test]
     fn linker_bump_relinks_from_cache() {
         let d = run(|h, _, _, _| h.linker = "l2".into());
-        assert!(matches!(d, RebuildDecision::Full { mode: FullMode::RelinkFromCache, .. }));
+        assert!(matches!(
+            d,
+            RebuildDecision::Full {
+                mode: FullMode::RelinkFromCache,
+                ..
+            }
+        ));
     }
 
     #[test]
@@ -227,14 +249,22 @@ mod tests {
         let d = run(|h, _, _, _| {
             h.config.insert("tsconfig".into(), "h2".into());
         });
-        assert!(matches!(d, RebuildDecision::Full { mode: FullMode::Reparse, .. }));
+        assert!(matches!(
+            d,
+            RebuildDecision::Full {
+                mode: FullMode::Reparse,
+                ..
+            }
+        ));
     }
 
     #[test]
     fn explicit_flag_wins() {
         let d = run(|_, f, _, _| f.explicit = true);
         match d {
-            RebuildDecision::Full { reasons, .. } => assert_eq!(reasons[0], RebuildReason::Explicit),
+            RebuildDecision::Full { reasons, .. } => {
+                assert_eq!(reasons[0], RebuildReason::Explicit)
+            }
             other => panic!("unexpected {other:?}"),
         }
     }
@@ -247,7 +277,10 @@ mod tests {
 
     #[test]
     fn deep_chain_requests_compaction_not_rebuild() {
-        assert_eq!(run(|_, _, _, d| *d = 20), RebuildDecision::CompactThenIncremental);
+        assert_eq!(
+            run(|_, _, _, d| *d = 20),
+            RebuildDecision::CompactThenIncremental
+        );
     }
 
     #[test]
@@ -260,7 +293,10 @@ mod tests {
         match d {
             RebuildDecision::Full { reasons, .. } => {
                 assert_eq!(reasons[0], RebuildReason::Explicit);
-                assert_eq!(*reasons.last().unwrap(), RebuildReason::LinkerVersionChanged);
+                assert_eq!(
+                    *reasons.last().unwrap(),
+                    RebuildReason::LinkerVersionChanged
+                );
             }
             other => panic!("unexpected {other:?}"),
         }
