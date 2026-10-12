@@ -1,0 +1,45 @@
+name: docker
+
+# Images are built on the CI runner only; local development never requires Docker.
+on:
+  pull_request:
+    paths: ['infra/docker/**', 'engine/**', 'apps/**', 'packages/**', '.github/workflows/docker.yml']
+  push:
+    branches: [main]
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: docker-${{ github.ref }}
+  cancel-in-progress: ${{ !startsWith(github.ref, 'refs/tags/') }}
+
+jobs:
+  build:
+    name: ${{ matrix.image }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        image: [engine, api, web]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - name: Build (no push)
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: infra/docker/${{ matrix.image }}.Dockerfile
+          load: true
+          tags: reviewgraph-${{ matrix.image }}:ci
+          cache-from: type=gha,scope=${{ matrix.image }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.image }}
+          build-args: |
+            GIT_SHA=${{ github.sha }}
+      - name: Hardening checks
+        run: bash scripts/ci/image-hardening-check.sh reviewgraph-${{ matrix.image }}:ci ${{ matrix.image }}
+      - name: Read-only rootfs smoke
+        run: bash scripts/ci/image-smoke.sh reviewgraph-${{ matrix.image }}:ci ${{ matrix.image }}

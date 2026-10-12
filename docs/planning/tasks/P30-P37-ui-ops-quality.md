@@ -2584,7 +2584,7 @@ Status: ☑
 ---
 
 ### CI-008 — Docker builds
-Status: ☐
+Status: ☑
 
 - **Task ID:** CI-008
 - **Title:** Build the `engine`, `api` and `web` images in CI with layer caching, image hardening checks and optional registry push on tagged releases
