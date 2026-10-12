@@ -27,6 +27,7 @@ uuid.workspace = true
 lang-typescript.workspace = true
 diff-engine = { workspace = true, features = ["testkit"] }
 proptest.workspace = true
+chrono.workspace = true
 serde_json.workspace = true
 criterion.workspace = true
 review-test-support.workspace = true

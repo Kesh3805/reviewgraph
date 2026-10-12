@@ -6,6 +6,13 @@
 
 use std::collections::BTreeMap;
 
+use graph_storage::status::SnapshotStatus;
+use graph_storage::types::{SnapshotMeta, SnapshotVersions};
+use review_core::location::RepoPath;
+use serde::Serialize;
+
+use crate::changeset::ChangeSet;
+
 /// Health of the base snapshot as recorded in its metadata.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum BaseStatus {
@@ -53,29 +60,40 @@ pub struct RebuildInputs<'a> {
 }
 
 /// Why a full rebuild was chosen, ordered by severity.
-#[derive(Debug, Clone, PartialEq, PartialOrd)]
+#[derive(Debug, Clone, PartialEq, PartialOrd, Serialize)]
 pub enum RebuildReason {
     Explicit,
     BaseNotReady,
     BaseInconsistent,
     ConsistencyCheckFailed,
-    GraphSchemaChanged { from: u32, to: u32 },
-    AnalyzerVersionChanged { language: String },
+    GraphSchemaChanged {
+        from: u32,
+        to: u32,
+    },
+    AnalyzerVersionChanged {
+        language: String,
+    },
     LinkerVersionChanged,
-    ConfigChanged { component: String },
-    ChangeRatioTooHigh { ratio: f32 },
+    ConfigChanged {
+        component: String,
+    },
+    ChangeRatioTooHigh {
+        ratio: f32,
+    },
+    /// A source-root defining file changed in a way the config hash cannot vouch for.
+    ChangeTouchesSourceRoots,
     InboundEscalation,
 }
 
 /// How a full rebuild proceeds.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
 pub enum FullMode {
     Reparse,
     RelinkFromCache,
 }
 
 /// The decision.
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Serialize)]
 pub enum RebuildDecision {
     Incremental,
     CompactThenIncremental,
@@ -160,6 +178,122 @@ pub fn evaluate(inp: &RebuildInputs<'_>) -> RebuildDecision {
             FullMode::Reparse
         },
     }
+}
+
+/// Paths whose change can alter configuration components (tsconfig, workspaces, source roots,
+/// review rules, generated-file globs). The caller recomputes the head components from exactly
+/// these files (and nothing else) when the list is non-empty.
+#[must_use]
+pub fn touched_config_paths(changes: &ChangeSet) -> Vec<RepoPath> {
+    changes
+        .entries
+        .iter()
+        .filter(|entry| is_config_path(entry.path.as_str()))
+        .map(|entry| entry.path.clone())
+        .collect()
+}
+
+fn is_config_path(path: &str) -> bool {
+    let name = path.rsplit('/').next().unwrap_or(path);
+    let tsconfig = name.starts_with("tsconfig") && name.ends_with(".json");
+    tsconfig
+        || name == "package.json"
+        || name == "pnpm-workspace.yaml"
+        || name == "lerna.json"
+        || path == ".review/config.yaml"
+        || path.ends_with("/.review/config.yaml")
+}
+
+/// Analyzer versions and the linker version live in one recorded map keyed by name.
+const LINKER_KEY: &str = "linker";
+
+impl VersionSet {
+    /// Splits the recorded `analyzer_versions` into per-language analyzers and the linker.
+    #[must_use]
+    pub fn from_snapshot_versions(versions: &SnapshotVersions) -> Self {
+        let mut analyzers = versions.analyzer_versions.clone();
+        let linker = analyzers.remove(LINKER_KEY).unwrap_or_default();
+        Self {
+            graph_schema: versions.graph_schema_version,
+            linker,
+            analyzers,
+            config: versions.config_components.clone(),
+        }
+    }
+}
+
+/// Thresholds and context of one decision that do not come from the snapshots themselves.
+#[derive(Debug, Clone)]
+pub struct DecisionContext<'a> {
+    /// Languages present in the repository.
+    pub languages: &'a [String],
+    /// Files of the base snapshot.
+    pub base_file_count: u64,
+    /// Fraction of changed files above which a rebuild is cheaper.
+    pub max_change_ratio: f32,
+    /// Chain depth at which compaction is requested.
+    pub max_chain_depth: u32,
+    /// Delta edge churn at which compaction is requested.
+    pub delta_edge_churn: f32,
+    /// Edge churn threshold.
+    pub max_edge_churn: f32,
+    pub flags: RebuildFlags,
+}
+
+/// Evaluates the rebuild decision from the recorded snapshot metadata and the change set.
+///
+/// `head_config` is the configuration components recomputed at head from the files named by
+/// [`touched_config_paths`]; pass `None` when none of them changed. If a config path changed but
+/// `head_config` is `None` the decision is conservative: the head cannot be vouched for.
+#[must_use]
+pub fn evaluate_snapshot(
+    base: &SnapshotMeta,
+    head_versions: &SnapshotVersions,
+    head_config: Option<&BTreeMap<String, String>>,
+    changes: &ChangeSet,
+    ctx: &DecisionContext<'_>,
+) -> RebuildDecision {
+    let base_set = VersionSet::from_snapshot_versions(&base.versions);
+    let mut head_set = VersionSet::from_snapshot_versions(head_versions);
+    let touched = !touched_config_paths(changes).is_empty();
+    match head_config {
+        Some(config) => head_set.config = config.clone(),
+        None => head_set.config = base_set.config.clone(),
+    }
+    let base_status = match base.status {
+        SnapshotStatus::Ready => BaseStatus::Ready,
+        SnapshotStatus::Inconsistent => BaseStatus::Inconsistent,
+        _ => BaseStatus::NotReady,
+    };
+    // A rename counts once: the new path's entry stands for both sides.
+    let changed_files = changes.entries.len() as u64;
+    let decision = evaluate(&RebuildInputs {
+        base_status,
+        base: &base_set,
+        head: &head_set,
+        languages: ctx.languages,
+        changed_files,
+        base_file_count: ctx.base_file_count,
+        max_change_ratio: ctx.max_change_ratio,
+        chain_depth: u32::from(base.chain_depth),
+        max_chain_depth: ctx.max_chain_depth,
+        delta_edge_churn: ctx.delta_edge_churn,
+        max_edge_churn: ctx.max_edge_churn,
+        flags: ctx.flags,
+    });
+    if touched && head_config.is_none() {
+        return match decision {
+            RebuildDecision::Full { mut reasons, mode } => {
+                reasons.push(RebuildReason::ChangeTouchesSourceRoots);
+                RebuildDecision::Full { reasons, mode }
+            }
+            _ => RebuildDecision::Full {
+                reasons: vec![RebuildReason::ChangeTouchesSourceRoots],
+                mode: FullMode::Reparse,
+            },
+        };
+    }
+    decision
 }
 
 #[cfg(test)]
