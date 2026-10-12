@@ -1411,7 +1411,7 @@ Status: ☐
 ---
 
 ### RISK-004 — Risk scoring (0..1, level)
-Status: ☐
+Status: ☑
 
 - **Task ID:** RISK-004
 - **Title:** Deterministic risk score in [0,1] and level per symbol, cluster and PR

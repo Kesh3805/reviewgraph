@@ -3,10 +3,12 @@
 
 pub mod level;
 pub mod rules;
+pub mod score;
 pub mod signal;
 
 pub use level::RiskLevel;
 pub use rules::{render_markdown, rule_by_id, RiskRule, RISK_RULES_VERSION, RULES};
+pub use score::{assess, RiskAssessment, ScoreInput, ScoredLevel};
 pub use signal::{
     dedup_signals, RiskCategory, RiskSignal, RuleSource, SignalEvidence, SignalSubject,
 };
