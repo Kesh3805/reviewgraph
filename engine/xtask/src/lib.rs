@@ -108,6 +108,8 @@ pub const ALLOWED: &[(&str, &[&str])] = &[
             "telemetry",
         ],
     ),
+    // Test-only crate: its tests scan the other crates' sources; it has no library dependencies.
+    ("invariants", &[]),
 ];
 
 /// External crates that specific internal crates must never depend on directly.
