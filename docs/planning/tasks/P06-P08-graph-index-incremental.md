@@ -1903,7 +1903,7 @@ impl GraphCache {
 ---
 
 ### IDX-001 — Full index pipeline
-Status: ☐
+Status: ◐
 
 **Task ID:** IDX-001
 
@@ -1987,7 +1987,7 @@ impl FullIndexer { pub async fn run(&self, req: FullIndexRequest, progress: &dyn
 ---
 
 ### IDX-002 — Index status, progress and snapshot version fields
-Status: ☐
+Status: ◐
 
 **Task ID:** IDX-002
 
@@ -2070,7 +2070,7 @@ ALTER TABLE index_runs ENABLE ROW LEVEL SECURITY;
 ---
 
 ### IDX-003 — Parse diagnostics persistence and tolerance policy
-Status: ☐
+Status: ◐
 
 **Task ID:** IDX-003
 
@@ -2224,7 +2224,7 @@ pub struct RepositoryIndexJob { pub repository_id: Uuid, pub organization_id: Uu
 ---
 
 ### IDX-005 — Parse cache keyed by (path, content_hash, analyzer_version)
-Status: ☐
+Status: ◐
 
 **Task ID:** IDX-005
 
