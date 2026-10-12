@@ -23,6 +23,8 @@ export type JsonPrimitive = boolean | number | string | null;
 
 export type JsonValue = JsonArray | JsonObject | JsonPrimitive;
 
+export type Numeric = ColumnType<string, number | string, number | string>;
+
 export type Timestamp = ColumnType<Date, Date | string, Date | string>;
 
 export interface AuditLog {
@@ -58,13 +60,17 @@ export interface CandidateFindings {
   evidence: Generated<Json>;
   fingerprint: string;
   id: Generated<string>;
+  idempotency_key: string | null;
   organization_id: string;
+  raw_output_hash: string | null;
+  reason_code: string | null;
   reasoning_artifacts: Generated<Json>;
   review_run_id: string;
   reviewer: string;
   reviewer_run_id: string;
   severity_candidate: string;
   state: string;
+  state_version: Generated<number>;
   suppressed_at_stage: number | null;
   suppression: Json | null;
   title: string;
@@ -114,6 +120,24 @@ export interface FileVersions {
   symbol_count: Generated<number>;
 }
 
+export interface FindingEvidence {
+  candidate_finding_id: string;
+  created_at: Generated<Timestamp>;
+  end_line: number | null;
+  id: Generated<string>;
+  kind: string;
+  organization_id: string;
+  path: string | null;
+  payload: Json;
+  polarity: string;
+  side: string | null;
+  source: string;
+  start_line: number | null;
+  strength: string;
+  symbol_keys: Generated<string[]>;
+  verification_id: string | null;
+}
+
 export interface FindingFeedback {
   comment: string | null;
   created_at: Generated<Timestamp>;
@@ -124,6 +148,69 @@ export interface FindingFeedback {
   updated_at: Generated<Timestamp>;
   user_id: string | null;
   verdict: string;
+}
+
+export interface FindingIdentities {
+  first_review_run_id: string;
+  identity_key: string;
+  last_review_run_id: string;
+  last_seen_head_sha: string;
+  last_status: string;
+  organization_id: string;
+  provider_comment_id: string | null;
+  published_fingerprint: string | null;
+  pull_request_id: string;
+  repository_id: string;
+}
+
+export interface FindingMergeMembers {
+  candidate_finding_id: string;
+  merge_record_id: string;
+  reviewer: string;
+  role: string;
+}
+
+export interface FindingMergeRecords {
+  confidence_after: number;
+  confidence_before: number;
+  created_at: Generated<Timestamp>;
+  id: string;
+  organization_id: string;
+  primary_candidate_id: string;
+  review_run_id: string;
+  rule: string;
+  similarity: number;
+}
+
+export interface FindingStateTransitions {
+  at: Generated<Timestamp>;
+  candidate_finding_id: string;
+  detail: Json | null;
+  from_state: string;
+  id: Generated<Int8>;
+  organization_id: string;
+  reason_code: string | null;
+  stage: string;
+  to_state: string;
+}
+
+export interface FindingVerifications {
+  base_snapshot_id: string;
+  cache_key: string;
+  candidate_finding_id: string;
+  confidence: Numeric | null;
+  created_at: Generated<Timestamp>;
+  depth: string;
+  duration_ms: number;
+  eligibility: string | null;
+  from_cache: Generated<boolean>;
+  head_snapshot_id: string;
+  id: Generated<string>;
+  organization_id: string;
+  placement: string | null;
+  signals: Json;
+  stage_outcomes: Json;
+  verification_version: string;
 }
 
 export interface GraphEdges {
@@ -142,6 +229,23 @@ export interface GraphEdges {
   snapshot_id: string;
   source_key: Buffer;
   target_key: Buffer;
+}
+
+export interface IndexRuns {
+  error: string | null;
+  files_done: Generated<number>;
+  files_total: number | null;
+  finished_at: Timestamp | null;
+  id: string;
+  job_id: string | null;
+  kind: string;
+  organization_id: string;
+  phase: string;
+  repository_id: string;
+  snapshot_id: string;
+  started_at: Generated<Timestamp>;
+  stats: Generated<Json>;
+  updated_at: Generated<Timestamp>;
 }
 
 export interface Jobs {
@@ -221,6 +325,19 @@ export interface Organizations {
   id: Generated<string>;
   slug: string;
   updated_at: Generated<Timestamp>;
+}
+
+export interface ProfileConventions {
+  confidence: number;
+  consistency: number;
+  convention_id: string;
+  exceptions: Generated<Json>;
+  profile_id: string;
+  rule: string;
+  samples: number;
+  scope: string;
+  source: string;
+  violations: number;
 }
 
 export interface ProvenanceKinds {
@@ -345,6 +462,17 @@ export interface RepositoryInitFacts {
   warnings_count: Generated<number>;
 }
 
+export interface RepositoryProfiles {
+  computed_at: Generated<Timestamp>;
+  config_hash: string;
+  id: Generated<string>;
+  organization_id: string;
+  profile: Json;
+  profile_version: number;
+  repository_id: string;
+  snapshot_id: string;
+}
+
 export interface RepositorySettings {
   created_at: Generated<Timestamp>;
   enabled: Generated<boolean>;
@@ -396,6 +524,7 @@ export interface ReviewerRuns {
 
 export interface ReviewRuns {
   base_sha: string;
+  budget_usage: Generated<Json>;
   completed_at: Timestamp | null;
   created_at: Generated<Timestamp>;
   degraded_reviewers: Generated<string[]>;
@@ -588,14 +717,22 @@ export interface DB {
   edge_kinds: EdgeKinds;
   feedback: Feedback;
   file_versions: FileVersions;
+  finding_evidence: FindingEvidence;
   finding_feedback: FindingFeedback;
+  finding_identities: FindingIdentities;
+  finding_merge_members: FindingMergeMembers;
+  finding_merge_records: FindingMergeRecords;
+  finding_state_transitions: FindingStateTransitions;
+  finding_verifications: FindingVerifications;
   graph_edges: GraphEdges;
+  index_runs: IndexRuns;
   jobs: Jobs;
   memberships: Memberships;
   model_cache: ModelCache;
   model_calls: ModelCalls;
   node_kinds: NodeKinds;
   organizations: Organizations;
+  profile_conventions: ProfileConventions;
   provenance_kinds: ProvenanceKinds;
   provider_installations: ProviderInstallations;
   publications: Publications;
@@ -604,6 +741,7 @@ export interface DB {
   repositories: Repositories;
   repository_configs: RepositoryConfigs;
   repository_init_facts: RepositoryInitFacts;
+  repository_profiles: RepositoryProfiles;
   repository_settings: RepositorySettings;
   resolved_by_kinds: ResolvedByKinds;
   review_runs: ReviewRuns;
