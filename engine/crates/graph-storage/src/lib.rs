@@ -7,6 +7,7 @@
 pub mod cache;
 pub mod compaction;
 pub mod error;
+pub mod file;
 pub mod kinds;
 pub mod mem;
 pub mod model;
