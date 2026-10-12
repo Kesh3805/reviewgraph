@@ -117,7 +117,7 @@ fn param_fact(
     let primitive = PRIMITIVES.contains(&head);
     let (kind, confidence) = match param.token.kind {
         Some(kind) => {
-            let base = match kind {
+            let base: f32 = match kind {
                 TokenKind::Str | TokenKind::Symbol => 0.7,
                 TokenKind::Unknown => 0.3,
                 _ => 0.9,
