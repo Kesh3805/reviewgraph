@@ -2490,8 +2490,18 @@ dependencies = [
 name = "impact"
 version = "0.1.0"
 dependencies = [
+ "blake3",
+ "codegraph",
+ "hex",
+ "opentelemetry",
+ "proptest",
+ "rayon",
  "review-core",
+ "schemars",
+ "serde",
+ "serde_json",
  "thiserror",
+ "tracing",
 ]
 
 [[package]]

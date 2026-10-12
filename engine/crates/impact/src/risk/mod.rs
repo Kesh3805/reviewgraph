@@ -1,0 +1,12 @@
+//! The risk engine (RISK-001..RISK-006): signals, rules, detectors, scoring, effects and
+//! low-risk detection.
+
+pub mod level;
+pub mod rules;
+pub mod signal;
+
+pub use level::RiskLevel;
+pub use rules::{render_markdown, rule_by_id, RiskRule, RISK_RULES_VERSION, RULES};
+pub use signal::{
+    dedup_signals, RiskCategory, RiskSignal, RuleSource, SignalEvidence, SignalSubject,
+};
