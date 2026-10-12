@@ -1487,7 +1487,7 @@ Status: ☑
 ---
 
 ### RISK-006 — Low-risk change detection with contract-change override
-Status: ☐
+Status: ☑
 
 - **Task ID:** RISK-006
 - **Title:** Detect formatting/comment-only, pure rename, generated, import-sort and simple-constant changes, overridden when contracts or behaviour change
