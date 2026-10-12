@@ -96,6 +96,21 @@ pub fn select(candidates: Vec<Candidate>, limits: &BudgetLimits) -> Selection {
             .then_with(|| b.item.score.total_cmp(&a.item.score))
             .then_with(|| a.item.id.cmp(&b.item.id))
     });
+    // Pinned overflow: step the lowest-priority pinned items down to their cheaper forms until
+    // the pinned set fits; whatever still does not fit is dropped below with `BudgetTokens`.
+    let mut pinned_total: u64 = pinned.iter().map(|c| u64::from(c.item.tokens)).sum();
+    for cand in pinned.iter_mut().rev() {
+        if pinned_total <= u64::from(limits.max_tokens) {
+            break;
+        }
+        if let Some((content, t)) = cand.cheaper.take() {
+            if t < cand.item.tokens {
+                pinned_total -= u64::from(cand.item.tokens - t);
+                cand.item.content = content;
+                cand.item.tokens = t;
+            }
+        }
+    }
     // Others: score per token desc, ties by score desc then id.
     let ratio = |c: &Candidate| c.item.score / c.item.tokens.max(1) as f32;
     rest.sort_by(|a, b| {
@@ -144,6 +159,100 @@ pub fn select(candidates: Vec<Candidate>, limits: &BudgetLimits) -> Selection {
             selected.push(item);
         }
     }
+    selected.sort_by(ContextItem::package_order);
+    omitted.sort_by(OmittedItem::list_order);
+    Selection {
+        selected,
+        omitted,
+        tokens_used: used,
+    }
+}
+
+/// Semantic fill needs at least this many tokens left after the first pass.
+pub const SEMANTIC_MIN_REMAINING_TOKENS: u32 = 1_500;
+
+fn related_selected(sel: &Selection) -> usize {
+    sel.selected
+        .iter()
+        .filter(|i| matches!(Category::of(i.kind), Category::Related))
+        .count()
+}
+
+/// Semantic candidates are queried only when at least [`SEMANTIC_MIN_REMAINING_TOKENS`] remain
+/// and the related-symbol cap has room.
+pub fn semantic_fill_needed(first: &Selection, limits: &BudgetLimits) -> bool {
+    limits.max_tokens.saturating_sub(first.tokens_used) >= SEMANTIC_MIN_REMAINING_TOKENS
+        && related_selected(first) < usize::from(limits.max_related)
+}
+
+/// The most semantic-only items a package may take: `max(2, 25% of max_related)`.
+pub fn semantic_item_cap(limits: &BudgetLimits) -> usize {
+    (usize::from(limits.max_related) / 4).max(2)
+}
+
+/// Second pass: adds `extra` (semantic) candidates strictly within the remaining budget. The
+/// first-pass selection is carried over unchanged, so the result is always a superset of it.
+pub fn fill_remaining(
+    first: Selection,
+    mut extra: Vec<Candidate>,
+    limits: &BudgetLimits,
+) -> Selection {
+    let first_ids: Vec<_> = first.selected.iter().map(|i| i.id).collect();
+    let mut related = related_selected(&first);
+    let mut selected = first.selected;
+    let mut omitted = first.omitted;
+    let mut used = first.tokens_used;
+    let mut added = 0usize;
+    let cap = semantic_item_cap(limits);
+
+    let ratio = |c: &Candidate| c.item.score / c.item.tokens.max(1) as f32;
+    extra.sort_by(|a, b| {
+        ratio(b)
+            .total_cmp(&ratio(a))
+            .then_with(|| b.item.score.total_cmp(&a.item.score))
+            .then_with(|| a.item.id.cmp(&b.item.id))
+    });
+    for cand in extra {
+        let mut item = cand.item;
+        if related >= usize::from(limits.max_related) {
+            omitted.push(omit(
+                &item,
+                OmitReason::BudgetCount {
+                    category: Category::Related.name().to_string(),
+                },
+            ));
+            continue;
+        }
+        if added >= cap {
+            omitted.push(omit(
+                &item,
+                OmitReason::BudgetCount {
+                    category: "semantic".to_string(),
+                },
+            ));
+            continue;
+        }
+        let room = limits.max_tokens.saturating_sub(used);
+        if item.tokens > room {
+            match cand.cheaper {
+                Some((content, t)) if t <= room => {
+                    item.content = content;
+                    item.tokens = t;
+                }
+                _ => {
+                    omitted.push(omit(&item, OmitReason::BudgetTokens));
+                    continue;
+                }
+            }
+        }
+        used = used.saturating_add(item.tokens);
+        related += 1;
+        added += 1;
+        selected.push(item);
+    }
+    debug_assert!(first_ids
+        .iter()
+        .all(|id| selected.iter().any(|i| i.id == *id)));
     selected.sort_by(ContextItem::package_order);
     omitted.sort_by(OmittedItem::list_order);
     Selection {

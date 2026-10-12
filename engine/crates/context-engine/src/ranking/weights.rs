@@ -1,4 +1,7 @@
-//! Per-reviewer weight tables (version `v1`) and their validation.
+//! Per-reviewer weight tables (version `v1`, from `weights/v1.yaml`) and their validation.
+
+use std::collections::BTreeMap;
+use std::sync::OnceLock;
 
 use review_core::reviewer_type::ReviewerType;
 use serde::{Deserialize, Serialize};
@@ -27,9 +30,27 @@ pub enum WeightError {
     OutOfRange { field: &'static str, value: f32 },
     #[error("weights sum to {sum}, expected 1.0")]
     BadSum { sum: f64 },
+    #[error("weights file does not parse: {0}")]
+    Parse(String),
+    #[error("weights file has no row for reviewer `{0}`")]
+    MissingReviewer(&'static str),
 }
 
 impl Weights {
+    /// Equal weights, used only if the embedded `v1` table fails to load.
+    const UNIFORM: Self = Self {
+        structural: 0.1,
+        proximity: 0.1,
+        execution_path: 0.1,
+        changed_code_similarity: 0.1,
+        test_relationship: 0.1,
+        api_relationship: 0.1,
+        config_relationship: 0.1,
+        semantic_similarity: 0.1,
+        historical: 0.1,
+        risk_importance: 0.1,
+    };
+
     fn fields(&self) -> [(&'static str, f32); 10] {
         [
             ("structural", self.structural),
@@ -60,35 +81,56 @@ impl Weights {
         Ok(())
     }
 
-    /// The `v1` table. Column order: struct, prox, exec, sim, test, api, config, sem, hist, risk.
+    /// The `v1` row of `weights/v1.yaml` for `reviewer`.
     pub fn for_reviewer(reviewer: ReviewerType) -> Self {
-        let r = |a, b, c, d, e, f, g, h, i, j| Self {
-            structural: a,
-            proximity: b,
-            execution_path: c,
-            changed_code_similarity: d,
-            test_relationship: e,
-            api_relationship: f,
-            config_relationship: g,
-            semantic_similarity: h,
-            historical: i,
-            risk_importance: j,
-        };
-        match reviewer {
-            ReviewerType::Correctness => {
-                r(0.25, 0.20, 0.12, 0.10, 0.08, 0.06, 0.05, 0.06, 0.0, 0.08)
-            }
-            ReviewerType::Security => r(0.20, 0.15, 0.25, 0.05, 0.03, 0.12, 0.05, 0.03, 0.0, 0.12),
-            ReviewerType::Test => r(0.15, 0.15, 0.05, 0.10, 0.35, 0.05, 0.03, 0.07, 0.0, 0.05),
-            ReviewerType::Architecture => {
-                r(0.30, 0.10, 0.05, 0.05, 0.0, 0.15, 0.10, 0.15, 0.0, 0.10)
-            }
-            ReviewerType::Performance => {
-                r(0.25, 0.20, 0.15, 0.10, 0.02, 0.05, 0.08, 0.05, 0.0, 0.10)
-            }
-            ReviewerType::Maintainability => {
-                r(0.25, 0.20, 0.0, 0.20, 0.05, 0.0, 0.05, 0.20, 0.0, 0.05)
-            }
+        static TABLE: OnceLock<Option<WeightTable>> = OnceLock::new();
+        TABLE
+            .get_or_init(|| WeightTable::v1().ok())
+            .as_ref()
+            .and_then(|t| t.get(reviewer))
+            .unwrap_or(Self::UNIFORM)
+    }
+}
+
+/// A versioned set of per-reviewer weights, loaded from YAML and validated row by row.
+#[derive(Debug, Clone, PartialEq)]
+pub struct WeightTable {
+    pub version: String,
+    rows: BTreeMap<ReviewerType, Weights>,
+}
+
+#[derive(Deserialize)]
+struct WeightFile {
+    version: String,
+    reviewers: BTreeMap<String, Weights>,
+}
+
+impl WeightTable {
+    /// Parses a weights file. Every reviewer must have a row and every row must validate.
+    pub fn from_yaml(text: &str) -> Result<Self, WeightError> {
+        let file: WeightFile =
+            serde_yaml::from_str(text).map_err(|e| WeightError::Parse(e.to_string()))?;
+        let mut rows = BTreeMap::new();
+        for reviewer in ReviewerType::ALL {
+            let row = file
+                .reviewers
+                .get(reviewer.as_str())
+                .ok_or(WeightError::MissingReviewer(reviewer.as_str()))?;
+            row.validate()?;
+            rows.insert(reviewer, *row);
         }
+        Ok(Self {
+            version: file.version,
+            rows,
+        })
+    }
+
+    /// The table shipped with the engine (`weights/v1.yaml`).
+    pub fn v1() -> Result<Self, WeightError> {
+        Self::from_yaml(include_str!("../../weights/v1.yaml"))
+    }
+
+    pub fn get(&self, reviewer: ReviewerType) -> Option<Weights> {
+        self.rows.get(&reviewer).copied()
     }
 }

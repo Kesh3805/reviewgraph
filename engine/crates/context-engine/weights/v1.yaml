@@ -1,0 +1,70 @@
+# CTX-005 relevance weights, version v1. Each row sums to 1.0 and no weight exceeds 0.35.
+# The `historical` signal is 0 until HIST-* lands; a v2 table will redistribute it.
+version: v1
+reviewers:
+  correctness:
+    structural: 0.25
+    proximity: 0.20
+    execution_path: 0.12
+    changed_code_similarity: 0.10
+    test_relationship: 0.08
+    api_relationship: 0.06
+    config_relationship: 0.05
+    semantic_similarity: 0.06
+    historical: 0.00
+    risk_importance: 0.08
+  security:
+    structural: 0.20
+    proximity: 0.15
+    execution_path: 0.25
+    changed_code_similarity: 0.05
+    test_relationship: 0.03
+    api_relationship: 0.12
+    config_relationship: 0.05
+    semantic_similarity: 0.03
+    historical: 0.00
+    risk_importance: 0.12
+  test:
+    structural: 0.15
+    proximity: 0.15
+    execution_path: 0.05
+    changed_code_similarity: 0.10
+    test_relationship: 0.35
+    api_relationship: 0.05
+    config_relationship: 0.03
+    semantic_similarity: 0.07
+    historical: 0.00
+    risk_importance: 0.05
+  architecture:
+    structural: 0.30
+    proximity: 0.10
+    execution_path: 0.05
+    changed_code_similarity: 0.05
+    test_relationship: 0.00
+    api_relationship: 0.15
+    config_relationship: 0.10
+    semantic_similarity: 0.15
+    historical: 0.00
+    risk_importance: 0.10
+  performance:
+    structural: 0.25
+    proximity: 0.20
+    execution_path: 0.15
+    changed_code_similarity: 0.10
+    test_relationship: 0.02
+    api_relationship: 0.05
+    config_relationship: 0.08
+    semantic_similarity: 0.05
+    historical: 0.00
+    risk_importance: 0.10
+  maintainability:
+    structural: 0.25
+    proximity: 0.20
+    execution_path: 0.00
+    changed_code_similarity: 0.20
+    test_relationship: 0.05
+    api_relationship: 0.00
+    config_relationship: 0.05
+    semantic_similarity: 0.20
+    historical: 0.00
+    risk_importance: 0.05

@@ -114,6 +114,31 @@ fn pinned_overflow_drops_lowest_risk_with_reason() {
 }
 
 #[test]
+fn pinned_overflow_compresses_then_drops_lowest_risk_reported() {
+    // 60 + 60 + 60 = 180 pinned tokens against a budget of 100.
+    let mut a = cand(1, ItemKind::ChangedSymbol, 0.9, 60, true);
+    let mut b = cand(2, ItemKind::ChangedSymbol, 0.5, 60, true);
+    let c = cand(3, ItemKind::ChangedSymbol, 0.1, 60, true);
+    a.cheaper = Some((ItemContent::Signature { text: "a".into() }, 20));
+    b.cheaper = Some((ItemContent::Signature { text: "b".into() }, 20));
+    let s = select(vec![a, b, c], &limits(100));
+    // The lowest-priority pinned items are stepped down first: c has no cheaper form, b shrinks
+    // to 20 and a shrinks to 20; c (60) then fits in the 60 that remain.
+    let tokens: u32 = s.selected.iter().map(|i| i.tokens).sum();
+    assert!(tokens <= 100);
+    assert_eq!(s.selected.len(), 3);
+    assert!(s.omitted.is_empty());
+
+    // With nothing left to compress the lowest-risk item is dropped and reported.
+    let d = cand(4, ItemKind::ChangedSymbol, 0.9, 80, true);
+    let e = cand(5, ItemKind::ChangedSymbol, 0.2, 80, true);
+    let s = select(vec![d, e], &limits(100));
+    assert_eq!(s.selected.len(), 1);
+    assert_eq!(s.omitted[0].title, "sym5");
+    assert_eq!(s.omitted[0].reason, OmitReason::BudgetTokens);
+}
+
+#[test]
 fn greedy_by_score_per_token() {
     // a: 0.6 / 80 = 0.0075, b: 0.4 / 20 = 0.02, c: 0.3 / 20 = 0.015
     let c = vec![

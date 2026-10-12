@@ -4,7 +4,7 @@ pub mod gate;
 pub mod weights;
 
 pub use gate::{gate, GateOutcome};
-pub use weights::{WeightError, Weights, MAX_WEIGHT, WEIGHTS_VERSION};
+pub use weights::{WeightError, WeightTable, Weights, MAX_WEIGHT, WEIGHTS_VERSION};
 
 use serde::{Deserialize, Serialize};
 

@@ -12,6 +12,29 @@ fn weights_rows_sum_to_one_and_max_035() {
 }
 
 #[test]
+fn weights_yaml_is_the_source_of_the_v1_table() {
+    let table = WeightTable::v1().unwrap();
+    assert_eq!(table.version, WEIGHTS_VERSION);
+    for r in ReviewerType::ALL {
+        let row = table.get(r).unwrap();
+        row.validate().unwrap();
+        assert_eq!(row, Weights::for_reviewer(r));
+        assert_eq!(row.historical, 0.0, "historical is 0 in v1");
+    }
+    let sec = table.get(ReviewerType::Security).unwrap();
+    assert!((sec.execution_path - 0.25).abs() < 1e-6);
+    let tests = table.get(ReviewerType::Test).unwrap();
+    assert!((tests.test_relationship - 0.35).abs() < 1e-6);
+}
+
+#[test]
+fn weights_yaml_with_a_row_over_the_cap_is_rejected() {
+    let bad = "version: v9\nreviewers:\n  correctness: {structural: 0.40, proximity: 0.05, execution_path: 0.12, changed_code_similarity: 0.10, test_relationship: 0.08, api_relationship: 0.06, config_relationship: 0.05, semantic_similarity: 0.06, historical: 0.0, risk_importance: 0.08}\n";
+    assert!(WeightTable::from_yaml(bad).is_err());
+    assert!(WeightTable::from_yaml("not: [valid").is_err());
+}
+
+#[test]
 fn override_with_040_rejected() {
     let mut w = Weights::for_reviewer(ReviewerType::Correctness);
     w.structural = 0.40;
