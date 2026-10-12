@@ -3494,7 +3494,7 @@ Status: ☑
 ---
 
 ### DED-004 — Prioritization score
-Status: ☐
+Status: ☑
 
 - **Task ID:** DED-004
 - **Title:** Finding prioritization score (PRD §57) with a bounded, non-inflating blast-radius term

@@ -4,6 +4,7 @@ pub mod fingerprint;
 pub mod identity;
 pub mod merge;
 pub mod normalize;
+pub mod priority;
 
 pub use fingerprint::{
     root_cause_fingerprint, DedupError, FingerprintBasis, Predicate, RootCauseFingerprint,
