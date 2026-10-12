@@ -1877,7 +1877,7 @@ Status: ☐
 ---
 
 ### CTX-001 — ContextPackage / ContextItem model
-Status: ☐
+Status: ☑
 
 - **Task ID:** CTX-001
 - **Title:** `ContextPackage` and `ContextItem` model with source locations, provenance per item and an omitted-with-reason list
