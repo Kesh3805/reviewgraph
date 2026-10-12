@@ -9,6 +9,11 @@ publish.workspace = true
 [lints]
 workspace = true
 
+[features]
+# Database-backed tests; need TEST_DATABASE_URL (or DATABASE_URL) pointing at a Postgres server
+# whose user may CREATE DATABASE. Plain `cargo test` never touches a database.
+integration = []
+
 [dependencies]
 review-core.workspace = true
 analysis-ir.workspace = true
@@ -16,6 +21,17 @@ graph-storage.workspace = true
 async-trait = "0.1"
 blake3.workspace = true
 thiserror.workspace = true
+sqlx.workspace = true
+tokio.workspace = true
+tokio-util.workspace = true
+tracing.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+uuid.workspace = true
+chrono.workspace = true
+futures.workspace = true
+hex.workspace = true
 
 [dev-dependencies]
-tokio.workspace = true
+tempfile.workspace = true
+review-test-support.workspace = true

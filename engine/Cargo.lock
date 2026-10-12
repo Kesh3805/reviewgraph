@@ -3216,10 +3216,21 @@ dependencies = [
  "analysis-ir",
  "async-trait",
  "blake3",
+ "chrono",
+ "futures",
  "graph-storage",
+ "hex",
  "review-core",
+ "review-test-support",
+ "serde",
+ "serde_json",
+ "sqlx",
+ "tempfile",
  "thiserror",
  "tokio",
+ "tokio-util",
+ "tracing",
+ "uuid",
 ]
 
 [[package]]
