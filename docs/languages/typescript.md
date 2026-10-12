@@ -109,3 +109,25 @@ Guard decorators default to `^(UseGuards|Roles?|Permissions?|Public|Auth\w*|Auth
 on the last name segment; `AnalyzerConfig.guard_decorator_names` replaces the pattern with an exact
 list. `analysis_ir::facts::compare_keys(base, head)` returns the multiset difference by
 `(kind, key)` that the change classifier consumes.
+
+## Framework adapters (NEST-001..007)
+
+Adapters live in `src/frameworks/` and run inside the analyzer after declarations and imports
+(`frameworks::run`). They share `FrameworkCtx`: the syntax tree, the symbol table, the import list
+and the module `BindingTable` (`crate::bindings`), with decorator-origin resolution
+(`decorator_origin`, `name_origin`, `nest_origin`). Each adapter is gated by
+`AnalyzerConfig.enabled_adapters` and by its own `detect`. The attribute contract of every fact is
+in `docs/graph-schema/framework-facts.md`.
+
+| Adapter | Task | Facts |
+|---|---|---|
+| `nestjs` / modules | NEST-001 | `ModuleDeclaration` (including `static forRoot` dynamic modules) |
+| `nestjs` / routes | NEST-002 | `Controller`, `HttpRoute`, `HttpGlobalConfig` |
+| `nestjs` / di | NEST-003 | `DiInjection` |
+| `nestjs` / middleware | NEST-004 | `Middleware`, `MiddlewareBinding`, `GlobalProvider`, `MetadataDecoratorDefinition`, `RouteMetadata` |
+| `typeorm` | NEST-005 | `OrmEntity`, `OrmColumn`, `OrmRelation`, `OrmAccess` |
+| `bullmq` | NEST-006 | `QueueRegistration`, `QueueConsumer`, `QueueJobHandler`, `QueueProducer` |
+| `jest`, `config` | NEST-007 | `TestSuite`, `TestCase`, `TestMock`, `ConfigRead` |
+
+Only names, kinds and flags are recorded: `useValue` literals, mock values, raw SQL, redirect URLs,
+job payloads and config defaults never appear in a fact.
