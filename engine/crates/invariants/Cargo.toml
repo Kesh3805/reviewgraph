@@ -1,0 +1,12 @@
+[package]
+name = "invariants"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish = false
+
+# Dev-only crate: it has no library code. The invariant tests live in `tests/` and scan or
+# exercise the other workspace crates (docs/architecture/invariants.md).
+[lints]
+workspace = true

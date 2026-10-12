@@ -1,0 +1,5 @@
+# INV-005 allowlist: generic-crate source files that may mention framework names.
+# Format: `path relative to engine/ | reason`. One entry per line; the reason is mandatory.
+crates/analysis-ir/src/framework.rs | doc comment listing example framework ids for an opaque string field
+crates/codegraph/src/framework/mod.rs | module doc stating that framework knowledge stays in lang-typescript
+crates/impact/src/graph/calls.rs | module doc comment explaining a synthesized IMPLEMENTS step

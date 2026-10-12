@@ -1,0 +1,8 @@
+# INV-004 allowlist: domain-crate source files that may mention provider names.
+# Format: `path relative to engine/ | reason`. One entry per line; the reason is mandatory.
+crates/semantic/src/redact.rs | secret-redaction patterns must recognise provider token formats (no provider logic)
+crates/diff-engine/src/anchor/mod.rs | doc comment describing the file-list truncation limit that providers report
+crates/diff-engine/src/anchor/patch.rs | test name for a unified-diff fixture style
+crates/review-core/src/location.rs | test fixture path for a workflow file under the provider config directory
+crates/review-core/src/repository.rs | ProviderKind enum is the neutral provider identity carried in the domain model
+crates/review-core/src/publication.rs | doc comment referencing the legacy provider module that the review event replaces
