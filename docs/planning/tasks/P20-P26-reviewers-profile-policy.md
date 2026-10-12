@@ -618,7 +618,7 @@ Status: ◐
 ---
 
 ### PROF-001 — RepositoryProfile model and persistence
-Status: ☐
+Status: ☑
 
 - **Task ID:** PROF-001
 - **Title:** RepositoryProfile model & persistence
@@ -737,7 +737,7 @@ Status: ☐
 ---
 
 ### PROF-003 — Convention miner framework
-Status: ☐
+Status: ☑
 
 - **Task ID:** PROF-003
 - **Title:** Convention miner framework (samples, violations, consistency, exceptions, confidence, scope)
@@ -886,7 +886,7 @@ Status: ☐
 ---
 
 ### PROF-006 — Profile versioning and cache
-Status: ☐
+Status: ☑
 
 - **Task ID:** PROF-006
 - **Title:** Profile versioning & cache
