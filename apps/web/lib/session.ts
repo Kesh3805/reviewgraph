@@ -6,21 +6,32 @@ export { SESSION_COOKIE } from './constants';
 export interface SessionUser {
   id: string;
   login: string;
-  name: string | null;
+  display_name: string | null;
   avatar_url: string | null;
 }
 
+/**
+ * Stored membership roles (API-003). `member` is the "maintainer" route role: it may enable,
+ * initialize and configure repositories; `admin` and `owner` also manage the organization.
+ */
+export type MembershipRole = 'owner' | 'admin' | 'member' | 'viewer';
+
 export interface SessionOrganization {
   id: string;
-  name: string;
-  role: 'owner' | 'maintainer' | 'member';
+  slug: string;
+  display_name: string;
+  role: MembershipRole;
 }
 
-/** Shape of `GET /auth/me` (stubbed until API-004/API-008 publish the OpenAPI contract). */
+/**
+ * Shape of `GET /auth/me` (API-004). The OpenAPI document does not describe this response
+ * yet, so it is typed by hand from `auth.controller.ts`.
+ */
 export interface Session {
   user: SessionUser;
   organizations: SessionOrganization[];
-  current_organization_id: string | null;
+  /** Not returned by the API today; kept optional for a future server-side preference. */
+  current_organization_id?: string | null;
 }
 
 export function apiInternalUrl(): string {

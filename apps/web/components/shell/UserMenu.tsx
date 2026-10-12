@@ -10,7 +10,7 @@ import type { SessionUser } from '@/lib/session';
 export function UserMenu({ user }: { user: SessionUser }) {
   const [open, setOpen] = useState(false);
   const { resolvedTheme, setTheme } = useTheme();
-  const display = user.name ?? user.login;
+  const display = user.display_name ?? user.login;
 
   async function signOut() {
     try {

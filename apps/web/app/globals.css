@@ -71,6 +71,14 @@
   --ring: oklch(0.556 0 0);
 }
 
+/* Shiki tokens carry both theme colours as CSS variables (SourceExcerpt). */
+.shiki-token {
+  color: var(--shiki-light);
+}
+.dark .shiki-token {
+  color: var(--shiki-dark);
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
