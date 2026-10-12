@@ -1,3 +1,4 @@
+#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 //! CLI-001 black-box tests: streams, exit codes, completions.
 
 mod common;

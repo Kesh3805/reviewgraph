@@ -20,8 +20,8 @@ pub enum Format {
     Json,
 }
 
-/// The versioned JSON envelope every command prints with `--format json` (`cli-output.v1`).
-/// Exported to contracts as `CliOutputV1`.
+// The versioned JSON envelope every command prints with `--format json` (`cli-output.v1`).
+// Exported to contracts as `CliOutputV1`.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
 #[serde(deny_unknown_fields)]
 pub struct CliOutputV1 {

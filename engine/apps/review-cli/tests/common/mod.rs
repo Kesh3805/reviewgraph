@@ -1,7 +1,7 @@
 //! Shared helpers for the CLI integration tests: run the real binary, build throwaway git
 //! repositories.
 
-#![allow(dead_code)]
+#![allow(dead_code, clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 
 use std::path::Path;
 use std::process::{Command, Output};

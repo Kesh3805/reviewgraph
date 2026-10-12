@@ -1,0 +1,25 @@
+---
+source: apps/review-cli/tests/help_snapshot.rs
+expression: "help(&[\"--help\"])"
+---
+ReviewGraph command line
+
+Usage: review [OPTIONS] <COMMAND>
+
+Commands:
+  completions  Generate shell completions on stdout
+  contracts    Contract (Rust -> JSON Schema -> TypeScript) tooling
+  semantic     Semantic (vector) collection registry and cut-over
+  eval         Quality benchmark tooling (developer use)
+  help         Print this message or the help of the given subcommand(s)
+
+Options:
+      --repo <REPO>                  Repository path (default: discover upward for `.git`)
+      --format <FORMAT>              Output format [default: human] [possible values: human, json]
+      --store <STORE>                Graph store backend [default: auto] [possible values: auto, local, postgres]
+      --database-url <DATABASE_URL>  Postgres connection string (only with `--store postgres`) [env: DATABASE_URL]
+      --color <COLOR>                Colored output [default: auto] [possible values: auto, always, never]
+  -v...                              Increase log verbosity (stderr)
+  -q...                              Decrease log verbosity
+  -h, --help                         Print help
+  -V, --version                      Print version

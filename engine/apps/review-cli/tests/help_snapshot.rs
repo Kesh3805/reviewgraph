@@ -1,3 +1,4 @@
+#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 //! CLI-001: the top-level `--help` output is snapshot-tested so flag renames are deliberate.
 
 use std::process::Command;
