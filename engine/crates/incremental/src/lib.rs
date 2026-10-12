@@ -9,6 +9,7 @@ pub mod error;
 pub mod lineage;
 pub mod matcher;
 pub mod name_index;
+pub mod rebuild;
 pub mod symbol_diff;
 
 pub use error::{Error, Result};

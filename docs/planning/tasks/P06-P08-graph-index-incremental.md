@@ -2827,7 +2827,7 @@ Status: ☐
 ---
 
 ### INC-011 — Full-rebuild trigger evaluation (PRD §24)
-Status: ☐
+Status: ☑
 
 - **Task ID:** INC-011
 - **Title:** `incremental::rebuild` — a pure decision function that returns `Incremental` or `Full{reasons, mode}` from versions, config components, snapshot health, the change set and operator flags.
