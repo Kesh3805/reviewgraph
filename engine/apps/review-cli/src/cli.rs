@@ -1,4 +1,4 @@
-//! clap command tree (CLI-001). Subcommand logic lands in CLI-002..CLI-013.
+//! clap command tree (CLI-001). Subcommand logic lives in `commands/`.
 
 use std::path::PathBuf;
 
@@ -6,14 +6,14 @@ use clap::{ArgAction, Parser, Subcommand, ValueEnum};
 
 use crate::output::Format;
 
-#[derive(Debug, Clone, Copy, ValueEnum)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, ValueEnum)]
 pub enum StoreKind {
     Auto,
     Local,
     Postgres,
 }
 
-#[derive(Debug, Clone, Copy, ValueEnum)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, ValueEnum)]
 pub enum ColorMode {
     Auto,
     Always,
@@ -24,7 +24,7 @@ pub enum ColorMode {
 #[command(name = "review", version, about = "ReviewGraph command line")]
 pub struct Cli {
     /// Repository path (default: discover upward for `.git`).
-    #[arg(long, global = true)]
+    #[arg(long, alias = "repository", global = true)]
     pub repo: Option<PathBuf>,
     /// Output format.
     #[arg(long, global = true, value_enum, default_value = "human")]
@@ -50,6 +50,12 @@ pub struct Cli {
 
 #[derive(Debug, Subcommand)]
 pub enum Command {
+    /// Generate shell completions on stdout.
+    Completions {
+        /// Target shell.
+        #[arg(value_enum)]
+        shell: clap_complete::Shell,
+    },
     /// Contract (Rust -> JSON Schema -> TypeScript) tooling.
     Contracts {
         #[command(subcommand)]
@@ -77,14 +83,18 @@ pub enum ContractsAction {
     },
 }
 
+/// The command tree, for completions and help snapshots.
+pub fn command() -> clap::Command {
+    <Cli as clap::CommandFactory>::command()
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
-    use clap::CommandFactory;
 
     #[test]
     fn cli_definition_is_valid() {
-        Cli::command().debug_assert();
+        command().debug_assert();
     }
 
     #[test]
@@ -92,5 +102,39 @@ mod tests {
         let cli =
             Cli::try_parse_from(["review", "--format", "json", "contracts", "export"]).unwrap();
         assert_eq!(cli.format, Format::Json);
+    }
+
+    #[test]
+    fn repository_is_an_alias_of_repo() {
+        let cli = Cli::try_parse_from([
+            "review",
+            "completions",
+            "bash",
+            "--repository",
+            "some/where",
+        ])
+        .unwrap();
+        assert_eq!(cli.repo, Some(PathBuf::from("some/where")));
+    }
+
+    #[test]
+    fn completions_generate() {
+        use clap_complete::Shell;
+        for shell in [
+            Shell::Bash,
+            Shell::Zsh,
+            Shell::Fish,
+            Shell::PowerShell,
+            Shell::Elvish,
+        ] {
+            let mut buf: Vec<u8> = Vec::new();
+            clap_complete::generate(shell, &mut command(), "review", &mut buf);
+            let text = String::from_utf8(buf).unwrap();
+            assert!(text.contains("review"), "{shell:?} script is empty");
+            assert!(
+                text.contains("completions"),
+                "{shell:?} misses a subcommand"
+            );
+        }
     }
 }

@@ -1,0 +1,30 @@
+{
+  "$id": "urn:reviewgraph:contracts:CliOutputV1",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": false,
+  "properties": {
+    "command": {
+      "type": "string"
+    },
+    "data": true,
+    "version": {
+      "format": "uint32",
+      "minimum": 0.0,
+      "type": "integer"
+    },
+    "warnings": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    }
+  },
+  "required": [
+    "command",
+    "data",
+    "version",
+    "warnings"
+  ],
+  "title": "CliOutputV1",
+  "type": "object"
+}

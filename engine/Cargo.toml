@@ -58,6 +58,8 @@ futures = "0.3"
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter", "json", "fmt"] }
 clap = { version = "4", features = ["derive", "env"] }
+clap_complete = "4"
+comfy-table = { version = "7", default-features = false }
 tree-sitter = "0.25"
 tree-sitter-typescript = "0.23"
 ignore = "0.4"

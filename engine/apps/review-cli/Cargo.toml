@@ -13,6 +13,8 @@ workspace = true
 anyhow.workspace = true
 telemetry.workspace = true
 clap.workspace = true
+clap_complete.workspace = true
+comfy-table.workspace = true
 review-core.workspace = true
 repository.workspace = true
 schemars.workspace = true
@@ -24,9 +26,12 @@ sha2.workspace = true
 semantic = { workspace = true, features = ["pg"] }
 sqlx.workspace = true
 tokio.workspace = true
+tracing.workspace = true
+tracing-subscriber.workspace = true
 
 [dev-dependencies]
 tempfile.workspace = true
+insta.workspace = true
 
 [[bin]]
 name = "review"

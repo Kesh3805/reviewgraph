@@ -57,6 +57,8 @@ pub fn registry() -> Vec<ContractType> {
         entry::<VerifiedFinding>("VerifiedFinding"),
         entry::<PublishedFinding>("PublishedFinding"),
         entry::<RepositoryFacts>("RepositoryFacts"),
+        // CLI-001: the `--format json` envelope (`cli-output.v1`).
+        entry::<crate::output::CliOutputV1>("CliOutputV1"),
     ]
 }
 

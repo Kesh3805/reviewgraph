@@ -5,6 +5,7 @@ mod context;
 mod contracts;
 mod eval;
 mod exit;
+mod logging;
 mod output;
 mod semantic_cmd;
 
@@ -12,11 +13,16 @@ use clap::Parser;
 
 use crate::cli::{Cli, Command, ContractsAction};
 use crate::exit::{CliError, ExitCode};
-use crate::output::Output;
+use crate::output::{color_enabled, Output};
 
 fn run(cli: Cli, out: &Output) -> Result<(), CliError> {
     let internal = |e: anyhow::Error| CliError::new(ExitCode::Internal, format!("{e:#}"));
+    tracing::info!("review started");
     match cli.command {
+        Command::Completions { shell } => {
+            clap_complete::generate(shell, &mut cli::command(), "review", &mut std::io::stdout());
+            Ok(())
+        }
         Command::Contracts {
             action: ContractsAction::Export { out: dir },
         } => {
@@ -56,8 +62,12 @@ fn main() {
             std::process::exit(code);
         }
     };
-    let out = Output::new(cli.format);
-    if let Err(err) = run(cli, &out) {
+    let guard = logging::init(cli.verbose, cli.quiet, cli.color);
+    let out = Output::new(cli.format, color_enabled(cli.color));
+    let result = run(cli, &out);
+    // `process::exit` skips destructors: flush telemetry first.
+    drop(guard);
+    if let Err(err) = result {
         out.error(&err);
         std::process::exit(err.exit.code());
     }

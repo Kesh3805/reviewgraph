@@ -3,6 +3,7 @@
   "sha256": {
     "CandidateFinding": "9670c71cc48ea3c00c1ebd8e4e3a46111c5ddb657475dc135eef606481ceef91",
     "CheckConclusion": "8d027409d805561b8384b149ceb8761bb6005f12289582548c7a6adbf9978f81",
+    "CliOutputV1": "de55b6c508433c39b9b1a7e57137dcf0eac859a1706c7b57db53cab86033bb7d",
     "ErrorClass": "61ffb744cee58171a28a92431cec2920e0ca6c70c2362dd02060263d05289687",
     "FindingCategory": "c144d9fc2215d96f811e617ed21d964af2f7f5ebd0c4da17a4b7c79224a0e7c3",
     "FindingState": "4aae47795b3fea18a79076cfac48613207d391741e39ed0e84b2d6dd35de8ff4",
@@ -20,6 +21,7 @@
   "types": [
     "CandidateFinding",
     "CheckConclusion",
+    "CliOutputV1",
     "ErrorClass",
     "FindingCategory",
     "FindingState",
