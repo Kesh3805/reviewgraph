@@ -30,6 +30,8 @@ export interface ServiceTokenClaims {
   scope: ServiceScope[];
   org?: string;
   repo?: string;
+  /** SEC-005: the job the credential is for; the broker checks it is running for `repo`. */
+  job?: string;
   iat: number;
   exp: number;
   jti: string;
@@ -87,6 +89,7 @@ export interface SignOptions {
   scope: ServiceScope[];
   org?: string;
   repo?: string;
+  job?: string;
   /** Lifetime in seconds, 1..=60. Default 60. */
   ttlSeconds?: number;
   /** Unix seconds; defaults to the wall clock. */
@@ -104,6 +107,7 @@ export async function signServiceToken(ring: ServiceKeyRing, opts: SignOptions):
   const payload: Record<string, unknown> = { scope: opts.scope };
   if (opts.org) payload.org = opts.org;
   if (opts.repo) payload.repo = opts.repo;
+  if (opts.job) payload.job = opts.job;
   return new SignJWT(payload)
     .setProtectedHeader({ alg: 'HS256', typ: 'JWT', kid: key.kid })
     .setIssuer(opts.iss)
@@ -176,7 +180,7 @@ export async function verifyServiceToken(
     throw new ServiceAuthError(classify(err));
   }
 
-  const { iss, sub, iat, exp, jti, scope, org, repo } = payload as Record<string, unknown>;
+  const { iss, sub, iat, exp, jti, scope, org, repo, job } = payload as Record<string, unknown>;
   const issuers: readonly string[] = opts.allowedIssuers ?? SERVICE_ISSUERS;
   if (typeof iss !== 'string' || !issuers.includes(iss)) throw new ServiceAuthError('wrong_issuer');
   if (
@@ -189,7 +193,8 @@ export async function verifyServiceToken(
       (s) => typeof s === 'string' && (SERVICE_SCOPES as readonly string[]).includes(s),
     ) ||
     (org !== undefined && (typeof org !== 'string' || !UUID.test(org))) ||
-    (repo !== undefined && (typeof repo !== 'string' || !UUID.test(repo)))
+    (repo !== undefined && (typeof repo !== 'string' || !UUID.test(repo))) ||
+    (job !== undefined && (typeof job !== 'string' || !UUID.test(job)))
   ) {
     throw new ServiceAuthError('invalid_claims');
   }
@@ -203,6 +208,7 @@ export async function verifyServiceToken(
     scope: scope as ServiceScope[],
     org: org as string | undefined,
     repo: repo as string | undefined,
+    ...(job !== undefined ? { job: job as string } : {}),
     iat,
     exp,
     jti,

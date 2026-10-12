@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { ServiceKeyRing } from '../internal/service-token';
+import { isValidPreviousKeysSpec, isValidTokenKeySpec } from '../security/token-cipher';
 import { telemetryEnvShape } from '../telemetry/config';
 
 /** Exit code for configuration errors (sysexits EX_CONFIG). */
@@ -15,8 +16,12 @@ const secretMin32Bytes = z
   .string()
   .refine((v) => Buffer.byteLength(v, 'utf8') >= 32, 'must be at least 32 bytes');
 
-const tokenCacheKey = z.string().refine((v) => Buffer.from(v, 'base64').length === 32, {
-  message: 'must be 32 bytes, base64 encoded',
+const tokenCacheKey = z.string().refine(isValidTokenKeySpec, {
+  message: 'must be 32 bytes, base64 encoded (optionally prefixed with kid:)',
+});
+
+const previousTokenCacheKeys = z.string().refine(isValidPreviousKeysSpec, {
+  message: 'must be kid:base64[,kid:base64...] with 32-byte keys',
 });
 
 const serviceJwtKeys = z.string().refine(
@@ -60,6 +65,8 @@ const baseShape = {
   SERVICE_JWT_KEYS: serviceJwtKeys.optional(),
   SESSION_JWT_SECRET: secretMin32Bytes,
   TOKEN_CACHE_KEY: tokenCacheKey,
+  /** SEC-005 rotation: previous keys, decrypt only (`kid:base64[,...]`). */
+  TOKEN_CACHE_KEY_PREVIOUS: previousTokenCacheKeys.optional(),
   WEB_ORIGIN: url(['http:', 'https:']),
   GITHUB_ENABLED: boolFromString.default(true),
   GITHUB_APP_ID: nonEmpty.optional(),

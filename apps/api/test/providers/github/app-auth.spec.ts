@@ -13,8 +13,10 @@ import {
   InstallationTokenCache,
   cacheTtlSeconds,
   scopeHash,
+  tokenCacheAad,
   tokenCacheKey,
 } from '../../../src/providers/github/token-cache';
+import { TokenCipher, TokenCipherError } from '../../../src/security/token-cipher';
 import { ProviderError } from '../../../src/providers/ports';
 import { testConfig } from '../../helpers';
 import { FakeGithub, generateAppKey } from '../../helpers/fake-github';
@@ -95,11 +97,17 @@ describe('GitHub App auth', () => {
     for (const k of await redis.keys('*'))
       expect(`${k}${await redis.get(k)}`).not.toContain(secret);
 
-    const decrypted = JSON.parse(aeadDecrypt(CACHE_KEY, raw!, key)) as { token: string };
+    const cipher = new TokenCipher({ kid: 'k1', key: CACHE_KEY });
+    const aad = tokenCacheAad(INSTALLATION, key);
+    const decrypted = JSON.parse(cipher.decrypt(raw!, aad)) as { token: string };
     expect(decrypted.token).toBe(secret);
     // Bound to its key and to TOKEN_CACHE_KEY.
-    expect(() => aeadDecrypt(CACHE_KEY, raw!, 'rg:gh:itok:other:key')).toThrow(AeadError);
-    expect(() => aeadDecrypt(Buffer.alloc(32, 8), raw!, key)).toThrow(AeadError);
+    expect(() => cipher.decrypt(raw!, 'installation:1|rg:gh:itok:other:key')).toThrow(
+      TokenCipherError,
+    );
+    expect(() =>
+      new TokenCipher({ kid: 'k1', key: Buffer.alloc(32, 8) }).decrypt(raw!, aad),
+    ).toThrow(TokenCipherError);
 
     const again = await auth.getInstallationToken(INSTALLATION);
     expect(again.fromCache).toBe(true);

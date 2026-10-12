@@ -1,8 +1,9 @@
 import { createHash } from 'node:crypto';
 import { Logger } from '@nestjs/common';
 import type { Redis } from 'ioredis';
-import { aeadDecrypt, aeadEncrypt } from '../../common/crypto/aead';
+import { incCounter } from '../../common/metrics';
 import { Secret } from '../../common/secret';
+import { DEFAULT_TOKEN_KEY_ID, TokenCipher } from '../../security/token-cipher';
 
 /** Which permissions/repositories an installation token is limited to. Unscoped = `{}`. */
 export interface TokenScope {
@@ -32,6 +33,9 @@ export function scopeHash(scope: TokenScope): string {
 
 export const tokenCacheKey = (installationId: string, hash: string): string =>
   `rg:gh:itok:${installationId}:${hash}`;
+/** Associated data of a cached value: binds it to its installation and cache key (SEC-005). */
+export const tokenCacheAad = (installationId: string, redisKey: string): string =>
+  `installation:${installationId}|${redisKey}`;
 export const mintLockKey = (installationId: string): string => `rg:gh:itok-lock:${installationId}`;
 
 /** `min(expires_at - now - 10min, 50min)` in whole seconds; <= 0 means do not cache. */
@@ -41,31 +45,45 @@ export function cacheTtlSeconds(expiresAt: Date, nowMs: number): number {
 }
 
 /**
- * Installation-token cache in Redis, AES-256-GCM encrypted with `TOKEN_CACHE_KEY` (the Redis key
- * is bound as AAD). Tokens are never persisted anywhere else. Every Redis failure degrades to a
- * cache miss: availability over efficiency.
+ * Installation-token cache in Redis, AES-256-GCM encrypted with `TOKEN_CACHE_KEY` through
+ * {@link TokenCipher} (value `{kid, iv, ciphertext, tag}`; the installation id and Redis key are
+ * bound as AAD). Tokens are never persisted anywhere else. Every Redis or decrypt failure degrades
+ * to a cache miss: availability over efficiency.
  */
 export class InstallationTokenCache {
   private readonly logger = new Logger(InstallationTokenCache.name);
+  private readonly cipher: TokenCipher;
 
   constructor(
     private readonly redis: CacheRedis,
-    private readonly key: Buffer,
+    key: TokenCipher | Buffer,
     private readonly now: () => number = Date.now,
-  ) {}
+  ) {
+    this.cipher =
+      key instanceof TokenCipher ? key : new TokenCipher({ kid: DEFAULT_TOKEN_KEY_ID, key });
+  }
 
   async get(installationId: string, hash: string): Promise<CachedToken | null> {
     const redisKey = tokenCacheKey(installationId, hash);
+    let raw: string | null;
     try {
-      const raw = await this.redis.get(redisKey);
-      if (!raw) return null;
-      const parsed = JSON.parse(aeadDecrypt(this.key, raw, redisKey)) as {
+      raw = await this.redis.get(redisKey);
+    } catch (err) {
+      this.warn('cache read failed; treating as miss', err);
+      return null;
+    }
+    if (!raw) return null;
+    try {
+      const parsed = JSON.parse(
+        this.cipher.decrypt(raw, tokenCacheAad(installationId, redisKey)),
+      ) as {
         token: string;
         expires_at: string;
       };
       return { token: new Secret(parsed.token), expiresAt: new Date(parsed.expires_at) };
     } catch (err) {
-      this.warn('cache read failed; treating as miss', err);
+      incCounter('token_cache_decrypt_failures_total');
+      this.warn('cache value could not be decrypted; treating as miss', err);
       // A corrupt or foreign value must not be served again.
       await this.redis.del(redisKey).catch(() => undefined);
       return null;
@@ -77,10 +95,9 @@ export class InstallationTokenCache {
     if (ttl <= 0) return;
     const redisKey = tokenCacheKey(installationId, hash);
     try {
-      const value = aeadEncrypt(
-        this.key,
+      const value = this.cipher.encrypt(
         JSON.stringify({ token: token.token.reveal(), expires_at: token.expiresAt.toISOString() }),
-        redisKey,
+        tokenCacheAad(installationId, redisKey),
       );
       await this.redis.set(redisKey, value, 'EX', ttl);
     } catch (err) {

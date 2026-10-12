@@ -1,3 +1,4 @@
+import type { KeyObject } from 'node:crypto';
 import { Module } from '@nestjs/common';
 import type { Redis } from 'ioredis';
 import { REDIS } from '../../common/redis.module';
@@ -15,6 +16,8 @@ import { GithubProviderRegistration } from './provider-registration';
 import { GithubRepositoryProvider } from './repository-provider';
 import { GithubReviewPublisher } from './review-publisher';
 import { InstallationTokenCache } from './token-cache';
+import { scrubPrivateKeyFromEnv } from '../../security/secret-source';
+import { TokenCipher } from '../../security/token-cipher';
 
 /** Null when `GITHUB_ENABLED=false` (CLI-only local development). */
 export function createGithubAppAuth(config: AppConfig, redis: Redis): GithubAppAuth | null {
@@ -23,10 +26,22 @@ export function createGithubAppAuth(config: AppConfig, redis: Redis): GithubAppA
   return new GithubAppAuth({
     appId: config.GITHUB_APP_ID,
     // A key that does not parse throws here, which fails the boot.
-    privateKey: loadPrivateKey(config),
+    privateKey: loadAppKeyOnce(config),
     apiUrl: config.GITHUB_API_URL,
-    cache: new InstallationTokenCache(redis, Buffer.from(config.TOKEN_CACHE_KEY, 'base64')),
+    cache: new InstallationTokenCache(
+      redis,
+      TokenCipher.fromConfig(config.TOKEN_CACHE_KEY, config.TOKEN_CACHE_KEY_PREVIOUS),
+    ),
   });
+}
+
+/** Parses the key and removes the inline PEM from `process.env` (SEC-005). */
+function loadAppKeyOnce(config: AppConfig): KeyObject {
+  const key = loadPrivateKey(config);
+  if (process.env.GITHUB_APP_PRIVATE_KEY === config.GITHUB_APP_PRIVATE_KEY) {
+    scrubPrivateKeyFromEnv();
+  }
+  return key;
 }
 
 @Module({

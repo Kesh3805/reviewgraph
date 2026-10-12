@@ -5,6 +5,7 @@ import type { Redis } from 'ioredis';
 import { REDIS } from '../common/redis.module';
 import { APP_CONFIG, type AppConfig } from '../config/config.module';
 import { CloneCredentialsController } from './clone-credentials.controller';
+import { CLONE_JOB_GATE, UnwiredCloneJobGate } from './clone-job-gate';
 import { SERVICE_JTI_STORE, SERVICE_KEY_RING, ServiceAuthGuard } from './service-auth.guard';
 import {
   RedisJtiStore,
@@ -58,7 +59,8 @@ export class ServiceTokenService {
     },
     { provide: APP_GUARD, useClass: ServiceAuthGuard },
     ServiceTokenService,
+    { provide: CLONE_JOB_GATE, useClass: UnwiredCloneJobGate },
   ],
-  exports: [SERVICE_KEY_RING, SERVICE_JTI_STORE, ServiceTokenService],
+  exports: [SERVICE_KEY_RING, SERVICE_JTI_STORE, ServiceTokenService, CLONE_JOB_GATE],
 })
 export class InternalModule {}

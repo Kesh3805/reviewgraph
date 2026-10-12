@@ -15,6 +15,7 @@ import {
 import { ApiExcludeController } from '@nestjs/swagger';
 import { SpanStatusCode, trace } from '@opentelemetry/api';
 import { sql } from 'kysely';
+import { AuditService } from '../audit/audit.service';
 import { incCounter } from '../common/metrics';
 import { ProblemException } from '../common/problem.filter';
 import { APP_CONFIG, type AppConfig } from '../config/config.module';
@@ -26,16 +27,28 @@ import {
   type ProviderResolver,
 } from '../providers/ports';
 import { TRACER_NAME } from '../telemetry/tracer.service';
+import { CLONE_JOB_GATE, checkCloneJob, type CloneJobGate } from './clone-job-gate';
 import { ServiceAuth, ServiceCaller } from './service-auth.guard';
 import type { ServiceTokenClaims } from './service-token';
 
 export const CLONE_CREDENTIAL_USERNAME = 'x-access-token';
-const CREDENTIAL_TTL_SECONDS = 3600;
+/**
+ * Requested lifetime. GitHub installation tokens always live one hour and cannot be shortened;
+ * the worker uses the token for one checkout and drops it (SEC-005).
+ */
+const CREDENTIAL_TTL_SECONDS = 600;
+
+/** The permission set and repository a broker credential is limited to (SEC-005 contract). */
+export interface CloneCredentialScope {
+  repository_ids: number[];
+  permissions: { contents: 'read' };
+}
 
 export interface CloneCredentialsResponse {
   username: typeof CLONE_CREDENTIAL_USERNAME;
   token: string;
   expires_at: string;
+  scope: CloneCredentialScope;
   /** Credential-free remote URL; the worker supplies the token through a credential callback. */
   clone_url: string;
 }
@@ -76,6 +89,8 @@ export class CloneCredentialsController {
     @Inject(APP_CONFIG) private readonly config: AppConfig,
     private readonly dbs: DbService,
     @Inject(PROVIDER_RESOLVER) private readonly providers: ProviderResolver,
+    @Inject(CLONE_JOB_GATE) private readonly jobs: CloneJobGate,
+    private readonly audit: AuditService,
   ) {}
 
   @Post(':id/clone-credentials')
@@ -137,6 +152,10 @@ export class CloneCredentialsController {
     );
     if (!repo) throw new NotFoundException();
     const row = repo as RepositoryRow;
+    // SEC-005: a job-bound token only gets credentials while its job runs on this repository.
+    const jobCheck = await checkCloneJob(this.jobs, caller?.job, id);
+    if (jobCheck === 'not_found') throw new NotFoundException();
+    if (jobCheck === 'not_running') throw new ForbiddenException();
     if (row.installation_state !== 'active') {
       throw new ProblemException(HttpStatus.CONFLICT, 'the installation is not active', {
         code:
@@ -175,11 +194,33 @@ export class CloneCredentialsController {
       this.logger.warn(`clone credential unavailable repository=${id}`);
       throw new ServiceUnavailableException();
     }
+    const scope: CloneCredentialScope = {
+      repository_ids: [Number(row.provider_repo_id)],
+      permissions: { contents: 'read' },
+    };
+    const expiresAt = credential.expiresAt.toISOString();
+    // Issuance is audited (SEC-005/SEC-008); without the audit row no credential leaves.
+    await this.dbs.withTx(org, (trx) =>
+      this.audit.record(trx, {
+        organizationId: org,
+        repositoryId: id,
+        actor: { type: 'service', id: caller?.sub },
+        action: 'clone_credentials.issued',
+        targetType: 'repository',
+        targetId: id,
+        metadata: {
+          expires_at: expiresAt,
+          permissions: scope.permissions,
+          ...(caller?.job ? { job_id: caller.job } : {}),
+        },
+      }),
+    );
     this.logger.log(`clone credential issued repository=${id}`);
     return {
       username: CLONE_CREDENTIAL_USERNAME,
       token: credential.token.reveal(),
-      expires_at: credential.expiresAt.toISOString(),
+      expires_at: expiresAt,
+      scope,
       clone_url: `${gitHostOf(this.config.GITHUB_API_URL)}/${row.full_name}.git`,
     };
   }

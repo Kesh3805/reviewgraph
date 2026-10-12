@@ -1,10 +1,14 @@
-import { createPrivateKey, type KeyObject } from 'node:crypto';
-import { readFileSync } from 'node:fs';
+import type { KeyObject } from 'node:crypto';
 import { Logger } from '@nestjs/common';
 import { SpanStatusCode, trace } from '@opentelemetry/api';
 import { SignJWT } from 'jose';
 import { incCounter, setGauge } from '../../common/metrics';
 import { Secret } from '../../common/secret';
+import {
+  parseAppPrivateKey,
+  privateKeySource,
+  type PrivateKeyEnv,
+} from '../../security/secret-source';
 import { TRACER_NAME } from '../../telemetry/tracer.service';
 import { ProviderError } from '../ports';
 import { toProviderError } from './errors';
@@ -43,35 +47,16 @@ export interface InstallationToken {
 export const UNSCOPED: TokenScope = {};
 
 /**
- * Parses the App private key. Failure messages never include key material, so a bad value
- * fails the boot without writing the PEM anywhere.
+ * Parses the App private key (RSA, at least 2048 bits; SEC-005). Failure messages never include
+ * key material, so a bad value fails the boot without writing the PEM anywhere.
  */
 export function parsePrivateKey(pem: string): KeyObject {
-  try {
-    const key = createPrivateKey(pem.replace(/\\n/g, '\n'));
-    if (key.asymmetricKeyType !== 'rsa') throw new Error('not rsa');
-    return key;
-  } catch {
-    throw new Error('GitHub App private key could not be parsed (expected an RSA PEM)');
-  }
+  return parseAppPrivateKey(pem);
 }
 
-/** Loads the key from `GITHUB_APP_PRIVATE_KEY` or `GITHUB_APP_PRIVATE_KEY_FILE`. */
-export function loadPrivateKey(env: {
-  GITHUB_APP_PRIVATE_KEY?: string;
-  GITHUB_APP_PRIVATE_KEY_FILE?: string;
-}): KeyObject {
-  if (env.GITHUB_APP_PRIVATE_KEY) return parsePrivateKey(env.GITHUB_APP_PRIVATE_KEY);
-  if (env.GITHUB_APP_PRIVATE_KEY_FILE) {
-    let pem: string;
-    try {
-      pem = readFileSync(env.GITHUB_APP_PRIVATE_KEY_FILE, 'utf8');
-    } catch {
-      throw new Error('GitHub App private key file could not be read');
-    }
-    return parsePrivateKey(pem);
-  }
-  throw new Error('GitHub App private key is not configured');
+/** Loads the key from `GITHUB_APP_PRIVATE_KEY` or `GITHUB_APP_PRIVATE_KEY_FILE` (SEC-005 source). */
+export function loadPrivateKey(env: PrivateKeyEnv): KeyObject {
+  return parseAppPrivateKey(privateKeySource(env).loadSync());
 }
 
 /**
@@ -247,9 +232,11 @@ export class GithubAppAuth {
         if (!data.token || !data.expires_at) {
           throw new ProviderError('transient', 'token mint returned an unexpected response');
         }
+        incCounter('github_token_mint_total', { outcome: 'success' });
         return { token: new Secret(data.token), expiresAt: new Date(data.expires_at) };
       } catch (err) {
         const error = toProviderError(err, 'installation token mint');
+        incCounter('github_token_mint_total', { outcome: 'failure' });
         span.recordException(new Error(error.message));
         span.setStatus({ code: SpanStatusCode.ERROR, message: error.message });
         this.logger.warn(`${error.message} installation=${installationId}`);
