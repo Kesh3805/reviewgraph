@@ -18,6 +18,7 @@ pub mod correctness;
 pub mod error;
 pub mod focus;
 pub mod input;
+pub mod maintainability;
 pub mod normalize;
 pub mod output;
 pub mod performance;

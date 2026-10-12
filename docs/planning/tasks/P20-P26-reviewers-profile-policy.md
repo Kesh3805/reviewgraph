@@ -562,7 +562,7 @@ Status: ◐
 ---
 
 ### REV-M-001 — Maintainability reviewer (high threshold ≥ 0.9)
-Status: ☐
+Status: ◐
 
 - **Task ID:** REV-M-001
 - **Title:** Maintainability reviewer (high threshold ≥0.9)
