@@ -244,3 +244,13 @@ pub fn check(engine_dir: &Path) -> anyhow::Result<Vec<Violation>> {
     }
     Ok(violations)
 }
+
+/// The metrics catalog document rendered from the telemetry registry (OBS-005).
+pub fn metrics_catalog_markdown() -> String {
+    telemetry::metrics::catalog::render_markdown()
+}
+
+/// Where the committed metrics catalog lives, relative to the `engine` directory.
+pub fn metrics_catalog_path(engine_dir: &Path) -> PathBuf {
+    engine_dir.join("../docs/operations/metrics-catalog.md")
+}
