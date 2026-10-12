@@ -22,7 +22,14 @@ pub fn sample_profile() -> RepositoryProfile {
 
 /// Runs the suite against `store`.
 pub fn run_conformance(store: &dyn ProfileStore) {
-    let p = sample_profile();
+    run_conformance_with(store, sample_profile);
+}
+
+/// Runs the suite with a caller-supplied profile factory, for adapters whose keys must refer to
+/// existing rows (the PostgreSQL adapter needs a real repository and snapshot). `fresh` is called
+/// once; the suite derives every further key from that profile.
+pub fn run_conformance_with(store: &dyn ProfileStore, fresh: impl FnOnce() -> RepositoryProfile) {
+    let p = fresh();
     assert!(store.get(&p.key()).unwrap().is_none());
     assert!(store.put(&p).unwrap(), "first put inserts");
     assert_eq!(store.get(&p.key()).unwrap().as_ref(), Some(&p));

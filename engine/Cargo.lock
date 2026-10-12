@@ -3824,6 +3824,7 @@ dependencies = [
  "anyhow",
  "blake3",
  "clap",
+ "profile",
  "repository",
  "review-core",
  "schemars",

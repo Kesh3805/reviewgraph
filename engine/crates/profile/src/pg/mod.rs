@@ -37,4 +37,6 @@ pub enum PgStoreError {
     Serialization(#[from] serde_json::Error),
     #[error("stored row is invalid: {0}")]
     Corrupt(String),
+    #[error("profile computation failed: {0}")]
+    Compute(String),
 }
