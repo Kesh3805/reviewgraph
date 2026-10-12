@@ -12,6 +12,7 @@ coverage/
 .env.*
 !.env.example
 *.pem
+.secrets/
 *.key
 /fixtures/build/
 /.review-local/
