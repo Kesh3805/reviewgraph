@@ -18,6 +18,7 @@ testkit = []
 review-core.workspace = true
 repository.workspace = true
 analysis-ir.workspace = true
+codegraph.workspace = true
 thiserror.workspace = true
 tracing.workspace = true
 opentelemetry.workspace = true
