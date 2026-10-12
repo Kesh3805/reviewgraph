@@ -2074,7 +2074,7 @@ Status: ☑
 ---
 
 ### CTX-006 — Budgeting
-Status: ☐
+Status: ☑
 
 - **Task ID:** CTX-006
 - **Title:** Per-reviewer budgets with greedy selection by score per token
