@@ -2632,7 +2632,7 @@ Status: ☑
 ---
 
 ### CI-009 — Windows CLI build (MSVC runner)
-Status: ☐
+Status: ☑
 
 - **Task ID:** CI-009
 - **Title:** Build and smoke-test the `review` CLI natively on a Windows MSVC runner and publish a release artifact
