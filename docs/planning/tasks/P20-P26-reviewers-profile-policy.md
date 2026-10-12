@@ -313,7 +313,7 @@ Status: ☐
 ---
 
 ### REV-T-002 — Deterministic pre-check: changed public symbol with zero TESTS edges
-Status: ☐
+Status: ◐
 
 - **Task ID:** REV-T-002
 - **Title:** Deterministic pre-check (changed public symbol with zero TESTS edges)

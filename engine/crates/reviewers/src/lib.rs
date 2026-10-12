@@ -19,6 +19,7 @@ pub mod focus;
 pub mod input;
 pub mod normalize;
 pub mod output;
+pub mod prechecks;
 pub mod prompts;
 pub mod refs;
 pub mod reviewer;
