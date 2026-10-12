@@ -9,7 +9,19 @@ publish.workspace = true
 [lints]
 workspace = true
 
+[features]
+# PostgreSQL adapters (the finding lifecycle store).
+pg = ["dep:sqlx", "dep:opentelemetry", "dep:uuid", "dep:serde_json", "dep:verification"]
+# Database-backed tests; need TEST_DATABASE_URL (or DATABASE_URL). Plain `cargo test` never
+# touches a database.
+integration = ["pg"]
+
 [dependencies]
+verification = { workspace = true, optional = true }
+serde_json = { workspace = true, optional = true }
+sqlx = { workspace = true, optional = true }
+opentelemetry = { workspace = true, optional = true }
+uuid = { workspace = true, optional = true }
 review-core.workspace = true
 analysis-ir.workspace = true
 graph-storage.workspace = true
@@ -19,3 +31,6 @@ thiserror.workspace = true
 
 [dev-dependencies]
 tokio.workspace = true
+uuid.workspace = true
+serde_json.workspace = true
+sqlx.workspace = true

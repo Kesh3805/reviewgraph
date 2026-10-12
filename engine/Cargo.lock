@@ -3217,9 +3217,14 @@ dependencies = [
  "async-trait",
  "blake3",
  "graph-storage",
+ "opentelemetry",
  "review-core",
+ "serde_json",
+ "sqlx",
  "thiserror",
  "tokio",
+ "uuid",
+ "verification",
 ]
 
 [[package]]
