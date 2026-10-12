@@ -2,6 +2,7 @@
 
 pub mod budget;
 pub mod error;
+pub mod history;
 pub mod jobs;
 
 pub use error::{Error, Result};

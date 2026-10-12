@@ -2,6 +2,7 @@ import type { NormalizeResult } from './provider-event';
 import type {
   ActorPermission,
   CloneCredential,
+  HistoryPage,
   PrRef,
   ProviderChangedFile,
   ProviderCommit,
@@ -49,4 +50,13 @@ export interface RepositoryProvider {
    * without it makes every absent finding "unknown" rather than "fixed".
    */
   listFilesBetween?(ref: RepoRef, fromSha: string, toSha: string): Promise<string[]>;
+  /**
+   * One page of closed and merged pull requests with their review comments, newest update
+   * first (HIST-001). Optional: a provider without it has no history to ingest. Fetches comments
+   * with at most `HISTORY_COMMENT_CONCURRENCY` requests in flight.
+   */
+  listHistoryPullRequests?(
+    ref: RepoRef,
+    opts: { cursor?: string; perPage: number },
+  ): Promise<HistoryPage>;
 }

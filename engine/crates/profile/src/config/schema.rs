@@ -71,6 +71,9 @@ pub struct ReviewConfigV1 {
     pub suppressions: Vec<ConfigSuppression>,
     #[serde(default)]
     pub knowledge_sources: Vec<KnowledgeSourceConfig>,
+    /// Review-history ingest and history-derived signals (HIST-001..004). Off by default.
+    #[serde(default)]
+    pub history: HistorySection,
 }
 
 impl Default for ReviewConfigV1 {
@@ -86,8 +89,33 @@ impl Default for ReviewConfigV1 {
             conventions: ConventionsSection::default(),
             suppressions: Vec::new(),
             knowledge_sources: Vec::new(),
+            history: HistorySection::default(),
         }
     }
+}
+
+/// `history:` (HIST-001, HIST-003, HIST-004). `enabled` is the opt-in for storing redacted
+/// review-comment bodies and the kill switch for every history influence: `false` disables
+/// all of it at once.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
+pub struct HistorySection {
+    #[serde(default)]
+    pub enabled: bool,
+    #[serde(default)]
+    pub signals: HistorySignalSwitches,
+}
+
+/// Where history-derived signals may be used. Both default to off until validated.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
+pub struct HistorySignalSwitches {
+    /// A bounded bump of module risk (advisory).
+    #[serde(default)]
+    pub risk: bool,
+    /// A small positive score for symbols in regression-prone modules (advisory).
+    #[serde(default)]
+    pub context: bool,
 }
 
 #[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]

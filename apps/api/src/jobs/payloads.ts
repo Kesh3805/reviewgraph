@@ -37,8 +37,10 @@ export const PrReviewPayloadSchema = z.object({ review_run_id: uuid }).strict();
 
 export const ReviewPublishPayloadSchema = z.object({ review_run_id: uuid }).strict();
 
+export const HISTORY_INGEST_MODES = ['backfill', 'incremental'] as const;
+
 export const HistoryIngestPayloadSchema = z
-  .object({ repository_id: uuid, organization_id: uuid })
+  .object({ repository_id: uuid, organization_id: uuid, mode: z.enum(HISTORY_INGEST_MODES) })
   .strict();
 
 export const JOB_PAYLOAD_SCHEMAS = {
@@ -75,4 +77,8 @@ export const jobKeys = {
   prReview: (provider: string, repositoryId: string, prNumber: number, headSha: string): string =>
     `pr-review:${provider}:${repositoryId}:${prNumber}:${headSha}`,
   publish: (reviewRunId: string): string => `publish:${reviewRunId}`,
+  /** One backfill per repository; incremental runs are keyed by the pull request that closed. */
+  historyBackfill: (repositoryId: string): string => `history-ingest:backfill:${repositoryId}`,
+  historyIncremental: (repositoryId: string, prNumber: number): string =>
+    `history-ingest:incremental:${repositoryId}:${prNumber}`,
 };

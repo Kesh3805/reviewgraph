@@ -8,10 +8,12 @@ pub mod cache;
 pub mod config;
 pub mod conventions;
 pub mod error;
+pub mod history;
 mod metrics;
 pub mod model;
 #[cfg(feature = "pg")]
 pub mod pg;
+pub mod precedence;
 pub mod store;
 pub mod version;
 

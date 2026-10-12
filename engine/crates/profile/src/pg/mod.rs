@@ -6,12 +6,14 @@
 //! ids and hashes.
 
 pub mod config;
+pub mod history;
 pub mod profile;
 
 use repository::store::RepoScope;
 use sqlx::{PgPool, Postgres, Transaction};
 
 pub use config::PgConfigStore;
+pub use history::PgSignalStore;
 pub use profile::PgProfileStore;
 
 /// Opens a transaction scoped to the tenant of `scope`.

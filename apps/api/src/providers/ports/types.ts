@@ -94,6 +94,46 @@ export interface ProviderCommit {
   parents: string[];
 }
 
+/** A review comment of a past pull request (HIST-001). The body is untrusted text. */
+export interface HistoryReviewComment {
+  providerCommentId: string;
+  threadId?: string;
+  path?: string;
+  line?: number;
+  commitSha?: string;
+  authorLogin: string;
+  authorIsBot: boolean;
+  body: string;
+  resolved: boolean;
+  resolvedByLogin?: string;
+  resolvedByIsBot: boolean;
+  createdAt: string;
+}
+
+/** A closed or merged pull request with its review comments (HIST-001). */
+export interface HistoryPullRequest {
+  providerPrId: string;
+  number: number;
+  title: string;
+  authorLogin: string;
+  merged: boolean;
+  mergeCommit?: string;
+  openedAt: string;
+  closedAt?: string;
+  updatedAt: string;
+  additions: number;
+  deletions: number;
+  changedFiles: number;
+  comments: HistoryReviewComment[];
+}
+
+export interface HistoryPage {
+  /** Ordered by `updatedAt`, newest first. */
+  pullRequests: HistoryPullRequest[];
+  /** Opaque; absent on the last page. */
+  nextCursor?: string;
+}
+
 /** Read-only, single-repository credential with an expiry. Never persisted. */
 export interface CloneCredential {
   token: Secret<string>;

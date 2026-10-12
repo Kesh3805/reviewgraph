@@ -711,7 +711,7 @@ Status: ◐
 ---
 
 ### HIST-001 — Ingest past PRs and review history
-Status: ☐
+Status: ◐ Pure ingest driver, normalization, linking, migration, GitHub history pagination and close-event enqueue done; missing: Postgres HistoryStore and review-worker job, Rust-side provider bridge, DB tests, metrics, docs.
 
 - **Task ID:** HIST-001
 - **Title:** Ingest past pull requests, review comments and outcomes from the provider into history tables (post-MVP)
@@ -755,7 +755,7 @@ Status: ☐
 ---
 
 ### HIST-002 — Finding outcome tracking
-Status: ☐
+Status: ◐ Pure outcome derivation and migration (append-only events, current view) done; missing: sync job, webhook thread events, feedback service writes, internal endpoint, DB tests.
 
 - **Task ID:** HIST-002
 - **Title:** Track the outcome of every published finding (accepted, rejected, resolved, dismissed, ignored) (post-MVP)
@@ -798,7 +798,7 @@ Status: ☐
 ---
 
 ### HIST-003 — Module regression signals
-Status: ☐
+Status: ◐ Signal derivation, regression detection, bounded risk/context helpers, migration and Postgres store done; missing: wiring into risk/context crates, refresh job, DB tests, docs.
 
 - **Task ID:** HIST-003
 - **Title:** Derive per-module and per-pattern historical review signals (post-MVP)
@@ -841,7 +841,7 @@ Status: ☐
 ---
 
 ### HIST-004 — Anti-reinforcement rules (PRD §69)
-Status: ☐
+Status: ◐ Admission gate, precedence and audit store done; missing: CLI explain command, suppression crate hook, internal endpoint, DB tests, docs.
 
 - **Task ID:** HIST-004
 - **Title:** Enforce anti-reinforcement: no historical signal becomes policy without repetition, evidence, acceptance or configuration (post-MVP)

@@ -3216,10 +3216,16 @@ dependencies = [
  "analysis-ir",
  "async-trait",
  "blake3",
+ "chrono",
  "graph-storage",
+ "model-gateway",
  "review-core",
+ "serde",
+ "serde_json",
  "thiserror",
  "tokio",
+ "tracing",
+ "uuid",
 ]
 
 [[package]]

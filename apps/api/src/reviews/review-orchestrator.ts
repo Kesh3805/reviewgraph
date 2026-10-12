@@ -1,7 +1,9 @@
-import { Inject, Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable, Logger, Optional } from '@nestjs/common';
 import { incCounter } from '../common/metrics';
 import { LOCK_NOT_AVAILABLE } from '../db/errors';
 import { DbService } from '../db/db.module';
+import { JOB_QUEUE, type JobQueue } from '../jobs/job-queue';
+import { jobKeys } from '../jobs/payloads';
 import {
   PROVIDER_RESOLVER,
   ProviderError,
@@ -56,6 +58,7 @@ export class ReviewOrchestrator implements ProviderEventSink {
     private readonly pullRequests: PullRequestSyncService,
     private readonly supersession: SupersessionService,
     @Inject(PROVIDER_RESOLVER) private readonly providers: ProviderResolver,
+    @Optional() @Inject(JOB_QUEUE) private readonly jobQueue?: JobQueue,
   ) {}
 
   async dispatch(event: ProviderEvent): Promise<void> {
@@ -114,7 +117,36 @@ export class ReviewOrchestrator implements ProviderEventSink {
         closedState: event.merged ? 'merged' : 'closed',
       }),
     );
+    await this.enqueueHistoryIngest(target.repository, event.pr.number);
     return 'cancelled';
+  }
+
+  /**
+   * Incremental history ingest for a closed or merged pull request (HIST-001). Best effort: a
+   * queue failure never fails the event; the next close or the nightly catch-up picks it up.
+   */
+  private async enqueueHistoryIngest(
+    repository: SyncedRepository,
+    prNumber: number,
+  ): Promise<void> {
+    const queue = this.jobQueue;
+    if (!queue) return;
+    try {
+      await this.dbs.withTx(repository.organizationId, (trx) =>
+        queue.enqueue(trx, {
+          queue: 'history-ingest',
+          idempotencyKey: jobKeys.historyIncremental(repository.id, prNumber),
+          organizationId: repository.organizationId,
+          payload: {
+            repository_id: repository.id,
+            organization_id: repository.organizationId,
+            mode: 'incremental',
+          },
+        }),
+      );
+    } catch (err) {
+      this.logger.warn(`history ingest enqueue failed: ${(err as Error).message}`);
+    }
   }
 
   private async review(

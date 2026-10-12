@@ -6,6 +6,9 @@ import {
   type ActorPermission,
   type ChangedFileStatus,
   type CloneCredential,
+  type HistoryPage,
+  type HistoryPullRequest,
+  type HistoryReviewComment,
   type HeaderBag,
   type NormalizeResult,
   type PrRef,
@@ -25,6 +28,9 @@ import type { GithubOctokit } from './octokit.factory';
 import { ACTOR_PERMISSION_LOOKUP, type ActorPermissionLookup } from './permissions';
 
 export const FILES_PER_PAGE = 100;
+/** Comment fetches in flight while building one history page (HIST-001). */
+export const HISTORY_COMMENT_CONCURRENCY = 4;
+const HISTORY_COMMENTS_PER_PULL = 100;
 /** Stored titles are cut to this many characters; the body is never stored. */
 export const MAX_TITLE_LENGTH = 512;
 
@@ -55,6 +61,28 @@ interface GhPullRequest {
   labels?: { name?: string }[];
   updated_at?: string;
 }
+
+interface GhHistoryPull extends GhPullRequest {
+  id: number;
+  created_at: string;
+  closed_at: string | null;
+  merge_commit_sha?: string | null;
+}
+
+interface GhReviewComment {
+  id: number;
+  in_reply_to_id?: number;
+  path?: string;
+  line?: number | null;
+  original_line?: number | null;
+  commit_id?: string;
+  user: GhUser | null;
+  body: string;
+  created_at: string;
+}
+
+const isBotUser = (user: GhUser | null): boolean =>
+  user?.type === 'Bot' || (user?.login ?? '').endsWith('[bot]');
 
 interface GhFile {
   filename: string;
@@ -191,6 +219,96 @@ export class GithubRepositoryProvider implements RepositoryProvider {
       ...(data.author?.login ? { authorLogin: data.author.login } : {}),
       ...(data.commit.author?.date ? { authoredAt: data.commit.author.date } : {}),
       parents: data.parents.map((p) => p.sha),
+    };
+  }
+
+  /**
+   * `GET /repos/{o}/{r}/pulls?state=closed&sort=updated`, then the review comments of each pull
+   * request (at most four in flight). REST does not expose thread resolution, so `resolved` is
+   * false here; the GraphQL thread sync (HIST-002) fills it in.
+   */
+  async listHistoryPullRequests(
+    ref: RepoRef,
+    opts: { cursor?: string; perPage: number },
+  ): Promise<HistoryPage> {
+    const octokit = await this.octokit(ref);
+    const page = Math.max(1, Number.parseInt(opts.cursor ?? '1', 10) || 1);
+    const { data } = await githubCall<GhHistoryPull[]>(
+      'GET /repos/{owner}/{repo}/pulls',
+      'history pull request listing',
+      async () =>
+        (await octokit.request('GET /repos/{owner}/{repo}/pulls', {
+          owner: ref.owner,
+          repo: ref.name,
+          state: 'closed',
+          sort: 'updated',
+          direction: 'desc',
+          per_page: opts.perPage,
+          page,
+        })) as { status: number; data: GhHistoryPull[] },
+      { span: 'github_list_history_pulls', attributes: { page } },
+    );
+    const pullRequests: HistoryPullRequest[] = [];
+    for (let i = 0; i < data.length; i += HISTORY_COMMENT_CONCURRENCY) {
+      const batch = data.slice(i, i + HISTORY_COMMENT_CONCURRENCY);
+      pullRequests.push(
+        ...(await Promise.all(batch.map((pr) => this.toHistoryPull(octokit, ref, pr)))),
+      );
+    }
+    return {
+      pullRequests,
+      ...(data.length === opts.perPage ? { nextCursor: String(page + 1) } : {}),
+    };
+  }
+
+  private async toHistoryPull(
+    octokit: GithubOctokit,
+    ref: RepoRef,
+    pr: GhHistoryPull,
+  ): Promise<HistoryPullRequest> {
+    const { data } = await githubCall<GhReviewComment[]>(
+      'GET /repos/{owner}/{repo}/pulls/{pull_number}/comments',
+      'history review comments',
+      async () =>
+        (await octokit.request('GET /repos/{owner}/{repo}/pulls/{pull_number}/comments', {
+          owner: ref.owner,
+          repo: ref.name,
+          pull_number: pr.number,
+          per_page: HISTORY_COMMENTS_PER_PULL,
+        })) as { status: number; data: GhReviewComment[] },
+      { span: 'github_list_history_comments', attributes: { 'github.pr': pr.number } },
+    );
+    const comments: HistoryReviewComment[] = data.map((c) => {
+      const line = c.line ?? c.original_line;
+      return {
+        providerCommentId: String(c.id),
+        threadId: String(c.in_reply_to_id ?? c.id),
+        ...(c.path ? { path: c.path } : {}),
+        ...(line ? { line } : {}),
+        ...(c.commit_id ? { commitSha: c.commit_id } : {}),
+        authorLogin: c.user?.login ?? 'ghost',
+        authorIsBot: isBotUser(c.user),
+        body: c.body,
+        resolved: false,
+        resolvedByIsBot: false,
+        createdAt: c.created_at,
+      };
+    });
+    return {
+      providerPrId: String(pr.id),
+      number: pr.number,
+      title: pr.title.slice(0, MAX_TITLE_LENGTH),
+      authorLogin: pr.user?.login ?? 'ghost',
+      merged: pr.merged === true || Boolean(pr.merged_at),
+      ...(pr.merge_commit_sha ? { mergeCommit: pr.merge_commit_sha } : {}),
+      openedAt: pr.created_at,
+      ...(pr.closed_at ? { closedAt: pr.closed_at } : {}),
+      updatedAt: pr.updated_at ?? pr.closed_at ?? pr.created_at,
+      // The list endpoint omits size statistics; the single-PR read is not worth one call per PR.
+      additions: 0,
+      deletions: 0,
+      changedFiles: 0,
+      comments,
     };
   }
 
