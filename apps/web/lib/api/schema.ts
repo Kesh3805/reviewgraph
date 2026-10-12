@@ -1,32 +1,16 @@
 /**
- * Hand-written stand-in for the generated OpenAPI types. Once API-008 publishes
- * `packages/contracts/openapi/api.json`, run `pnpm --filter @reviewgraph/web gen:api` and
- * switch `api-client.ts` to import `paths` from the generated `schema.d.ts`.
+ * The `paths` type behind the typed API client.
+ *
+ * - `generated.ts` is produced from `packages/contracts/openapi/api.json` by
+ *   `pnpm -F @reviewgraph/web gen:api` (never edit it by hand).
+ * - `pending.ts` hand-writes the routes whose OpenAPI description does not exist yet (or is
+ *   incomplete). Each entry there names the task that will publish it; once that task lands,
+ *   regenerate, delete the entry here and in `pending.ts`, and the generated route takes over.
  */
-import type { DashboardSummary } from '../dashboard';
-import type { Session } from '../session';
+import type { paths as GeneratedPaths } from './generated';
+import type { PendingPaths } from './pending';
 
-export interface paths {
-  '/api/v1/auth/me': {
-    get: {
-      responses: {
-        200: { content: { 'application/json': Session } };
-      };
-    };
-  };
-  '/api/v1/auth/logout': {
-    post: {
-      responses: {
-        204: { content: never };
-      };
-    };
-  };
-  '/api/v1/organizations/{id}/dashboard': {
-    get: {
-      parameters: { path: { id: string } };
-      responses: {
-        200: { content: { 'application/json': DashboardSummary } };
-      };
-    };
-  };
-}
+/** Generated routes whose response bodies are not described (yet) and are typed by hand. */
+type Overridden = Extract<keyof PendingPaths, keyof GeneratedPaths>;
+
+export type paths = Omit<GeneratedPaths, Overridden> & PendingPaths;
