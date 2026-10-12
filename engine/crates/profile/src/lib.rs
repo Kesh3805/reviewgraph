@@ -5,14 +5,18 @@
 //!   the snapshot-time sync that binds the policy to a commit (POL-001, POL-002).
 
 pub mod cache;
+pub mod compute;
 pub mod config;
 pub mod conventions;
 pub mod error;
+pub mod infer;
 mod metrics;
 pub mod model;
 #[cfg(feature = "pg")]
 pub mod pg;
 pub mod store;
+#[cfg(test)]
+mod testgraph;
 pub mod version;
 
 pub use error::{Error, Result};

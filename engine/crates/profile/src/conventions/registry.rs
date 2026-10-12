@@ -10,7 +10,10 @@ use super::confidence::{confidence, consistency, is_enforceable};
 use super::miner::{Conformance, ConventionMiner, GraphView, PartialProfile};
 use super::scope::{compile_all, exception_reason, narrow_scope, Judged};
 use crate::metrics;
-use crate::model::{Convention, ConventionException, ConventionSource, PROFILE_VERSION};
+use crate::model::{Convention, ConventionException, ConventionSource, ConventionViolation};
+
+/// At most this many violating samples are kept on a convention.
+pub const MAX_VIOLATION_SAMPLES: usize = 50;
 
 /// Inputs shared by all miners.
 #[derive(Debug, Clone, Default)]
@@ -83,6 +86,7 @@ pub fn mine_one(
 
     let mut judged: Vec<Judged> = Vec::new();
     let mut exceptions: Vec<ConventionException> = Vec::new();
+    let mut violation_samples: Vec<ConventionViolation> = Vec::new();
     let mut modules: BTreeSet<String> = BTreeSet::new();
     for s in miner.population(g, partial) {
         match miner.conforms(&s, g) {
@@ -99,6 +103,13 @@ pub fn mine_one(
                     });
                 } else {
                     modules.insert(s.module.clone());
+                    if violation_samples.len() < MAX_VIOLATION_SAMPLES {
+                        violation_samples.push(ConventionViolation {
+                            sample_id: s.id.clone(),
+                            path: s.path.clone(),
+                            evidence,
+                        });
+                    }
                     judged.push((s, false));
                 }
             }
@@ -121,9 +132,10 @@ pub fn mine_one(
         consistency: cons,
         confidence: conf,
         exceptions,
+        violation_samples,
         source: ConventionSource::Inferred,
         computed_at: now,
-        profile_version: PROFILE_VERSION,
+        profile_version: partial.profile_version,
     };
     metrics::convention_mined(miner.id(), is_enforceable(conf, samples));
     metrics::miner_duration(miner.id(), started.elapsed().as_secs_f64());

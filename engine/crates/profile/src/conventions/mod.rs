@@ -1,13 +1,14 @@
 //! Convention miner framework (PROF-003): samples, violations, consistency, exceptions,
 //! confidence and scope. Concrete miners (PROF-004/005) register in [`registry`].
 
+pub mod builtin;
 pub mod confidence;
 pub mod miner;
 pub mod registry;
 pub mod scope;
 
 pub use confidence::is_enforceable;
-pub use miner::{Conformance, ConventionMiner, GraphView, PartialProfile, Sample};
+pub use miner::{CodeGraphView, Conformance, ConventionMiner, GraphView, PartialProfile, Sample};
 pub use registry::{mine_one, MineOptions, MinerRegistry};
 
 #[cfg(test)]
@@ -19,8 +20,7 @@ mod tests {
     use super::*;
     use crate::model::RepositoryProfile;
 
-    struct NoGraph;
-    impl GraphView for NoGraph {}
+    use crate::testgraph::OwnedView;
 
     /// `n` samples spread over `modules`; every one conforms except those whose index is in `bad`.
     struct Fixed {
@@ -53,6 +53,7 @@ mod tests {
                         } else {
                             vec![]
                         },
+                        meta: String::new(),
                     }
                 })
                 .collect()
@@ -80,7 +81,13 @@ mod tests {
 
     fn run(m: &Fixed) -> Option<crate::model::Convention> {
         let now = Utc.with_ymd_and_hms(2026, 1, 1, 0, 0, 0).unwrap();
-        mine_one(m, &NoGraph, &partial(), &MineOptions::default(), now)
+        mine_one(
+            m,
+            &OwnedView::empty(),
+            &partial(),
+            &MineOptions::default(),
+            now,
+        )
     }
 
     #[test]
@@ -173,8 +180,18 @@ mod tests {
             annotate_bad: false,
         }));
         let now = Utc.with_ymd_and_hms(2026, 1, 1, 0, 0, 0).unwrap();
-        let a = r.mine_all(&NoGraph, &partial(), &MineOptions::default(), now);
-        let b = r.mine_all(&NoGraph, &partial(), &MineOptions::default(), now);
+        let a = r.mine_all(
+            &OwnedView::empty(),
+            &partial(),
+            &MineOptions::default(),
+            now,
+        );
+        let b = r.mine_all(
+            &OwnedView::empty(),
+            &partial(),
+            &MineOptions::default(),
+            now,
+        );
         assert_eq!(a, b);
         assert_eq!(r.versions(), vec![("fixed", 1)]);
     }

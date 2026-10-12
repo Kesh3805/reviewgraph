@@ -23,17 +23,38 @@ pub struct FrameworkFact {
     pub version: Option<String>,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
 pub struct LayerDef {
     pub name: String,
     pub globs: Vec<String>,
+    /// Number of graph nodes classified into this layer.
+    #[serde(default)]
+    pub member_count: u32,
+    /// Mean confidence of the role assignments behind the layer (PROF-002).
+    #[serde(default)]
+    pub role_confidence: f32,
 }
 
-#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+/// Observed dependencies (`IMPORTS`/`CALLS`) from one layer to another.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+pub struct LayerEdge {
+    pub from: String,
+    pub to: String,
+    pub count: u32,
+}
+
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize, JsonSchema)]
 pub struct ArchitectureModel {
     pub layers: Vec<LayerDef>,
     /// Allowed layer dependencies as `(from, to)` pairs.
+    #[serde(default)]
     pub allowed_layer_edges: Vec<(String, String)>,
+    /// The observed layer dependency matrix, sorted by `(from, to)`.
+    #[serde(default)]
+    pub matrix: Vec<LayerEdge>,
+    /// Set to `architecture_inference: insufficient_signal` when no role was recognizable.
+    #[serde(default)]
+    pub note: Option<String>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
@@ -41,6 +62,12 @@ pub struct ModuleBoundary {
     pub name: String,
     pub root: String,
     pub layer: Option<String>,
+    /// Exported symbols (framework `exports` facts, or a barrel `index.ts`).
+    #[serde(default)]
+    pub public_exports: Vec<String>,
+    /// Modules that depend on this one from outside its root.
+    #[serde(default)]
+    pub internal_dependents: Vec<String>,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
@@ -67,6 +94,14 @@ pub struct ConventionException {
     pub reason: Option<String>,
 }
 
+/// One violating sample of a convention, with the evidence that makes it a violation.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+pub struct ConventionViolation {
+    pub sample_id: String,
+    pub path: String,
+    pub evidence: String,
+}
+
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
 pub struct Convention {
     pub id: String,
@@ -79,6 +114,9 @@ pub struct Convention {
     pub confidence: f32,
     #[serde(default)]
     pub exceptions: Vec<ConventionException>,
+    /// The violating samples (capped), so a reviewer can cite them.
+    #[serde(default)]
+    pub violation_samples: Vec<ConventionViolation>,
     pub source: ConventionSource,
     pub computed_at: DateTime<Utc>,
     pub profile_version: u32,
@@ -87,18 +125,36 @@ pub struct Convention {
 macro_rules! profile_section {
     ($(#[$m:meta])* $name:ident { $($f:ident : $t:ty),* $(,)? }) => {
         $(#[$m])*
-        #[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+        #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize, JsonSchema)]
         pub struct $name { $(#[serde(default)] pub $f: $t),* }
     };
 }
 
 profile_section!(
     /// Test layout and tooling.
-    TestingProfile { frameworks: Vec<String>, test_globs: Vec<String>, colocated: Option<bool> }
+    TestingProfile {
+        frameworks: Vec<String>,
+        test_globs: Vec<String>,
+        colocated: Option<bool>,
+        // Share of tests living next to their source (`*.spec.ts`), 0..1.
+        colocated_ratio: f32,
+        // `jest.mock` or `provider_override`.
+        mock_style: Option<String>,
+        e2e_roots: Vec<String>,
+    }
 );
 profile_section!(
     /// HTTP/API surface conventions.
-    ApiProfile { style: Option<String>, versioned: Option<bool>, dto_validation: Option<bool> }
+    ApiProfile {
+        style: Option<String>,
+        // `path`, `header` or `none`.
+        versioning: Option<String>,
+        // Share of routes agreeing with the majority versioning scheme, 0..1.
+        versioning_consistency: f32,
+        // `global`, `per_route` or `none`.
+        dto_validation: Option<String>,
+        response_envelope: Option<String>,
+    }
 );
 profile_section!(
     /// Authentication and authorization patterns.
@@ -110,7 +166,14 @@ profile_section!(
 );
 profile_section!(
     /// Queue and background-job facts.
-    QueueProfile { libraries: Vec<String>, idempotency_keys: bool }
+    QueueProfile {
+        libraries: Vec<String>,
+        idempotency_keys: bool,
+        // Queue node ids (`queue:{name}`).
+        queues: Vec<String>,
+        producers: Vec<String>,
+        consumers: Vec<String>,
+    }
 );
 profile_section!(
     /// Naming conventions.

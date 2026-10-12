@@ -38,6 +38,7 @@ fn convention(id: &str) -> Convention {
         consistency: 0.91,
         confidence: 0.93,
         exceptions: vec![],
+        violation_samples: vec![],
         source: ConventionSource::Inferred,
         computed_at: Utc.with_ymd_and_hms(2026, 1, 1, 0, 0, 0).unwrap(),
         profile_version: 1,
