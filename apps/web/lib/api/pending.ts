@@ -740,6 +740,36 @@ export interface Subgraph {
   truncated: boolean;
 }
 
+/** `GET /repositories/:id/graph/path` (with `all=true&max_paths=5` for alternatives). */
+export interface PathQuery {
+  from: string;
+  to: string;
+  /** 1..6 */
+  max_depth: number;
+  kinds?: string;
+  all?: boolean;
+  max_paths?: number;
+  snapshot?: string;
+}
+
+export interface PathResponse {
+  /** Shortest first; each path carries `min_confidence`. Empty when none within depth. */
+  paths: GraphPath[];
+  truncated: boolean;
+}
+
+/** `GET /reviews/:id/impact/:symbolKey` — the IMP ImpactGraph for a changed symbol. */
+export interface ImpactGraph {
+  root: GraphNode;
+  categories: {
+    /** e.g. callers, endpoints, consumers, tests, implementations. */
+    name: string;
+    items: { node: GraphNode; depth: number; confidence: number }[];
+  }[];
+  paths: GraphPath[];
+  truncated: boolean;
+}
+
 /** `GET /repositories/:id/source` — redacted and capped at 200 lines. */
 export interface SourceExcerpt {
   path: string;
@@ -863,6 +893,12 @@ export interface PendingPaths {
       SymbolDetail,
       { path: { repoId: string; key: string }; query?: { snapshot?: string } }
     >;
+  };
+  '/api/v1/repositories/{repoId}/graph/path': {
+    get: GetOp<PathResponse, { path: { repoId: string }; query: PathQuery }>;
+  };
+  '/api/v1/reviews/{reviewId}/impact/{symbolKey}': {
+    get: GetOp<ImpactGraph, { path: { reviewId: string; symbolKey: string }; query?: never }>;
   };
   '/api/v1/repositories/{repoId}/graph/subgraph': {
     post: BodyOp<Subgraph, SubgraphRequest, PathParams<'repoId'>>;

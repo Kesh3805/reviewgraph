@@ -590,7 +590,8 @@ Status: ◐
 ---
 
 ### GX-003 — Impact path view
-Status: ☐
+Status: ◐
+> **Implementation note:** Built against hand-typed `GET /repositories/:id/graph/path` (`paths[]` with `min_confidence`, `truncated`) and `GET /reviews/:id/impact/:symbolKey` (`root`, `categories[{name, items[{node, depth, confidence}]}]`, `paths[]`) in `apps/web/lib/api/pending.ts`. The explorer has three URL-driven modes (`?mode=search|path|impact`). The path finder picks FROM and TO with the GX-001 search, edge kinds (sent as a comma-separated `kinds`) and max depth ≤ 6, always asks for `all=true&max_paths=5`, and shows alternatives as tabs reusing `ImpactPathFlow` (per-hop kind and confidence plus the path minimum). The impact mode takes a review run id and a changed symbol. The CLI-parity acceptance test needs the engine and the CLI-009 output, so it is not covered yet.
 
 - **Task ID:** GX-003
 - **Title:** Impact path view

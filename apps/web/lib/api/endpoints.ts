@@ -6,6 +6,9 @@
  */
 import { api } from '../api-client';
 import type {
+  ImpactGraph,
+  PathQuery,
+  PathResponse,
   Subgraph,
   SubgraphRequest,
   SymbolDetail,
@@ -422,6 +425,30 @@ export async function getSymbol(
     signal: opts.signal,
   });
   return required(data, 'symbol');
+}
+
+export async function findPaths(
+  repoId: string,
+  query: PathQuery,
+  opts: Signal = {},
+): Promise<PathResponse> {
+  const { data } = await api.GET('/api/v1/repositories/{repoId}/graph/path', {
+    params: { path: { repoId }, query },
+    signal: opts.signal,
+  });
+  return required(data, 'path');
+}
+
+export async function getReviewImpact(
+  reviewId: string,
+  symbolKey: string,
+  opts: Signal = {},
+): Promise<ImpactGraph> {
+  const { data } = await api.GET('/api/v1/reviews/{reviewId}/impact/{symbolKey}', {
+    params: { path: { reviewId, symbolKey } },
+    signal: opts.signal,
+  });
+  return required(data, 'impact');
 }
 
 /** Side-effect free POST; `max_nodes` above 500 is a 400. */
