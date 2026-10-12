@@ -43,6 +43,27 @@ impl NameIndex {
         index
     }
 
+    /// Rebuilds the index from any graph view in `O(V)`, one pass over the symbol nodes
+    /// (INC-004). A node declared in a file and not the file node itself is a symbol; nested
+    /// symbols (those with a parent) are members, the rest are top-level. The result equals
+    /// [`NameIndex::build`] over the units the graph was linked from.
+    #[must_use]
+    pub fn from_graph(graph: &dyn crate::query::GraphQuery) -> Self {
+        let mut index = Self::default();
+        graph.for_each_node(&mut |node| {
+            if node.file.is_none() || node.kind == crate::node_kind::NodeKind::File {
+                return;
+            }
+            if node.attrs.parent.is_some() {
+                index.insert_member(node.name, node.key);
+            } else {
+                index.insert_top(node.name, node.key);
+            }
+        });
+        index.sort();
+        index
+    }
+
     fn insert_file(&mut self, file: &FileSymbols) {
         for (raw, symbol) in file.symbols.iter().enumerate() {
             if raw == 0 {

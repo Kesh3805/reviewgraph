@@ -6,7 +6,9 @@
 
 use std::collections::{BTreeMap, BTreeSet, HashMap};
 
-use codegraph::{NameLookup, NodeKey};
+use crate::symbols::SymbolChangeSet;
+
+use codegraph::{GraphQuery, NameIndex, NameLookup, NodeKey};
 
 /// Names whose candidate sets changed, split by index.
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
@@ -27,6 +29,24 @@ pub struct AffectedNames {
 }
 
 type KeyMap = BTreeMap<String, BTreeSet<NodeKey>>;
+
+/// Indexes derived from a base graph once per snapshot load and cached next to it.
+///
+/// Building costs one pass over the nodes (`O(V)`), which piggybacks on the graph load that is paid
+/// anyway; it is not part of the marginal cost of one pull request.
+#[derive(Debug, Clone)]
+pub struct BaseIndexes {
+    pub names: NameIndex,
+}
+
+impl BaseIndexes {
+    /// Builds the name indexes of `graph`.
+    pub fn build(graph: &dyn GraphQuery) -> Self {
+        Self {
+            names: NameIndex::from_graph(graph),
+        }
+    }
+}
 
 impl NameDelta {
     /// Records a top-level declaration added under `name`.
@@ -53,6 +73,28 @@ impl NameDelta {
             .entry(name.to_owned())
             .or_default()
             .insert(key);
+    }
+
+    /// The delta implied by a symbol change set: every added key joins its name and every removed
+    /// key leaves it. A rename is a removal under the old name plus an addition under the new one;
+    /// in-place modifications never touch the index because name and kind are unchanged.
+    pub fn from_changes(changes: &SymbolChangeSet) -> Self {
+        let mut delta = Self::default();
+        for record in &changes.added {
+            if record.entry.is_member {
+                delta.add_member(&record.entry.name, record.key);
+            } else {
+                delta.add_top(&record.entry.name, record.key);
+            }
+        }
+        for record in &changes.removed {
+            if record.entry.is_member {
+                delta.remove_member(&record.entry.name, record.key);
+            } else {
+                delta.remove_top(&record.entry.name, record.key);
+            }
+        }
+        delta
     }
 
     /// True when nothing changed.
