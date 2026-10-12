@@ -77,7 +77,7 @@ pub fn scan_crates(
     for name in crates {
         for file in rust_files(&crate_src(name))? {
             let relative = rel(&file);
-            if allowlisted.iter().any(|a| *a == relative) {
+            if allowlisted.contains(&relative) {
                 continue;
             }
             let text = fs::read_to_string(&file)?;
