@@ -36,6 +36,7 @@ tracing.workspace = true
 rayon.workspace = true
 uuid.workspace = true
 opentelemetry.workspace = true
+tempfile.workspace = true
 sqlx = { workspace = true, optional = true }
 
 [dev-dependencies]

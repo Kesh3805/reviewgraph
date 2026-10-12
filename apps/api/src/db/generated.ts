@@ -178,6 +178,21 @@ export interface Organizations {
   updated_at: Generated<Timestamp>;
 }
 
+export interface ProfileConventions {
+  confidence: number;
+  consistency: number;
+  convention_id: string;
+  enforceable: Generated<boolean>;
+  exceptions: Generated<Json>;
+  organization_id: string;
+  profile_id: string;
+  rule: string;
+  samples: number;
+  scope: string;
+  source: string;
+  violations: number;
+}
+
 export interface ProvenanceKinds {
   id: number;
   name: string;
@@ -282,6 +297,17 @@ export interface RepositoryInitFacts {
   repository_id: string;
   tool_version: string;
   warnings_count: Generated<number>;
+}
+
+export interface RepositoryProfiles {
+  computed_at: Generated<Timestamp>;
+  config_hash: string;
+  id: string;
+  organization_id: string;
+  profile: Json;
+  profile_version: number;
+  repository_id: string;
+  snapshot_id: string;
 }
 
 export interface RepositorySettings {
@@ -507,6 +533,7 @@ export interface DB {
   model_calls: ModelCalls;
   node_kinds: NodeKinds;
   organizations: Organizations;
+  profile_conventions: ProfileConventions;
   provenance_kinds: ProvenanceKinds;
   provider_installations: ProviderInstallations;
   published_findings: PublishedFindings;
@@ -514,6 +541,7 @@ export interface DB {
   repositories: Repositories;
   repository_configs: RepositoryConfigs;
   repository_init_facts: RepositoryInitFacts;
+  repository_profiles: RepositoryProfiles;
   repository_settings: RepositorySettings;
   resolved_by_kinds: ResolvedByKinds;
   review_runs: ReviewRuns;

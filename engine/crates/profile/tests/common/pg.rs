@@ -45,7 +45,18 @@ impl TestDb {
             .connect_with(options)
             .await
             .unwrap();
-        MIGRATOR.run(&pool).await.unwrap();
+        // Database roles are cluster-wide: migrations of parallel test databases race on
+        // CREATE ROLE, so they run one at a time.
+        sqlx::query("SELECT pg_advisory_lock(7262001)")
+            .execute(&admin)
+            .await
+            .unwrap();
+        let migrated = MIGRATOR.run(&pool).await;
+        sqlx::query("SELECT pg_advisory_unlock(7262001)")
+            .execute(&admin)
+            .await
+            .unwrap();
+        migrated.unwrap();
         Self { pool, admin, name }
     }
 

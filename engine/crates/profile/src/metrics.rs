@@ -1,5 +1,4 @@
 //! Process-local metrics named by the POL and PROF specs.
-#![allow(dead_code)]
 
 use std::sync::OnceLock;
 
