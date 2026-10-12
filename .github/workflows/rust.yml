@@ -180,14 +180,18 @@ jobs:
         run: pnpm contracts:check
       - name: TEMP export fresh schemas
         if: failure()
-        working-directory: engine
-        run: cargo run -q -p review-cli -- contracts export --out ../.tmp-schemas
+        working-directory: .
+        run: |
+          (cd engine && cargo run -q -p review-cli -- contracts export --out ../packages/contracts/schemas)
+          pnpm contracts:generate
       - name: TEMP upload fresh schemas
         if: failure()
         uses: actions/upload-artifact@v4
         with:
           name: contracts-fresh
-          path: .tmp-schemas
+          path: |
+            packages/contracts/schemas
+            packages/contracts/src/generated
 
   deny:
     runs-on: ubuntu-24.04

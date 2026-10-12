@@ -16,12 +16,12 @@ use profile::pg::PgProfileStore;
 use profile::store::conformance::run_conformance_with;
 use profile::store::{ProfileStore, StoreError};
 use repository::store::RepoScope;
-use review_core::ids::{RepositoryId, SnapshotId};
+use review_core::ids::SnapshotId;
 use review_core::version::ConfigHash;
 
 fn profile_for(scope: &RepoScope, snapshot: uuid::Uuid, cfg: &[u8]) -> RepositoryProfile {
     RepositoryProfile::empty(
-        RepositoryId::from_uuid(scope.repository_id.as_uuid()),
+        scope.repository_id,
         SnapshotId::from_uuid(snapshot),
         ConfigHash::of(cfg),
         Utc.with_ymd_and_hms(2026, 1, 1, 0, 0, 0).unwrap(),
