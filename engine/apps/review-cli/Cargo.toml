@@ -18,6 +18,9 @@ repository.workspace = true
 schemars.workspace = true
 serde_json.workspace = true
 sha2.workspace = true
+semantic = { workspace = true, features = ["pg"] }
+sqlx.workspace = true
+tokio.workspace = true
 
 [dev-dependencies]
 tempfile.workspace = true

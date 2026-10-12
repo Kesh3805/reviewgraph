@@ -9,6 +9,43 @@ publish.workspace = true
 [lints]
 workspace = true
 
+[features]
+# Tenant audit layer over the Qdrant client (SEM-005, SEC-002). Test builds only.
+audit = []
+# PostgreSQL collection registry (`PgRegistry`).
+pg = ["dep:sqlx"]
+# Provider base-URL overrides for mock servers. Test builds only.
+test-endpoints = []
+# Tests that need a live Qdrant (QDRANT_URL) and PostgreSQL (TEST_DATABASE_URL).
+integration = ["pg", "audit", "test-endpoints"]
+
 [dependencies]
 review-core.workspace = true
+telemetry.workspace = true
 thiserror.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+blake3.workspace = true
+uuid.workspace = true
+tokio.workspace = true
+futures.workspace = true
+tracing.workspace = true
+opentelemetry.workspace = true
+regex.workspace = true
+reqwest.workspace = true
+async-trait = "0.1"
+xxhash-rust = { version = "0.8", features = ["xxh3"] }
+sqlx = { workspace = true, optional = true }
+
+[dev-dependencies]
+tokio = { workspace = true, features = ["test-util"] }
+wiremock.workspace = true
+semantic = { path = ".", features = ["audit", "test-endpoints"] }
+
+[[bench]]
+name = "qdrant_filtered"
+harness = false
+
+[[bench]]
+name = "hash_provider"
+harness = false
