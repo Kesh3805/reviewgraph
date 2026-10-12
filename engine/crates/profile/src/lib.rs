@@ -5,6 +5,7 @@
 //!   the snapshot-time sync that binds the policy to a commit (POL-001, POL-002).
 
 pub mod config;
+pub mod conventions;
 pub mod error;
 mod metrics;
 pub mod model;

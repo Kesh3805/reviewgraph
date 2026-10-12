@@ -737,7 +737,7 @@ Status: ☐
 ---
 
 ### PROF-003 — Convention miner framework
-Status: ☐
+Status: ☑
 
 - **Task ID:** PROF-003
 - **Title:** Convention miner framework (samples, violations, consistency, exceptions, confidence, scope)
