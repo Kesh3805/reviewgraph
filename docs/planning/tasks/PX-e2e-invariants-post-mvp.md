@@ -89,7 +89,7 @@ Status: ☐
 ---
 
 ### E2E-002 — Live smoke procedure
-Status: ☐
+Status: ◐
 
 - **Task ID:** E2E-002
 - **Title:** Live smoke procedure: real GitHub App and real model key, a manual gate documented in `docs/operations`
@@ -133,7 +133,7 @@ Status: ☐
 ---
 
 ### INV-001 — No full rebuild in PR review
-Status: ☐
+Status: ◐
 
 - **Task ID:** INV-001
 - **Title:** Invariant 1 (PRD §147): PR review never requires a complete graph rebuild under normal operation
@@ -170,7 +170,7 @@ Status: ☐
 ---
 
 ### INV-002 — LLM output never directly published
-Status: ☐
+Status: ◐
 
 - **Task ID:** INV-002
 - **Title:** Invariant 2 (PRD §147): LLM output never directly becomes an external finding
@@ -208,7 +208,7 @@ Status: ☐
 ---
 
 ### INV-003 — Every published finding is anchored
-Status: ☐
+Status: ◐
 
 - **Task ID:** INV-003
 - **Title:** Invariant 3 (PRD §147): every published finding is anchored to changed behavior or impact created by the PR
@@ -247,7 +247,7 @@ Status: ☐
 ---
 
 ### INV-004 — No provider code in the engine domain
-Status: ☐
+Status: ◐
 
 - **Task ID:** INV-004
 - **Title:** Invariant 4 (PRD §147): provider-specific code cannot leak into review-engine domain logic
@@ -283,7 +283,7 @@ Status: ☐
 ---
 
 ### INV-005 — Consumer-specific rules never in generic graph semantics
-Status: ☐
+Status: ◐
 
 - **Task ID:** INV-005
 - **Title:** Invariant 5 (PRD §147): consumer-specific rules cannot become generic graph semantics
@@ -321,7 +321,7 @@ Status: ☐
 ---
 
 ### INV-006 — Intelligence is versioned and reproducible
-Status: ☐
+Status: ◐
 
 - **Task ID:** INV-006
 - **Title:** Invariant 6 (PRD §147): repository intelligence is versioned and reproducible
@@ -357,7 +357,7 @@ Status: ☐
 ---
 
 ### INV-007 — Context selection is explicitly budgeted
-Status: ☐
+Status: ◐
 
 - **Task ID:** INV-007
 - **Title:** Invariant 7 (PRD §147): context selection is explicitly budgeted
@@ -399,7 +399,7 @@ Status: ☐
 ---
 
 ### INV-008 — Graph uncertainty is represented
-Status: ☐
+Status: ◐
 
 - **Task ID:** INV-008
 - **Title:** Invariant 8 (PRD §147): graph inference uncertainty remains represented rather than hidden
@@ -438,7 +438,7 @@ Status: ☐
 ---
 
 ### INV-009 — Pre-existing defects are not reported as regressions
-Status: ☐
+Status: ◐
 
 - **Task ID:** INV-009
 - **Title:** Invariant 9 (PRD §147): pre-existing unrelated defects are not presented as PR-introduced regressions
@@ -478,7 +478,7 @@ Status: ☐
 ---
 
 ### INV-010 — Comment quantity is never an optimization target
-Status: ☐
+Status: ◐
 
 - **Task ID:** INV-010
 - **Title:** Invariant 10 (PRD §147): comment quantity is never an optimization target
@@ -518,7 +518,7 @@ Status: ☐
 ---
 
 ### INV-011 — Never merge
-Status: ☐
+Status: ◐
 
 - **Task ID:** INV-011
 - **Title:** Safety invariant: the system never merges a pull request (no merge capability exists)
@@ -557,7 +557,7 @@ Status: ☐
 ---
 
 ### INV-012 — Failure is never approval; never auto-approve
-Status: ☐
+Status: ◐
 
 - **Task ID:** INV-012
 - **Title:** Safety invariant: any failure path posts nothing positive, and the product never auto-approves
@@ -597,7 +597,7 @@ Status: ☐
 ---
 
 ### INV-013 — Completeness is computed, not self-reported
-Status: ☐
+Status: ◐
 
 - **Task ID:** INV-013
 - **Title:** Safety invariant: review completeness is computed by the orchestrator, never taken from a model's claim
@@ -633,7 +633,7 @@ Status: ☐
 ---
 
 ### INV-014 — NOT_EXECUTED is never PASS
-Status: ☐
+Status: ◐
 
 - **Task ID:** INV-014
 - **Title:** Safety invariant: a deterministic tool that could not run is `not_executed`, never passing, and never blocks on its own
@@ -672,7 +672,7 @@ Status: ☐
 ---
 
 ### INV-015 — Out-of-diff findings are relocated to the summary, never dropped
-Status: ☐
+Status: ◐
 
 - **Task ID:** INV-015
 - **Title:** Safety invariant: a verified finding whose anchor is not on a commentable diff line moves to the review summary and is never silently dropped
