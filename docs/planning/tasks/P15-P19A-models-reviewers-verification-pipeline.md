@@ -3444,7 +3444,7 @@ Status: ☑
 ---
 
 ### DED-003 — Cross-run identity via symbol lineage
-Status: ☐
+Status: ☑
 
 - **Task ID:** DED-003
 - **Title:** Cross-run finding identity through `symbol_lineage` (re-review classification: persisting / fixed / new); dedup applied after the verdict
