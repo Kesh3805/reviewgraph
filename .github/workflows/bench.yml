@@ -14,6 +14,10 @@ concurrency:
   group: bench-${{ github.event_name == 'schedule' && 'nightly' || github.ref }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
+env:
+  CARGO_TERM_COLOR: always
+  CARGO_INCREMENTAL: '0'
+
 jobs:
   smoke:
     name: smoke
@@ -28,19 +32,34 @@ jobs:
       - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2
         with:
           workspaces: engine
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with: { node-version: 24 }
       - name: Benches compile
         working-directory: engine
         run: cargo bench --workspace --no-run --locked
+      - name: Tiny criterion profile (informational timings; a crash or panic fails)
+        working-directory: engine
+        run: >-
+          cargo bench --locked -p codegraph -p incremental --benches --
+          --warm-up-time 1 --measurement-time 2 --sample-size 10
       - name: Compare-script tests
-        run: node --test scripts/ci/bench-compare.test.mjs
-      # Quality smoke (review-eval, replay adapter, no network/keys) is enabled once EVAL-004 lands:
-      #   review-eval run --set benchmarks/quality/smoke-set.txt --adapter replay --output eval-smoke.json
+        run: node --test scripts/ci/bench-compare.test.mjs scripts/ci/criterion-to-perf.test.mjs
+      - name: Smoke summary
+        if: always()
+        run: |
+          {
+            echo '### bench smoke'
+            echo 'Quality smoke (review-eval under the replay adapter) is pending the EVAL run command and the QB-001 corpus; see docs/operations/ci.md.'
+          } >> "$GITHUB_STEP_SUMMARY"
 
   nightly:
     name: nightly
     if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-24.04
     timeout-minutes: 90
+    permissions:
+      contents: read
+      issues: write
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
       - uses: dtolnay/rust-toolchain@686976e191b89faba57d3206551f0f330d8cb249 # stable
@@ -49,17 +68,50 @@ jobs:
       - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2
         with:
           workspaces: engine
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with: { node-version: 24 }
       - name: Criterion full run
         working-directory: engine
-        run: cargo bench --workspace --locked -- --save-baseline nightly
+        run: >-
+          cargo bench --workspace --locked --benches --
+          --save-baseline nightly --warm-up-time 1 --measurement-time 3 --sample-size 20
       - name: Record CPU model
         run: lscpu | grep 'Model name' >> "$GITHUB_STEP_SUMMARY"
+      - name: Convert criterion results
+        run: node scripts/ci/criterion-to-perf.mjs engine/target/criterion > perf-current.json
       - name: Compare with baselines
+        id: compare
         run: |
-          [ -f perf-current.json ] && node scripts/ci/bench-compare.mjs perf benchmarks/baselines/perf.json perf-current.json || echo "no perf-current.json produced yet"
+          set +e
+          node scripts/ci/bench-compare.mjs perf benchmarks/baselines/perf.json perf-current.json 2>&1 | tee compare.txt
+          rc=${PIPESTATUS[0]}
+          {
+            echo '### perf comparison'
+            echo '```'
+            cat compare.txt
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+          exit $rc
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         if: always()
         with:
           name: criterion
-          path: engine/target/criterion
+          path: |
+            perf-current.json
+            compare.txt
+            engine/target/criterion
           if-no-files-found: ignore
+      - name: Open or update the perf-regression issue
+        if: failure() && github.event_name == 'schedule' && steps.compare.outcome == 'failure'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh label create perf-regression --color D93F0B --description "Nightly benchmark regression" || true
+          existing=$(gh issue list --label perf-regression --state open --json number --jq '.[0].number // empty')
+          body="Nightly benchmark regression on ${{ github.sha }} (run ${{ github.run_id }}).
+
+          \`\`\`
+          $(cat compare.txt)
+          \`\`\`"
+          if [ -n "$existing" ]; then gh issue comment "$existing" --body "$body"
+          else gh issue create --title "Nightly benchmark regression" --label perf-regression --body "$body"; fi
