@@ -1,0 +1,16 @@
+{
+  "positives": [
+    { "name": "github_pat_classic", "input": "token ghp_abcdefghijklmnopqrstuvwxyz0123456789 end", "expected_redacted": "token «redacted:github_token» end", "pattern": "github_token" },
+    { "name": "aws_access_key", "input": "key=AKIAIOSFODNN7EXAMPLE", "expected_redacted": "key=«redacted:aws_access_key»", "pattern": "aws_access_key" },
+    { "name": "bearer_header", "input": "Authorization: Bearer abc.def-123", "expected_redacted": "«redacted:auth_header»", "pattern": "auth_header" },
+    { "name": "url_userinfo", "input": "clone https://user:s3cret@example.com/repo.git", "expected_redacted": "clone https://«redacted:url_userinfo»@example.com/repo.git", "pattern": "url_userinfo" },
+    { "name": "env_assignment", "input": "DB_PASSWORD=hunter2", "expected_redacted": "«redacted:env_assignment»", "pattern": "env_assignment" },
+    { "name": "pem_block", "input": "x -----BEGIN RSA PRIVATE KEY-----\nMIIabc\n-----END RSA PRIVATE KEY----- y", "expected_redacted": "x «redacted:private_key» y", "pattern": "private_key" }
+  ],
+  "negatives": [
+    "plain log line with no secrets",
+    "commit 3f2a9c1 touched src/main.rs",
+    "https://example.com/path?page=2",
+    "tokenizer finished in 12ms"
+  ]
+}

@@ -892,7 +892,7 @@ Status: ☐
 ---
 
 ### OBS-006 — Redaction layers and tests
-Status: ☐
+Status: ◐ (TypeScript redaction and shared corpus done; Rust `telemetry::redact` layer pending)
 
 - **Task ID:** OBS-006
 - **Title:** Redaction in the Rust `tracing` pipeline and the NestJS log formatter, sharing one pattern set and a shared test corpus
