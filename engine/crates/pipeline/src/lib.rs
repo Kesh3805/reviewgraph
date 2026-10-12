@@ -2,7 +2,8 @@
 
 pub mod budget;
 pub mod error;
+pub mod index;
 pub mod jobs;
+pub mod store;
 
 pub use error::{Error, Result};
-pub mod index;
