@@ -11,6 +11,8 @@ use diff_engine::files::{diff_commits, DiffOptions};
 use diff_engine::model::DiffModel;
 use diff_engine::symbol_map::UnitMap;
 use diff_engine::testkit::Scenario;
+use lang_typescript::hashing::assign_hashes;
+use lang_typescript::text::Source;
 use lang_typescript::TypeScriptAnalyzer;
 use review_core::change::FileChangeStatus;
 use review_core::location::{ContentHash, DiffSide, RepoPath};
@@ -27,9 +29,12 @@ pub fn analyze(path: &str, src: &str) -> ParsedUnit {
         bytes: src.as_bytes(),
         is_generated: false,
     };
-    TypeScriptAnalyzer::new()
+    let mut unit = TypeScriptAnalyzer::new()
         .analyze(&input, &AnalyzerConfig::default())
-        .unwrap()
+        .unwrap();
+    // The analyzer leaves hashing to the indexer; the change model compares hashes.
+    assign_hashes(&mut unit.symbols, &Source::new(src.as_bytes()));
+    unit
 }
 
 fn is_ts(path: &str) -> bool {

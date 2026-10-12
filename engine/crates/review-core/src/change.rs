@@ -348,9 +348,89 @@ impl<'de> Deserialize<'de> for ChangeCluster {
     }
 }
 
+/// What a symbol's change does (PRD §28; `loop_changed` is added by target-architecture §3.6).
+/// The wire strings are the snake_case names; the declaration order is the canonical sort order
+/// of classified changes.
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize, JsonSchema,
+)]
+#[serde(rename_all = "snake_case")]
+pub enum ChangeClass {
+    ControlFlowChanged,
+    ConditionChanged,
+    LoopChanged,
+    ReturnChanged,
+    ExceptionHandlingChanged,
+    AsyncBehaviorChanged,
+    CallAdded,
+    CallRemoved,
+    DependencyAdded,
+    DependencyRemoved,
+    AuthorizationChanged,
+    ValidationRemoved,
+    DatabaseWriteChanged,
+    TransactionBoundaryChanged,
+    ApiContractChanged,
+    ReturnTypeChanged,
+}
+
+impl ChangeClass {
+    /// Every class in canonical order.
+    pub const ALL: [ChangeClass; 16] = [
+        Self::ControlFlowChanged,
+        Self::ConditionChanged,
+        Self::LoopChanged,
+        Self::ReturnChanged,
+        Self::ExceptionHandlingChanged,
+        Self::AsyncBehaviorChanged,
+        Self::CallAdded,
+        Self::CallRemoved,
+        Self::DependencyAdded,
+        Self::DependencyRemoved,
+        Self::AuthorizationChanged,
+        Self::ValidationRemoved,
+        Self::DatabaseWriteChanged,
+        Self::TransactionBoundaryChanged,
+        Self::ApiContractChanged,
+        Self::ReturnTypeChanged,
+    ];
+
+    /// The stable wire string.
+    pub const fn as_str(self) -> &'static str {
+        match self {
+            Self::ControlFlowChanged => "control_flow_changed",
+            Self::ConditionChanged => "condition_changed",
+            Self::LoopChanged => "loop_changed",
+            Self::ReturnChanged => "return_changed",
+            Self::ExceptionHandlingChanged => "exception_handling_changed",
+            Self::AsyncBehaviorChanged => "async_behavior_changed",
+            Self::CallAdded => "call_added",
+            Self::CallRemoved => "call_removed",
+            Self::DependencyAdded => "dependency_added",
+            Self::DependencyRemoved => "dependency_removed",
+            Self::AuthorizationChanged => "authorization_changed",
+            Self::ValidationRemoved => "validation_removed",
+            Self::DatabaseWriteChanged => "database_write_changed",
+            Self::TransactionBoundaryChanged => "transaction_boundary_changed",
+            Self::ApiContractChanged => "api_contract_changed",
+            Self::ReturnTypeChanged => "return_type_changed",
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn change_class_wire_strings_match_serde() {
+        for class in ChangeClass::ALL {
+            let json = serde_json::to_string(&class).unwrap();
+            assert_eq!(json, format!("\"{}\"", class.as_str()));
+        }
+        assert!(ChangeClass::ALL.windows(2).all(|w| w[0] < w[1]));
+    }
+
     use proptest::prelude::*;
 
     fn p(s: &str) -> RepoPath {

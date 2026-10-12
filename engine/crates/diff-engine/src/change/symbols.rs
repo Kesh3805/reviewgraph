@@ -20,6 +20,7 @@ use review_core::location::{DiffSide, Position, RepoPath, SourceRange};
 use review_core::symbol::SymbolKind;
 use serde::Serialize;
 
+use super::classify::ClassifiedChange;
 use super::delta::{DeltaEntry, SymbolDelta};
 use super::graphs::GraphPair;
 use super::versions::SymbolVersion;
@@ -98,6 +99,10 @@ pub struct SymbolRecord {
     pub hunk_ids: Vec<u32>,
     /// Symbol flags.
     pub flags: SymbolFlags,
+    /// Classified changes (CHG-002..005); empty until [`super::classify::classify_all`] runs.
+    pub classes: Vec<ClassifiedChange>,
+    /// The facts of this symbol could not be compared (parse failure or no facts).
+    pub facts_unavailable: bool,
 }
 
 /// Result of [`build_changed_symbols`].
@@ -109,6 +114,8 @@ pub struct ChangedSymbolSet {
     pub truncated: bool,
     /// Files whose unit was unavailable (coverage note; versions are absent).
     pub missing_units: Vec<RepoPath>,
+    /// Symbols whose syntax facts were unavailable, so no classes were derived.
+    pub facts_unavailable: Vec<SymbolKey>,
 }
 
 /// A symbol to turn into a record, from a hunk hit or a delta entry.
@@ -215,18 +222,13 @@ pub fn build_changed_symbols(
 
     // The hunk map loads the base unit only when old-side lines changed, so an insert-only edit
     // arrives without its base symbol; look it up by id (or lineage) here.
-    let reverse: BTreeMap<&SymbolId, &SymbolId> =
-        cfg.renames.iter().map(|(b, h)| (h, b)).collect();
+    let reverse: BTreeMap<&SymbolId, &SymbolId> = cfg.renames.iter().map(|(b, h)| (h, b)).collect();
     let mut base_index: HashMap<RepoPath, Option<HashMap<SymbolId, u32>>> = HashMap::new();
     for seed in seeds.values_mut() {
         if seed.side != DiffSide::Head || seed.base_local.is_some() {
             continue;
         }
-        let base_path = cfg
-            .base_paths
-            .get(&seed.path)
-            .unwrap_or(&seed.path)
-            .clone();
+        let base_path = cfg.base_paths.get(&seed.path).unwrap_or(&seed.path).clone();
         let index = base_index.entry(base_path.clone()).or_insert_with(|| {
             units.unit(DiffSide::Base, &base_path).map(|u| {
                 symbol_ids(&u)
@@ -237,7 +239,9 @@ pub fn build_changed_symbols(
             })
         });
         let Some(index) = index else { continue };
-        let base_id = reverse.get(&seed.id).map_or_else(|| seed.id.clone(), |b| (*b).clone());
+        let base_id = reverse
+            .get(&seed.id)
+            .map_or_else(|| seed.id.clone(), |b| (*b).clone());
         if let Some(&local) = index.get(&base_id) {
             seed.base_local = Some(local);
             seed.base_path = Some(base_path);
@@ -452,6 +456,8 @@ fn finish(
         cosmetic,
         hunk_ids: seed.hunk_ids.clone(),
         flags,
+        classes: Vec::new(),
+        facts_unavailable: false,
     }
 }
 
