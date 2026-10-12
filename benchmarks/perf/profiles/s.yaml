@@ -1,0 +1,7 @@
+name: s
+modules: 4
+features_per_module: 30
+density_pct: 262
+est_bytes_per_file: 3600
+target_files: 1000
+target_symbols: 15000

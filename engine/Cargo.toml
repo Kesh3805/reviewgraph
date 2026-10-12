@@ -1,6 +1,6 @@
 [workspace]
 resolver = "2"
-members = ["crates/*", "apps/*", "xtask", "tools/test-support"]
+members = ["crates/*", "apps/*", "xtask", "tools/test-support", "../benchmarks/perf/synth-repo"]
 
 [workspace.package]
 version = "0.1.0"

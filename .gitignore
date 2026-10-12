@@ -28,3 +28,4 @@ Thumbs.db
 /packages/contracts/.tmp/
 /fixtures/.build/
 .gradle/
+/benchmarks/perf/.cache/

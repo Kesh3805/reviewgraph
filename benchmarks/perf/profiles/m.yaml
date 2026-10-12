@@ -1,0 +1,7 @@
+name: m
+modules: 40
+features_per_module: 30
+density_pct: 147
+est_bytes_per_file: 3000
+target_files: 10000
+target_symbols: 100000

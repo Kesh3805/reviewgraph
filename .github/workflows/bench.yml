@@ -36,6 +36,23 @@ jobs:
       # Quality smoke (review-eval, replay adapter, no network/keys) is enabled once EVAL-004 lands:
       #   review-eval run --set benchmarks/quality/smoke-set.txt --adapter replay --output eval-smoke.json
 
+  synth-repo:
+    name: synth-repo
+    if: github.event_name != 'schedule'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: '1.97'
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: engine
+      - name: Large-profile generator checks (100k files, dry run)
+        working-directory: engine
+        run: cargo test --release --locked -p synth-repo -- --ignored --nocapture
+
   nightly:
     name: nightly
     if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
@@ -51,7 +68,7 @@ jobs:
           workspaces: engine
       - name: Criterion full run
         working-directory: engine
-        run: cargo bench --workspace --locked -- --save-baseline nightly
+        run: cargo bench --workspace --benches --locked -- --save-baseline nightly
       - name: Record CPU model
         run: lscpu | grep 'Model name' >> "$GITHUB_STEP_SUMMARY"
       - name: Compare with baselines
