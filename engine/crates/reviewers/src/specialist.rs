@@ -169,6 +169,11 @@ impl Reviewer for SpecialistReviewer {
     }
 }
 
+/// For reviewers that add no sections beyond the common ones.
+pub fn no_extra_sections(_req: &ReviewRequest<'_>) -> Vec<InputSection> {
+    Vec::new()
+}
+
 /// True when the cluster carries any of the named signals.
 pub(crate) fn any_signal(input: &RoutingInput<'_>, set: &[&str]) -> bool {
     set.iter().any(|s| input.cluster.signals.contains(*s))

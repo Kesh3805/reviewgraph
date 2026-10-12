@@ -2,3 +2,4 @@
 # any edit needs a new version file and a new line here.
 correctness/v1 472b8c3421e1cec23b51c63ba456574347e2f937c9d47d0e6be9386aad274d65
 security/v1 230337fa6dd1b2a465adc8f02105f2d02fe89b217b27081e62e75a49395a3f77
+tests/v1 a29babd41070ace18854d741ec2a57cc6e6b01a8919069a4d3c771e6cef46a6d

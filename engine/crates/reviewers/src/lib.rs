@@ -26,6 +26,7 @@ pub mod reviewer;
 pub mod routing;
 pub mod security;
 pub mod specialist;
+pub mod tests_reviewer;
 
 pub use context::{ContextSnapshot, ReviewContext};
 pub use correctness::CorrectnessReviewer;

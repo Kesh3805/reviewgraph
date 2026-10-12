@@ -42,6 +42,11 @@ pub const PROMPTS: &[PromptFile] = &[
         version: 1,
         text: include_str!("../prompts/security/v1.md"),
     },
+    PromptFile {
+        kind: "tests",
+        version: 1,
+        text: include_str!("../prompts/tests/v1.md"),
+    },
 ];
 
 /// The committed lock file.

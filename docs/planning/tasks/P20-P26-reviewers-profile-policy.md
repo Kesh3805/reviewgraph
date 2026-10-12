@@ -252,7 +252,7 @@ Status: ☐
 ---
 
 ### REV-T-001 — Test reviewer
-Status: ☐
+Status: ◐
 
 - **Task ID:** REV-T-001
 - **Title:** Test reviewer (changed behavior without tests, stale mocks, missing negative tests)
