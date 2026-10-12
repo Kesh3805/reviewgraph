@@ -118,6 +118,7 @@ export type FindingState =
   | "SUPPRESSED_PREEXISTING"
   | "SUPPRESSED_NOT_ACTIONABLE"
   | "SUPPRESSED_POLICY"
+  | "REJECTED_INVALID"
   | "INVALIDATED";
 /**
  * Why a finding left the happy path. The variant must match the target state.

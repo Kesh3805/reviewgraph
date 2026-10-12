@@ -1,11 +1,16 @@
 //! Persistence of the review pipeline: stage outputs for idempotent resume (PIPE-005), run
-//! claims and retries (PIPE-005), and compare-and-set run state transitions (PIPE-007).
+//! claims and retries (PIPE-005), compare-and-set run state transitions (PIPE-007), and the
+//! finding lifecycle store (VER-001, feature `pg`).
 //!
 //! Every query carries `organization_id` and runs in a transaction that sets
 //! `app.organization_id`, so row-level security applies even when the connecting role does not
 //! bypass it.
 
 pub mod blob;
+#[cfg(feature = "pg")]
+mod finding_metrics;
+#[cfg(feature = "pg")]
+pub mod findings;
 pub mod input_hash;
 pub mod metrics;
 pub mod review_state;
@@ -18,6 +23,8 @@ use sqlx::{PgPool, Postgres, Transaction};
 use uuid::Uuid;
 
 pub use blob::{BlobStore, MemoryBlobStore};
+#[cfg(feature = "pg")]
+pub use findings::PgFindingStore;
 pub use input_hash::{canonical_json, hash_hex, input_hash, InputHashParts};
 pub use review_state::{PgReviewStateStore, ReviewStateStore, TransitionResult};
 pub use run_claims::{NewRun, RunClaims, RunRow, REUSABLE_ACROSS_RETRY};

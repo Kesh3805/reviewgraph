@@ -28,6 +28,10 @@ pub enum FindingState {
     SuppressedPreexisting,
     SuppressedNotActionable,
     SuppressedPolicy,
+    // A malformed reviewer candidate: neither suppressed by evidence nor valid (PRD §150
+    // extension, DOM-006). Carries a reason code and no suppression object. Plain comment for
+    // the same schema reason as above.
+    RejectedInvalid,
     Invalidated,
 }
 
@@ -37,23 +41,25 @@ use FindingState as S;
 ///
 /// | From | Allowed to |
 /// |---|---|
-/// | `Generated` | `EvidenceCollected`, `SuppressedNotActionable`, `SuppressedPreexisting`, `SuppressedPolicy`, `Invalidated` |
-/// | `EvidenceCollected` | `Verified`, `SuppressedLowConfidence`, `SuppressedPreexisting`, `SuppressedNotActionable`, `SuppressedPolicy`, `Invalidated` |
+/// | `Generated` | `EvidenceCollected`, `RejectedInvalid`, `SuppressedNotActionable`, `SuppressedPreexisting`, `SuppressedPolicy`, `Invalidated` |
+/// | `EvidenceCollected` | `Verified`, `SuppressedLowConfidence`, `SuppressedPreexisting`, `SuppressedNotActionable`, `SuppressedPolicy`, `RejectedInvalid`, `Invalidated` |
 /// | `Verified` | `Deduplicated`, `SuppressedDuplicate`, `SuppressedPolicy`, `Invalidated` |
 /// | `Deduplicated` | `Prioritized`, `SuppressedPolicy`, `Invalidated` |
 /// | `Prioritized` | `Published`, `SuppressedPolicy`, `Invalidated` |
-/// | `Published`, every `Suppressed*`, `Invalidated` | none (terminal) |
+/// | `Published`, every `Suppressed*`, `RejectedInvalid`, `Invalidated` | none (terminal) |
 pub const ALLOWED: &[(FindingState, FindingState)] = &[
     (S::Generated, S::EvidenceCollected),
     (S::Generated, S::SuppressedNotActionable),
     (S::Generated, S::SuppressedPreexisting),
     (S::Generated, S::SuppressedPolicy),
+    (S::Generated, S::RejectedInvalid),
     (S::Generated, S::Invalidated),
     (S::EvidenceCollected, S::Verified),
     (S::EvidenceCollected, S::SuppressedLowConfidence),
     (S::EvidenceCollected, S::SuppressedPreexisting),
     (S::EvidenceCollected, S::SuppressedNotActionable),
     (S::EvidenceCollected, S::SuppressedPolicy),
+    (S::EvidenceCollected, S::RejectedInvalid),
     (S::EvidenceCollected, S::Invalidated),
     (S::Verified, S::Deduplicated),
     (S::Verified, S::SuppressedDuplicate),
@@ -68,7 +74,7 @@ pub const ALLOWED: &[(FindingState, FindingState)] = &[
 ];
 
 impl FindingState {
-    pub const ALL: [FindingState; 12] = [
+    pub const ALL: [FindingState; 13] = [
         S::Generated,
         S::EvidenceCollected,
         S::Verified,
@@ -80,6 +86,7 @@ impl FindingState {
         S::SuppressedPreexisting,
         S::SuppressedNotActionable,
         S::SuppressedPolicy,
+        S::RejectedInvalid,
         S::Invalidated,
     ];
 
@@ -97,6 +104,7 @@ impl FindingState {
             S::SuppressedPreexisting => "SUPPRESSED_PREEXISTING",
             S::SuppressedNotActionable => "SUPPRESSED_NOT_ACTIONABLE",
             S::SuppressedPolicy => "SUPPRESSED_POLICY",
+            S::RejectedInvalid => "REJECTED_INVALID",
             S::Invalidated => "INVALIDATED",
         }
     }
@@ -112,9 +120,9 @@ impl FindingState {
         )
     }
 
-    /// `Published`, every suppressed state and `Invalidated` have no outgoing edges.
+    /// `Published`, every suppressed state, `RejectedInvalid` and `Invalidated` have no outgoing edges.
     pub const fn is_terminal(self) -> bool {
-        matches!(self, S::Published | S::Invalidated) || self.is_suppressed()
+        matches!(self, S::Published | S::RejectedInvalid | S::Invalidated) || self.is_suppressed()
     }
 
     pub fn can_transition_to(self, to: FindingState) -> bool {
@@ -138,6 +146,7 @@ mod tests {
         match from {
             Generated => &[
                 EvidenceCollected,
+                RejectedInvalid,
                 SuppressedNotActionable,
                 SuppressedPreexisting,
                 SuppressedPolicy,
@@ -149,6 +158,7 @@ mod tests {
                 SuppressedPreexisting,
                 SuppressedNotActionable,
                 SuppressedPolicy,
+                RejectedInvalid,
                 Invalidated,
             ],
             Verified => &[
@@ -165,13 +175,14 @@ mod tests {
             | SuppressedPreexisting
             | SuppressedNotActionable
             | SuppressedPolicy
+            | RejectedInvalid
             | Invalidated => &[],
         }
     }
 
     #[test]
     fn finding_state_transition_table_exhaustive() {
-        assert_eq!(FindingState::ALL.len(), 12);
+        assert_eq!(FindingState::ALL.len(), 13);
         let mut checked = 0;
         for from in FindingState::ALL {
             for to in FindingState::ALL {
@@ -180,7 +191,7 @@ mod tests {
                 checked += 1;
             }
         }
-        assert_eq!(checked, 144);
+        assert_eq!(checked, 169);
         let edges: usize = FindingState::ALL
             .iter()
             .map(|s| expected_targets(*s).len())
@@ -202,6 +213,7 @@ mod tests {
             assert_eq!(s.is_terminal(), outgoing == 0, "{s}");
         }
         assert!(FindingState::Published.is_terminal());
+        assert!(FindingState::RejectedInvalid.is_terminal());
         assert!(FindingState::Invalidated.is_terminal());
         assert!(!FindingState::Prioritized.is_terminal());
     }
@@ -239,5 +251,26 @@ mod tests {
             );
         }
         assert!(serde_json::from_str::<FindingState>("\"published\"").is_err());
+    }
+}
+
+#[cfg(test)]
+mod rejected_invalid_tests {
+    use super::*;
+
+    #[test]
+    fn rejected_invalid_is_terminal_unsuppressed_and_only_reachable_before_verification() {
+        let r = FindingState::RejectedInvalid;
+        assert!(r.is_terminal());
+        assert!(!r.is_suppressed());
+        let from: Vec<_> = ALLOWED
+            .iter()
+            .filter(|(_, t)| *t == r)
+            .map(|(f, _)| *f)
+            .collect();
+        assert_eq!(
+            from,
+            vec![FindingState::Generated, FindingState::EvidenceCollected]
+        );
     }
 }

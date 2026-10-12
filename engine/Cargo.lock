@@ -3229,6 +3229,7 @@ dependencies = [
  "hex",
  "lang-typescript",
  "model-gateway",
+ "opentelemetry",
  "profile",
  "rayon",
  "repository",
@@ -3243,6 +3244,7 @@ dependencies = [
  "tokio-util",
  "tracing",
  "uuid",
+ "verification",
  "zstd",
 ]
 

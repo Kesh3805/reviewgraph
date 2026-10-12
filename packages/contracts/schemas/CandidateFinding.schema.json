@@ -343,6 +343,7 @@
         "SUPPRESSED_PREEXISTING",
         "SUPPRESSED_NOT_ACTIONABLE",
         "SUPPRESSED_POLICY",
+        "REJECTED_INVALID",
         "INVALIDATED"
       ],
       "type": "string"
