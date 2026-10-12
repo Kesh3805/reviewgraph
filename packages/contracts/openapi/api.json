@@ -1233,6 +1233,37 @@
             }
           },
           {
+            "name": "kinds",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "maxLength": 500,
+              "type": "string"
+            }
+          },
+          {
+            "name": "all",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "true",
+                "false"
+              ]
+            }
+          },
+          {
+            "name": "max_paths",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 10,
+              "type": "integer"
+            }
+          },
+          {
             "name": "snapshot",
             "required": false,
             "in": "query",
@@ -1249,7 +1280,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/GraphResponseDto"
+                  "$ref": "#/components/schemas/PathResponseDto"
                 }
               }
             }
@@ -1287,7 +1318,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/GraphResponseDto"
+                  "$ref": "#/components/schemas/ImpactResponseDto"
                 }
               }
             }
@@ -4296,6 +4327,324 @@
           "seeds"
         ],
         "additionalProperties": false
+      },
+      "PathResponseDto": {
+        "type": "object",
+        "properties": {
+          "snapshot_id": {
+            "type": "string"
+          },
+          "paths": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "nodes": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "key": {
+                        "type": "string"
+                      },
+                      "id": {
+                        "type": "string"
+                      },
+                      "name": {
+                        "type": "string"
+                      },
+                      "qualified_name": {
+                        "type": "string"
+                      },
+                      "kind": {
+                        "type": "string"
+                      },
+                      "path": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "line": {
+                        "type": "integer",
+                        "minimum": -9007199254740991,
+                        "maximum": 9007199254740991,
+                        "nullable": true
+                      }
+                    },
+                    "required": [
+                      "key",
+                      "id",
+                      "name",
+                      "qualified_name",
+                      "kind",
+                      "path",
+                      "line"
+                    ]
+                  }
+                },
+                "edges": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "source": {
+                        "type": "string"
+                      },
+                      "target": {
+                        "type": "string"
+                      },
+                      "kind": {
+                        "type": "string"
+                      },
+                      "confidence": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1
+                      },
+                      "resolved_by": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "source",
+                      "target",
+                      "kind",
+                      "confidence",
+                      "resolved_by"
+                    ]
+                  }
+                },
+                "min_confidence": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 1
+                }
+              },
+              "required": [
+                "nodes",
+                "edges",
+                "min_confidence"
+              ]
+            }
+          },
+          "truncated": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "snapshot_id",
+          "paths",
+          "truncated"
+        ]
+      },
+      "ImpactResponseDto": {
+        "type": "object",
+        "properties": {
+          "review_run_id": {
+            "type": "string"
+          },
+          "symbol_key": {
+            "type": "string"
+          },
+          "seed_id": {
+            "type": "string"
+          },
+          "side": {
+            "type": "string",
+            "enum": [
+              "base",
+              "head"
+            ]
+          },
+          "untested": {
+            "type": "boolean"
+          },
+          "skipped": {
+            "type": "string",
+            "enum": [
+              "cosmetic",
+              "generated",
+              null
+            ],
+            "nullable": true
+          },
+          "nodes": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "object",
+              "properties": {
+                "node_id": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "kind": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "node_id",
+                "name",
+                "kind"
+              ]
+            }
+          },
+          "relations": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "key": {
+                    "type": "string"
+                  },
+                  "node_id": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "kind": {
+                    "type": "string"
+                  },
+                  "relation": {
+                    "type": "string"
+                  },
+                  "distance": {
+                    "type": "integer",
+                    "minimum": -9007199254740991,
+                    "maximum": 9007199254740991
+                  },
+                  "min_confidence": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1
+                  },
+                  "alt_paths": {
+                    "type": "integer",
+                    "minimum": -9007199254740991,
+                    "maximum": 9007199254740991
+                  },
+                  "weak": {
+                    "type": "boolean"
+                  },
+                  "missing_on_head": {
+                    "type": "boolean"
+                  },
+                  "path": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "from": {
+                          "type": "string"
+                        },
+                        "edge": {
+                          "type": "string"
+                        },
+                        "to": {
+                          "type": "string"
+                        },
+                        "confidence": {
+                          "type": "number",
+                          "minimum": 0,
+                          "maximum": 1
+                        },
+                        "graph": {
+                          "type": "string",
+                          "enum": [
+                            "base",
+                            "head"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "from",
+                        "edge",
+                        "to",
+                        "confidence",
+                        "graph"
+                      ]
+                    }
+                  }
+                },
+                "required": [
+                  "key",
+                  "node_id",
+                  "name",
+                  "kind",
+                  "relation",
+                  "distance",
+                  "min_confidence",
+                  "alt_paths",
+                  "weak",
+                  "missing_on_head",
+                  "path"
+                ]
+              }
+            }
+          },
+          "truncation": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "relation": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "limit": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "dropped": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "reason": {
+                  "type": "string",
+                  "enum": [
+                    "limit",
+                    "depth",
+                    "total_cap",
+                    "seed_missing"
+                  ]
+                }
+              },
+              "required": [
+                "relation",
+                "limit",
+                "dropped",
+                "reason"
+              ]
+            }
+          },
+          "truncated": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "review_run_id",
+          "symbol_key",
+          "seed_id",
+          "side",
+          "untested",
+          "skipped",
+          "nodes",
+          "relations",
+          "truncation",
+          "truncated"
+        ]
       },
       "SourceExcerptDto": {
         "type": "object",

@@ -512,7 +512,9 @@ Status: ☑
 ---
 
 ### API-008 — Repositories API (PRD §106)
-Status: ☐
+Status: ◐
+
+> **Implementation note:** Routes, settings (migration 20261003000012), audit and the OpenAPI snapshot are implemented (commit 06dcf22). **Missing:** the integration tests `initialize_enqueues_once`, `rebuild_rate_limited`, `status_contains_fingerprint_and_versions`, `create_repository_requires_installation_access`, `profile_404_before_first_index`, `settings_change_audited` do not exist yet.
 
 - **Task ID:** API-008
 - **Title:** Repositories API (PRD §106)
@@ -794,7 +796,9 @@ Status: ☑
 ---
 
 ### API-013 — review-engine Axum internal API
-Status: ☐
+Status: ◐
+
+> **Implementation note:** `engine/apps/review-engine` (lib + bin): HS256 ServiceAuth with jti replay cache and cross-language golden vectors, routes health/symbols/detail/neighbors/subgraph/path (shortest or up to N paths)/source/impact, single-flight graph cache with 2 s 503 + Retry-After, spawn_blocking under a CPU semaphore, graceful 10 s drain, storage-to-codegraph conversion, tests in `tests/api.rs` (green in CI). `health` is deliberately unauthenticated for probes. **Missing:** utoipa `engine.json` and its drift test, the PERF-004 benchmark, compose acceptance run against the API proxy; impact graphs are read from `review_runs.provenance->'impact_graph'` (nothing writes it until PIPE-007); source excerpts need a bare mirror at `ENGINE_MIRROR_DIR/{repo}.git`.
 
 - **Task ID:** API-013
 - **Title:** review-engine Axum internal API (Rust) for graph/impact/subgraph queries

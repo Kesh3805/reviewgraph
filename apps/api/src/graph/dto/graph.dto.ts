@@ -5,6 +5,7 @@ import { z } from 'zod';
 export const MAX_SUBGRAPH_NODES = 500;
 export const MAX_SUBGRAPH_DEPTH = 3;
 export const MAX_PATH_DEPTH = 6;
+export const MAX_PATHS = 10;
 export const MAX_EXCERPT_LINES = 200;
 export const MAX_SYMBOL_RESULTS = 50;
 
@@ -52,6 +53,14 @@ export const PathQuerySchema = z.object({
   from: z.string().min(1).max(500),
   to: z.string().min(1).max(500),
   max_depth: z.coerce.number().int().min(1).max(MAX_PATH_DEPTH).default(4),
+  /** Comma separated edge kinds to follow, e.g. `CALLS,IMPORTS`; every kind when absent. */
+  kinds: kindList.optional(),
+  /** `true` returns up to `max_paths` simple paths, shortest first, instead of the shortest one. */
+  all: z
+    .enum(['true', 'false'])
+    .transform((v) => v === 'true')
+    .default(false),
+  max_paths: z.coerce.number().int().min(1).max(MAX_PATHS).optional(),
   snapshot,
 });
 
@@ -74,6 +83,97 @@ export const SourceQuerySchema = z
     message: `at most ${MAX_EXCERPT_LINES} lines`,
     path: ['end'],
   });
+
+const confidence = z.number().min(0).max(1);
+
+export const GraphNodeSchema = z.object({
+  key: z.string(),
+  id: z.string(),
+  name: z.string(),
+  qualified_name: z.string(),
+  kind: z.string(),
+  path: z.string().nullable(),
+  line: z.number().int().nullable(),
+});
+
+export const GraphEdgeSchema = z.object({
+  source: z.string(),
+  target: z.string(),
+  kind: z.string(),
+  confidence,
+  resolved_by: z.string(),
+});
+
+/** An ordered chain: `edges[i]` joins `nodes[i]` to `nodes[i + 1]`. */
+export const GraphPathSchema = z.object({
+  nodes: z.array(GraphNodeSchema),
+  edges: z.array(GraphEdgeSchema),
+  /** The weakest edge of the path. */
+  min_confidence: confidence,
+});
+
+/** `GET /repositories/:id/graph/path` (engine `PathResponse`). */
+export const PathResponseSchema = z.object({
+  snapshot_id: z.string(),
+  /** Shortest first; empty when nothing is reachable within the budget. */
+  paths: z.array(GraphPathSchema),
+  /** The search budget ran out before it could say there is no (further) path. */
+  truncated: z.boolean(),
+});
+
+export const ImpactNodeSchema = z.object({
+  node_id: z.string(),
+  name: z.string(),
+  /** Absent for the changed symbol itself. */
+  kind: z.string().nullable(),
+});
+
+export const ImpactStepSchema = z.object({
+  from: z.string(),
+  edge: z.string(),
+  to: z.string(),
+  confidence,
+  graph: z.enum(['base', 'head']),
+});
+
+export const ImpactItemSchema = z.object({
+  key: z.string(),
+  node_id: z.string(),
+  name: z.string(),
+  kind: z.string(),
+  /** snake_case relation, e.g. `caller`, `endpoint`, `db_table`. */
+  relation: z.string(),
+  distance: z.number().int(),
+  min_confidence: confidence,
+  alt_paths: z.number().int(),
+  weak: z.boolean(),
+  missing_on_head: z.boolean(),
+  /** From the changed symbol to this element. */
+  path: z.array(ImpactStepSchema),
+});
+
+export const ImpactTruncationSchema = z.object({
+  relation: z.string().nullable(),
+  limit: z.number().int(),
+  dropped: z.number().int(),
+  reason: z.enum(['limit', 'depth', 'total_cap', 'seed_missing']),
+});
+
+/** `GET /reviews/:id/impact/:symbolKey`: one changed symbol of the run's ImpactGraph. */
+export const ImpactResponseSchema = z.object({
+  review_run_id: z.string(),
+  symbol_key: z.string(),
+  seed_id: z.string(),
+  side: z.enum(['base', 'head']),
+  untested: z.boolean(),
+  skipped: z.enum(['cosmetic', 'generated']).nullable(),
+  /** Display data of the nodes the paths mention, by node key. */
+  nodes: z.record(z.string(), ImpactNodeSchema),
+  /** Elements grouped by relation, in the impact graph's sort order. */
+  relations: z.record(z.string(), z.array(ImpactItemSchema)),
+  truncation: z.array(ImpactTruncationSchema),
+  truncated: z.boolean(),
+});
 
 /** Graph responses are the engine's (API-013 DTOs); budget truncation is passed through. */
 export const GraphResponseSchema = z
@@ -101,6 +201,8 @@ export class SubgraphRequestDto extends createZodDto(SubgraphRequestSchema) {}
 export class PathQueryDto extends createZodDto(PathQuerySchema) {}
 export class SourceQueryDto extends createZodDto(SourceQuerySchema) {}
 export class GraphResponseDto extends createZodDto(GraphResponseSchema) {}
+export class PathResponseDto extends createZodDto(PathResponseSchema) {}
+export class ImpactResponseDto extends createZodDto(ImpactResponseSchema) {}
 export class SourceExcerptDto extends createZodDto(SourceExcerptSchema) {}
 
 export type SymbolSearchQuery = z.infer<typeof SymbolSearchQuerySchema>;
@@ -110,3 +212,5 @@ export type PathQuery = z.infer<typeof PathQuerySchema>;
 export type SourceQuery = z.infer<typeof SourceQuerySchema>;
 export type GraphResponse = z.infer<typeof GraphResponseSchema>;
 export type SourceExcerpt = z.infer<typeof SourceExcerptSchema>;
+export type PathResponse = z.infer<typeof PathResponseSchema>;
+export type ImpactResponse = z.infer<typeof ImpactResponseSchema>;

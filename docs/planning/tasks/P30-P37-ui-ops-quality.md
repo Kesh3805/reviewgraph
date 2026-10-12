@@ -593,6 +593,8 @@ Status: ☑
 Status: ◐
 > **Implementation note:** The explorer has Explore / Path / Impact-for-review tabs (`?mode=`). `PathFinder` calls `GET /graph/path` with `all=true&max_paths=5` and shows alternatives as tabs rendered by `ImpactPathFlow`; `ImpactGroups` renders the ImpactGraph categories plus the entrypoint path. The path and impact response shapes (`PathResponse`, `ImpactResponse`) are assumed in `pending.ts` until API-013 fixes them, and the API path route does not yet accept `kinds`/`all`/`max_paths`. The CLI-output comparison test waits for CLI-009.
 
+> **Round-3 update:** The API now accepts and forwards `kinds`, `all` and `max_paths` (`PathQuerySchema`, `EngineClient.path`, test `path_forwards_kinds_all_and_max_paths`), and `PathResponse`/`ImpactResponse` are typed contract schemas in `api.json` (regenerated `generated.ts`). **Still open:** `apps/web/lib/api/pending.ts` still carries the assumed `ImpactResponse` (`categories`) and `ImpactGroups.tsx` must be switched to the real `relations`/`nodes` shape; `PathResponse` can be re-pointed at `components['schemas']['PathResponseDto']`.
+
 - **Task ID:** GX-003
 - **Title:** Impact path view
 - **Problem:** Users want to ask "how does A reach B?" interactively (the CLI-009 equivalent).

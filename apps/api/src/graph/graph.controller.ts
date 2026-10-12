@@ -10,14 +10,18 @@ import {
 import { RequireRole } from '../tenancy/roles.decorator';
 import {
   GraphResponseDto,
+  ImpactResponseDto,
   NeighborsQueryDto,
   PathQueryDto,
+  PathResponseDto,
   SnapshotQueryDto,
   SourceExcerptDto,
   SourceQueryDto,
   SubgraphRequestDto,
   SymbolSearchQueryDto,
   type GraphResponse,
+  type ImpactResponse,
+  type PathResponse,
   type SourceExcerpt,
 } from './dto/graph.dto';
 import { GraphService, type GraphCaller } from './graph.service';
@@ -87,29 +91,33 @@ export class GraphController {
     return this.graph.subgraph(caller(tenant, user, req), repoId, body);
   }
 
+  /**
+   * `all=true&max_paths=N` returns up to N simple paths, shortest first; `kinds` restricts the
+   * edge kinds followed. Without `all` the single shortest path comes back.
+   */
   @Get('repositories/:repoId/graph/path')
   @RequireRole('viewer')
-  @ApiOkResponse({ type: GraphResponseDto })
+  @ApiOkResponse({ type: PathResponseDto })
   path(
     @Param('repoId') repoId: string,
     @Query() query: PathQueryDto,
     @Tenant() tenant: RequestTenant,
     @CurrentUser() user: RequestUser | undefined,
     @Req() req: RequestWithId,
-  ): Promise<GraphResponse> {
+  ): Promise<PathResponse> {
     return this.graph.path(caller(tenant, user, req), repoId, query);
   }
 
   @Get('reviews/:reviewId/impact/:symbolKey')
   @RequireRole('viewer')
-  @ApiOkResponse({ type: GraphResponseDto })
+  @ApiOkResponse({ type: ImpactResponseDto })
   impact(
     @Param('reviewId') reviewId: string,
     @Param('symbolKey') symbolKey: string,
     @Tenant() tenant: RequestTenant,
     @CurrentUser() user: RequestUser | undefined,
     @Req() req: RequestWithId,
-  ): Promise<GraphResponse> {
+  ): Promise<ImpactResponse> {
     return this.graph.impact(caller(tenant, user, req), reviewId, symbolKey);
   }
 

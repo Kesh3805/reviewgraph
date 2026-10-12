@@ -7,9 +7,10 @@ import { ProblemException } from '../common/problem.filter';
 import { REDIS } from '../common/redis.module';
 import { TRACER_NAME } from '../telemetry/tracer.service';
 import type {
-  GraphResponse,
+  ImpactResponse,
   NeighborsQuery,
   PathQuery,
+  PathResponse,
   SourceExcerpt,
   SourceQuery,
   SubgraphRequest,
@@ -83,14 +84,21 @@ export class GraphService {
     );
   }
 
-  path(caller: GraphCaller, repositoryId: string, q: PathQuery) {
+  path(caller: GraphCaller, repositoryId: string, q: PathQuery): Promise<PathResponse> {
     return this.cachedQuery(caller, repositoryId, q.snapshot, 'path', q, (s, snap) =>
-      this.engine.path(s, snap, { from: q.from, to: q.to, maxDepth: q.max_depth }),
+      this.engine.path(s, snap, {
+        from: q.from,
+        to: q.to,
+        maxDepth: q.max_depth,
+        kinds: q.kinds,
+        all: q.all,
+        maxPaths: q.max_paths,
+      }),
     );
   }
 
   /** Impact of a symbol in a review (the run's head graph); scoped to the run's repository. */
-  async impact(caller: GraphCaller, reviewRunId: string, key: string): Promise<GraphResponse> {
+  async impact(caller: GraphCaller, reviewRunId: string, key: string): Promise<ImpactResponse> {
     const repositoryId = await this.scope.reviewRepository(caller.organizationId, reviewRunId);
     if (!repositoryId) throw new NotFoundException();
     const scope = { organizationId: caller.organizationId, repositoryId };
@@ -137,14 +145,14 @@ export class GraphService {
     };
   }
 
-  private async cachedQuery(
+  private async cachedQuery<T>(
     caller: GraphCaller,
     repositoryId: string,
     requestedSnapshot: string | undefined,
     route: string,
     query: unknown,
-    call: (scope: EngineScope, snapshotId: string) => Promise<GraphResponse>,
-  ): Promise<GraphResponse> {
+    call: (scope: EngineScope, snapshotId: string) => Promise<T>,
+  ): Promise<T> {
     const scope: EngineScope = { organizationId: caller.organizationId, repositoryId };
     const snapshotId = await this.resolveSnapshot(scope, requestedSnapshot);
     return this.withCache(route, repositoryId, snapshotId, { route, query }, () =>
@@ -174,18 +182,18 @@ export class GraphService {
     return latest;
   }
 
-  private async withCache(
+  private async withCache<T>(
     route: string,
     repositoryId: string,
     snapshotId: string,
     query: unknown,
-    load: () => Promise<GraphResponse>,
-  ): Promise<GraphResponse> {
+    load: () => Promise<T>,
+  ): Promise<T> {
     const key = graphCacheKey(repositoryId, snapshotId, query);
     const hit = await this.redis.get(key).catch(() => null);
     if (hit) {
       incCounter('graph_queries_total', { route, cached: 'true' });
-      return JSON.parse(hit) as GraphResponse;
+      return JSON.parse(hit) as T;
     }
     const value = await load();
     incCounter('graph_queries_total', { route, cached: 'false' });
