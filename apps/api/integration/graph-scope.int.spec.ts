@@ -1,3 +1,4 @@
+import { randomBytes, randomUUID } from 'node:crypto';
 import { AuditService } from '../src/audit/audit.service';
 import type { AppConfig } from '../src/config/config.module';
 import { DbService } from '../src/db/db.module';
@@ -77,8 +78,46 @@ describe('PgGraphScope (integration)', () => {
     ]);
   });
 
-  it('has no snapshots before the graph storage tables exist', async () => {
-    expect(await scope.defaultSnapshot()).toBeNull();
-    expect(await scope.snapshotBelongsTo()).toBe(false);
+  it('resolves the latest ready full default-branch snapshot and validates ownership', async () => {
+    const repo = org.repositoryIds[0]!;
+    expect(await scope.defaultSnapshot(org.organizationId, repo)).toBeNull();
+    const snapshot = async (
+      target: SeededOrg,
+      fields: { status?: string; purpose?: string; completedAt?: Date | null },
+    ) => {
+      const id = randomUUID();
+      await admin
+        .insertInto('snapshots')
+        .values({
+          id,
+          organization_id: target.organizationId,
+          repository_id: target.repositoryIds[0]!,
+          commit_sha: 'a'.repeat(40),
+          kind: 'full',
+          purpose: fields.purpose ?? 'default_branch',
+          status: fields.status ?? 'ready',
+          graph_schema_version: 1,
+          analyzer_versions: JSON.stringify({}),
+          config_hash: Buffer.alloc(32, 1),
+          fingerprint: randomBytes(32),
+          completed_at: fields.completedAt ?? null,
+        })
+        .execute();
+      return id;
+    };
+    const older = await snapshot(org, { completedAt: new Date('2026-10-01T00:00:00Z') });
+    const latest = await snapshot(org, { completedAt: new Date('2026-10-02T00:00:00Z') });
+    const indexing = await snapshot(org, { status: 'indexing' });
+    await snapshot(org, { purpose: 'pull_request', completedAt: new Date('2026-10-03T00:00:00Z') });
+    const foreign = await snapshot(other, { completedAt: new Date('2026-10-04T00:00:00Z') });
+
+    expect(await scope.defaultSnapshot(org.organizationId, repo)).toBe(latest);
+    expect(await scope.snapshotBelongsTo(org.organizationId, repo, older)).toBe(true);
+    expect(await scope.snapshotBelongsTo(org.organizationId, repo, indexing)).toBe(false);
+    expect(await scope.snapshotBelongsTo(org.organizationId, repo, foreign)).toBe(false);
+    // Even naming the other tenant's repository, RLS hides its snapshot.
+    expect(
+      await scope.snapshotBelongsTo(org.organizationId, other.repositoryIds[0]!, foreign),
+    ).toBe(false);
   });
 });

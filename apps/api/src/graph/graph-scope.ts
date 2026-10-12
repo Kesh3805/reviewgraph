@@ -1,13 +1,13 @@
 import { Injectable } from '@nestjs/common';
+import { sql } from 'kysely';
 import { AuditService } from '../audit/audit.service';
 import { DbService } from '../db/db.module';
 
 /**
  * The database side of the graph proxy: which snapshot a query runs against, whether a snapshot
  * belongs to a repository, which repository a review run belongs to, and the source-access
- * audit (SEC-008). Graph snapshots (`snapshots`, GS-005) do not exist in the schema yet: until
- * they do, a repository has no default snapshot and no snapshot id validates, so graph queries
- * answer 404 and a client-supplied snapshot is rejected.
+ * audit (SEC-008). Only `ready` snapshots (GS-003 `snapshots`) are served; before the first
+ * index a repository has none and graph queries answer 404.
  */
 export interface GraphScope {
   /** The latest full snapshot of the default branch, or null before the first index. */
@@ -37,14 +37,40 @@ export class PgGraphScope implements GraphScope {
     private readonly audit: AuditService,
   ) {}
 
-  defaultSnapshot(): Promise<string | null> {
-    // GS-005 replaces this with: latest `snapshots` row (kind='full', purpose='default_branch',
-    // status='ready') of the repository.
-    return Promise.resolve(null);
+  /** The latest ready full snapshot of the default branch (GS-003 `snapshots`). */
+  async defaultSnapshot(orgId: string, repositoryId: string): Promise<string | null> {
+    const row = await this.dbs.withTx(orgId, (trx) =>
+      trx
+        .selectFrom('snapshots')
+        .select('id')
+        .where('repository_id', '=', repositoryId)
+        .where('kind', '=', 'full')
+        .where('purpose', '=', 'default_branch')
+        .where('status', '=', 'ready')
+        .orderBy(sql`completed_at desc nulls last`)
+        .orderBy('created_at', 'desc')
+        .orderBy('id', 'desc')
+        .executeTakeFirst(),
+    );
+    return row?.id ?? null;
   }
 
-  snapshotBelongsTo(): Promise<boolean> {
-    return Promise.resolve(false);
+  /** Any snapshot of the repository in this tenant (RLS hides other tenants' snapshots). */
+  async snapshotBelongsTo(
+    orgId: string,
+    repositoryId: string,
+    snapshotId: string,
+  ): Promise<boolean> {
+    const row = await this.dbs.withTx(orgId, (trx) =>
+      trx
+        .selectFrom('snapshots')
+        .select('id')
+        .where('id', '=', snapshotId)
+        .where('repository_id', '=', repositoryId)
+        .where('status', '=', 'ready')
+        .executeTakeFirst(),
+    );
+    return row !== undefined;
   }
 
   async reviewRepository(orgId: string, reviewRunId: string): Promise<string | null> {
