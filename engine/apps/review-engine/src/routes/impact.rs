@@ -14,7 +14,9 @@ use review_core::ids::{OrganizationId, RepositoryId};
 use uuid::Uuid;
 
 use super::{parse_key, Authed};
-use crate::dto::{ImpactItemDto, ImpactResponse, ImpactStepDto, ImpactTruncationDto};
+use crate::dto::{
+    ImpactItemDto, ImpactNodeDto, ImpactResponse, ImpactStepDto, ImpactTruncationDto,
+};
 use crate::error::ApiError;
 use crate::state::AppState;
 
@@ -74,7 +76,24 @@ pub async fn impact(
     let symbol = graph.symbol(seed).ok_or(ApiError::NotFound)?;
 
     let mut relations: BTreeMap<String, Vec<ImpactItemDto>> = BTreeMap::new();
+    let mut nodes: BTreeMap<String, ImpactNodeDto> = BTreeMap::new();
+    nodes.insert(
+        seed.to_string(),
+        ImpactNodeDto {
+            node_id: symbol.seed_id.clone(),
+            name: display_name(&symbol.seed_id),
+            kind: None,
+        },
+    );
     for element in &symbol.elements {
+        nodes.insert(
+            element.node.to_string(),
+            ImpactNodeDto {
+                node_id: element.node_id.clone(),
+                name: display_name(&element.node_id),
+                kind: Some(element.kind.as_str().to_owned()),
+            },
+        );
         let relation = element.relation.as_str().to_owned();
         relations
             .entry(relation.clone())
@@ -120,6 +139,7 @@ pub async fn impact(
         side: side(symbol.side).to_owned(),
         untested: symbol.untested,
         skipped: symbol.skipped.map(|s| skip(s).to_owned()),
+        nodes,
         relations,
         truncated: !truncation.is_empty(),
         truncation,

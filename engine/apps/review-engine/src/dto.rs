@@ -218,6 +218,15 @@ pub struct ImpactTruncationDto {
     pub reason: String,
 }
 
+/// A node an impact path passes through: the changed symbol and every element of its impact.
+#[derive(Debug, Clone, Serialize, JsonSchema)]
+pub struct ImpactNodeDto {
+    pub node_id: String,
+    pub name: String,
+    /// `None` for the changed symbol itself (the impact graph records only its id).
+    pub kind: Option<String>,
+}
+
 #[derive(Debug, Clone, Serialize, JsonSchema)]
 pub struct ImpactResponse {
     pub review_run_id: String,
@@ -226,6 +235,8 @@ pub struct ImpactResponse {
     pub side: String,
     pub untested: bool,
     pub skipped: Option<String>,
+    /// Display data of the nodes the paths mention, by node key.
+    pub nodes: BTreeMap<String, ImpactNodeDto>,
     /// Elements grouped by relation, in the impact graph's sort order.
     pub relations: BTreeMap<String, Vec<ImpactItemDto>>,
     pub truncation: Vec<ImpactTruncationDto>,

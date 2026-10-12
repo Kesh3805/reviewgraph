@@ -2,7 +2,7 @@ import { HttpStatus, Inject, Injectable, Logger } from '@nestjs/common';
 import { ProblemException } from '../common/problem.filter';
 import { APP_CONFIG, type AppConfig } from '../config/config.module';
 import { ServiceTokenService } from '../internal/internal.module';
-import type { GraphResponse } from './dto/graph.dto';
+import type { GraphResponse, ImpactResponse, PathResponse } from './dto/graph.dto';
 
 export const ENGINE_TIMEOUT_MS = 5_000;
 
@@ -26,6 +26,16 @@ export interface NeighborsParams {
   dir: 'in' | 'out';
   kinds?: string[];
   minConfidence?: number;
+}
+
+export interface PathParams {
+  from: string;
+  to: string;
+  maxDepth: number;
+  kinds?: string[];
+  /** Up to `maxPaths` simple paths, shortest first, instead of the single shortest. */
+  all?: boolean;
+  maxPaths?: number;
 }
 
 export interface SubgraphParams {
@@ -91,19 +101,19 @@ export class EngineClient {
     });
   }
 
-  path(
-    scope: EngineScope,
-    snapshotId: string,
-    params: { from: string; to: string; maxDepth: number },
-  ): Promise<GraphResponse> {
+  path(scope: EngineScope, snapshotId: string, params: PathParams): Promise<PathResponse> {
     return this.get(scope, `${this.snap(scope, snapshotId)}/path`, {
       from: params.from,
       to: params.to,
       max_depth: String(params.maxDepth),
+      kinds: params.kinds && params.kinds.length > 0 ? params.kinds.join(',') : undefined,
+      // `all` and `max_paths` are only sent when the caller asked for alternatives.
+      all: params.all ? 'true' : undefined,
+      max_paths: params.maxPaths?.toString(),
     });
   }
 
-  impact(scope: EngineScope, reviewRunId: string, key: string): Promise<GraphResponse> {
+  impact(scope: EngineScope, reviewRunId: string, key: string): Promise<ImpactResponse> {
     return this.get(scope, `reviews/${enc(reviewRunId)}/impact/${enc(key)}`);
   }
 

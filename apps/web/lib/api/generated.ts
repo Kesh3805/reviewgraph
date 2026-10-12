@@ -4,6 +4,38 @@
  */
 
 export interface paths {
+  '/api/v1/organizations/{organizationId}/audit': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations['AuditController_list'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/organizations/{organizationId}/audit/verify': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations['AuditController_verify'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/api/v1/auth/github/login': {
     parameters: {
       query?: never;
@@ -196,6 +228,294 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/api/v1/repositories/{repoId}/pull-requests': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations['ReviewsController_listPullRequests'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/pull-requests/{pullRequestId}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations['ReviewsController_getPullRequest'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/pull-requests/{pullRequestId}/review': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post: operations['ReviewsController_startReview'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/pull-requests/{pullRequestId}/reviews': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations['ReviewsController_listReviews'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/pull-requests/{pullRequestId}/reviews/{reviewId}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations['ReviewsController_getReview'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/reviews/{reviewId}/cancel': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post: operations['ReviewsController_cancel'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/reviews/{reviewId}/findings': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations['FindingsController_list'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/findings/{findingId}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations['FindingsController_detail'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/findings/{findingId}/trace': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations['FindingsController_trace'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/findings/{findingId}/feedback': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations['FeedbackController_list'];
+    put?: never;
+    post: operations['FeedbackController_submit'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/repositories/{repoId}/feedback/summary': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations['FeedbackController_summary'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/repositories/{repoId}/graph/symbols': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations['GraphController_symbols'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/repositories/{repoId}/graph/symbols/{key}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations['GraphController_symbol'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/repositories/{repoId}/graph/symbols/{key}/neighbors': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations['GraphController_neighbors'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/repositories/{repoId}/graph/subgraph': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post: operations['GraphController_subgraph'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/repositories/{repoId}/graph/path': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations['GraphController_path'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/reviews/{reviewId}/impact/{symbolKey}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations['GraphController_impact'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/repositories/{repoId}/source': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations['GraphController_source'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/api/v1/health/live': {
     parameters: {
       query?: never;
@@ -248,6 +568,36 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
   schemas: {
+    AuditPageDto: {
+      items: {
+        /** Format: uuid */
+        id: string;
+        occurred_at: string;
+        /** Format: uuid */
+        repository_id: string | null;
+        /** @enum {string} */
+        actor_type: 'user' | 'service' | 'system';
+        actor_id: string | null;
+        action: string;
+        target_type: string;
+        target_id: string | null;
+        /** @enum {string} */
+        outcome: 'success' | 'denied' | 'failure';
+        metadata: {
+          [key: string]: unknown;
+        };
+        request_id: string | null;
+        trace_id: string | null;
+        chain_seq: number | null;
+      }[];
+      next_cursor: string[];
+    };
+    AuditVerifyDto: {
+      ok: boolean;
+      checked: number;
+      /** Format: uuid */
+      first_invalid_id: string | null;
+    };
     CreateRepositoryDto: {
       /** Format: uuid */
       installation_id: string;
@@ -380,6 +730,621 @@ export interface components {
         [key: string]: boolean;
       };
     };
+    PullRequestListDto: {
+      items: {
+        /** Format: uuid */
+        id: string;
+        /** Format: uuid */
+        repository_id: string;
+        number: number;
+        title: string;
+        author_login: string;
+        base_ref: string;
+        head_ref: string;
+        base_sha: string;
+        head_sha: string;
+        /** @enum {string} */
+        state: 'open' | 'closed' | 'merged';
+        draft: boolean;
+        created_at: string;
+        updated_at: string;
+        latest_review: {
+          /** Format: uuid */
+          id: string;
+          /** @enum {string} */
+          state:
+            | 'RECEIVED'
+            | 'INDEXING'
+            | 'ANALYZING'
+            | 'REVIEWING'
+            | 'VERIFYING'
+            | 'PUBLISHING'
+            | 'COMPLETED'
+            | 'FAILED_INDEXING'
+            | 'FAILED_ANALYSIS'
+            | 'FAILED_REVIEW'
+            | 'FAILED_PUBLISH'
+            | 'SUPERSEDED'
+            | 'CANCELLED';
+          head_sha: string;
+          created_at: string;
+        } | null;
+      }[];
+      next_cursor: string[];
+    };
+    PullRequestDto: {
+      /** Format: uuid */
+      id: string;
+      /** Format: uuid */
+      repository_id: string;
+      number: number;
+      title: string;
+      author_login: string;
+      base_ref: string;
+      head_ref: string;
+      base_sha: string;
+      head_sha: string;
+      /** @enum {string} */
+      state: 'open' | 'closed' | 'merged';
+      draft: boolean;
+      created_at: string;
+      updated_at: string;
+      latest_review: {
+        /** Format: uuid */
+        id: string;
+        /** @enum {string} */
+        state:
+          | 'RECEIVED'
+          | 'INDEXING'
+          | 'ANALYZING'
+          | 'REVIEWING'
+          | 'VERIFYING'
+          | 'PUBLISHING'
+          | 'COMPLETED'
+          | 'FAILED_INDEXING'
+          | 'FAILED_ANALYSIS'
+          | 'FAILED_REVIEW'
+          | 'FAILED_PUBLISH'
+          | 'SUPERSEDED'
+          | 'CANCELLED';
+        head_sha: string;
+        created_at: string;
+      } | null;
+    };
+    StartReviewResultDto: {
+      /** Format: uuid */
+      review_run_id: string;
+      job_id: string[];
+      created: boolean;
+      head_sha: string;
+      superseded_run_ids: string[];
+    };
+    ReviewListDto: {
+      items: {
+        /** Format: uuid */
+        id: string;
+        /** Format: uuid */
+        pull_request_id: string;
+        /** Format: uuid */
+        repository_id: string;
+        /** @enum {string} */
+        state:
+          | 'RECEIVED'
+          | 'INDEXING'
+          | 'ANALYZING'
+          | 'REVIEWING'
+          | 'VERIFYING'
+          | 'PUBLISHING'
+          | 'COMPLETED'
+          | 'FAILED_INDEXING'
+          | 'FAILED_ANALYSIS'
+          | 'FAILED_REVIEW'
+          | 'FAILED_PUBLISH'
+          | 'SUPERSEDED'
+          | 'CANCELLED';
+        /** @enum {string} */
+        trigger: 'webhook' | 'manual' | 'reconciler' | 'cli';
+        base_sha: string;
+        head_sha: string;
+        /** Format: uuid */
+        superseded_by: string | null;
+        /** Format: uuid */
+        retry_of: string | null;
+        degraded_reviewers: string[];
+        created_at: string;
+        updated_at: string;
+        completed_at: string | null;
+      }[];
+      next_cursor: string[];
+    };
+    ReviewDetailDto: {
+      /** Format: uuid */
+      id: string;
+      /** Format: uuid */
+      pull_request_id: string;
+      /** Format: uuid */
+      repository_id: string;
+      /** @enum {string} */
+      state:
+        | 'RECEIVED'
+        | 'INDEXING'
+        | 'ANALYZING'
+        | 'REVIEWING'
+        | 'VERIFYING'
+        | 'PUBLISHING'
+        | 'COMPLETED'
+        | 'FAILED_INDEXING'
+        | 'FAILED_ANALYSIS'
+        | 'FAILED_REVIEW'
+        | 'FAILED_PUBLISH'
+        | 'SUPERSEDED'
+        | 'CANCELLED';
+      /** @enum {string} */
+      trigger: 'webhook' | 'manual' | 'reconciler' | 'cli';
+      base_sha: string;
+      head_sha: string;
+      /** Format: uuid */
+      superseded_by: string | null;
+      /** Format: uuid */
+      retry_of: string | null;
+      degraded_reviewers: string[];
+      created_at: string;
+      updated_at: string;
+      completed_at: string[];
+      failure: {
+        class: string;
+        detail: string | null;
+      } | null;
+      stages: {
+        state: string;
+        entered_at: string;
+        duration_ms: number | null;
+      }[];
+      reviewer_runs: {
+        /** Format: uuid */
+        id: string;
+        reviewer: string;
+        cluster_key: string | null;
+        /** @enum {string} */
+        state: 'pending' | 'running' | 'succeeded' | 'failed' | 'skipped' | 'timed_out';
+        error_class: string | null;
+        provider: string | null;
+        model: string | null;
+        prompt_version: string | null;
+        reviewer_version: string | null;
+        input_tokens: number;
+        output_tokens: number;
+        cost_usd_micros: number;
+        latency_ms: number | null;
+        started_at: string | null;
+        finished_at: string | null;
+      }[];
+      completeness: {
+        reviewers_planned: number;
+        reviewers_succeeded: number;
+        reviewers_failed: {
+          reviewer: string;
+          error_class: string | null;
+        }[];
+        not_executed: string[];
+      };
+      degraded: {
+        degraded: boolean;
+        reviewers: string[];
+        reasons: {
+          reviewer: string;
+          error_class: string | null;
+        }[];
+      };
+      risk_assessment: unknown;
+      change_summary: unknown;
+      coverage: {
+        reviewed_clusters: string[];
+        unreviewed_clusters: string[];
+      } | null;
+      finding_counts: {
+        by_state: {
+          [key: string]: number;
+        };
+        published: number;
+      };
+      trace_id: string[];
+    };
+    CancelReviewResultDto: {
+      /** Format: uuid */
+      review_run_id: string;
+      /** @enum {string} */
+      state:
+        | 'RECEIVED'
+        | 'INDEXING'
+        | 'ANALYZING'
+        | 'REVIEWING'
+        | 'VERIFYING'
+        | 'PUBLISHING'
+        | 'COMPLETED'
+        | 'FAILED_INDEXING'
+        | 'FAILED_ANALYSIS'
+        | 'FAILED_REVIEW'
+        | 'FAILED_PUBLISH'
+        | 'SUPERSEDED'
+        | 'CANCELLED';
+      cancelled_jobs: number;
+    };
+    FindingListDto: {
+      items: {
+        /** Format: uuid */
+        id: string;
+        /** Format: uuid */
+        candidate_id: string;
+        /** Format: uuid */
+        verified_id: string | null;
+        /** Format: uuid */
+        review_run_id: string;
+        /** @enum {string} */
+        lifecycle: 'published' | 'verified' | 'suppressed' | 'candidate';
+        state: string;
+        reviewer: string;
+        category: string;
+        title: string;
+        /** @enum {string} */
+        severity: 'critical' | 'high' | 'medium' | 'low' | 'info';
+        confidence: number | null;
+        band: string | null;
+        anchor: {
+          path: string;
+          /** @enum {string} */
+          side: 'head' | 'base';
+          start_line: number;
+          end_line: number;
+        };
+        suppression: {
+          reason: string;
+          detail: string | null;
+          stage: number | null;
+          duplicate_of: string | null;
+        } | null;
+        published: {
+          placement: string;
+          published_at: string;
+          provider_comment_id: string | null;
+        } | null;
+        created_at: string;
+      }[];
+    };
+    FindingDetailDto: {
+      /** Format: uuid */
+      id: string;
+      /** Format: uuid */
+      candidate_id: string;
+      /** Format: uuid */
+      verified_id: string | null;
+      /** Format: uuid */
+      review_run_id: string;
+      /** @enum {string} */
+      lifecycle: 'published' | 'verified' | 'suppressed' | 'candidate';
+      state: string;
+      reviewer: string;
+      category: string;
+      title: string;
+      /** @enum {string} */
+      severity: 'critical' | 'high' | 'medium' | 'low' | 'info';
+      confidence: number[];
+      band: string[];
+      anchor: {
+        path: string;
+        /** @enum {string} */
+        side: 'head' | 'base';
+        start_line: number;
+        end_line: number;
+      };
+      suppression: {
+        reason: string;
+        detail: string | null;
+        stage: number | null;
+        duplicate_of: string | null;
+      } | null;
+      published: {
+        placement: string;
+        published_at: string;
+        provider_comment_id: string | null;
+      } | null;
+      created_at: string;
+      explanation: string;
+      symbols: string[];
+      evidence: {
+        kind: string;
+        claimed_strength: string | null;
+        origin: unknown;
+        verification: unknown;
+        claim: string | null;
+        location: unknown;
+        symbols: unknown[];
+        relation: unknown;
+      }[];
+      confidence_detail: {
+        value: number;
+        components: {
+          [key: string]: number;
+        } | null;
+      } | null;
+      /** @enum {string} */
+      severity_candidate: 'critical' | 'high' | 'medium' | 'low' | 'info';
+      verification_version: number | null;
+      publication: {
+        /** Format: uuid */
+        id: string;
+        /** @enum {string} */
+        placement: 'inline' | 'summary';
+        path: string | null;
+        start_line: number | null;
+        end_line: number | null;
+        head_sha: string;
+        provider_review_id: string | null;
+        provider_comment_id: string | null;
+        published_at: string;
+      } | null;
+      /** Format: uuid */
+      repository_id: string;
+      /** Format: uuid */
+      pull_request_id: string;
+    };
+    FindingTraceDto: {
+      /** Format: uuid */
+      finding_id: string;
+      change: {
+        /** Format: uuid */
+        review_run_id: string;
+        /** Format: uuid */
+        pull_request_id: string;
+        base_sha: string;
+        head_sha: string;
+        anchor: {
+          path: string;
+          /** @enum {string} */
+          side: 'head' | 'base';
+          start_line: number;
+          end_line: number;
+        };
+      };
+      symbols: string[];
+      context_refs: {
+        path: string;
+        start_line: number | null;
+        end_line: number | null;
+        snapshot_id: string | null;
+      }[];
+      symbol_path: string[];
+      reviewer: {
+        type: string;
+        version: string | null;
+        model: string | null;
+        /** Format: uuid */
+        reviewer_run_id: string;
+      };
+      candidate: {
+        /** Format: uuid */
+        id: string;
+        state: string;
+        /** @enum {string} */
+        severity: 'critical' | 'high' | 'medium' | 'low' | 'info';
+        fingerprint: string;
+        created_at: string;
+      };
+      verification: {
+        /** Format: uuid */
+        verified_id: string;
+        version: number;
+        stages: {
+          stage: number;
+          /** @enum {string} */
+          outcome: 'pass' | 'fail' | 'inconclusive';
+          reason: string | null;
+        }[];
+        evidence: {
+          kind: string;
+          claimed_strength: string | null;
+          origin: unknown;
+          verification: unknown;
+          claim: string | null;
+          location: unknown;
+          symbols: unknown[];
+          relation: unknown;
+        }[];
+        confidence: number;
+        /** @enum {string} */
+        severity: 'critical' | 'high' | 'medium' | 'low' | 'info';
+      } | null;
+      dedup: {
+        merged_into: string | null;
+        merged_from: string[];
+      };
+      policy: {
+        band: string | null;
+        suppression: {
+          reason: string;
+          detail: string | null;
+          stage: number | null;
+          duplicate_of: string | null;
+        } | null;
+      };
+      publication: {
+        /** Format: uuid */
+        id: string;
+        /** @enum {string} */
+        placement: 'inline' | 'summary';
+        path: string | null;
+        start_line: number | null;
+        end_line: number | null;
+        head_sha: string;
+        provider_review_id: string | null;
+        provider_comment_id: string | null;
+        published_at: string;
+      } | null;
+      incomplete: boolean;
+    };
+    FeedbackRequestDto: {
+      /** @enum {string} */
+      verdict: 'useful' | 'false_positive' | 'already_handled' | 'not_relevant' | 'intentional';
+      comment?: string;
+      create_suppression?: {
+        /** @enum {string} */
+        kind: 'fingerprint' | 'symbol' | 'path';
+        reason: string;
+      };
+    };
+    FeedbackResultDto: {
+      feedback: {
+        /** Format: uuid */
+        id: string;
+        /** Format: uuid */
+        finding_id: string;
+        /** Format: uuid */
+        repository_id: string;
+        /** Format: uuid */
+        user_id: string | null;
+        /** @enum {string} */
+        source: 'web' | 'provider';
+        /** @enum {string} */
+        verdict: 'useful' | 'false_positive' | 'already_handled' | 'not_relevant' | 'intentional';
+        comment: string | null;
+        created_at: string;
+        updated_at: string;
+      };
+      suppression_id: string[];
+    };
+    FeedbackListDto: {
+      items: {
+        /** Format: uuid */
+        id: string;
+        /** Format: uuid */
+        finding_id: string;
+        /** Format: uuid */
+        repository_id: string;
+        /** Format: uuid */
+        user_id: string | null;
+        /** @enum {string} */
+        source: 'web' | 'provider';
+        /** @enum {string} */
+        verdict: 'useful' | 'false_positive' | 'already_handled' | 'not_relevant' | 'intentional';
+        comment: string | null;
+        created_at: string;
+        updated_at: string;
+      }[];
+    };
+    FeedbackSummaryDto: {
+      /** Format: uuid */
+      repository_id: string;
+      since: string;
+      total: number;
+      by_verdict: {
+        [key: string]: number;
+      };
+      acceptance_rate: number[];
+      false_positive_rate: number[];
+      by_reviewer: {
+        [key: string]: {
+          total: number;
+          by_verdict: {
+            [key: string]: number;
+          };
+          acceptance_rate: number | null;
+          false_positive_rate: number | null;
+        };
+      };
+    };
+    GraphResponseDto: {
+      snapshot_id: string;
+      truncated: boolean;
+    };
+    SubgraphRequestDto: {
+      seeds: string[];
+      /** @default 1 */
+      depth: number;
+      kinds?: string[];
+      /** @default 200 */
+      max_nodes: number;
+      /** Format: uuid */
+      snapshot?: string;
+    };
+    PathResponseDto: {
+      snapshot_id: string;
+      paths: {
+        nodes: {
+          key: string;
+          id: string;
+          name: string;
+          qualified_name: string;
+          kind: string;
+          path: string | null;
+          line: number | null;
+        }[];
+        edges: {
+          source: string;
+          target: string;
+          kind: string;
+          confidence: number;
+          resolved_by: string;
+        }[];
+        min_confidence: number;
+      }[];
+      truncated: boolean;
+    };
+    ImpactResponseDto: {
+      review_run_id: string;
+      symbol_key: string;
+      seed_id: string;
+      /** @enum {string} */
+      side: 'base' | 'head';
+      untested: boolean;
+      /** @enum {string|null} */
+      skipped: 'cosmetic' | 'generated' | null;
+      nodes: {
+        [key: string]: {
+          node_id: string;
+          name: string;
+          kind: string | null;
+        };
+      };
+      relations: {
+        [key: string]: {
+          key: string;
+          node_id: string;
+          name: string;
+          kind: string;
+          relation: string;
+          distance: number;
+          min_confidence: number;
+          alt_paths: number;
+          weak: boolean;
+          missing_on_head: boolean;
+          path: {
+            from: string;
+            edge: string;
+            to: string;
+            confidence: number;
+            /** @enum {string} */
+            graph: 'base' | 'head';
+          }[];
+        }[];
+      };
+      truncation: {
+        relation: string | null;
+        limit: number;
+        dropped: number;
+        /** @enum {string} */
+        reason: 'limit' | 'depth' | 'total_cap' | 'seed_missing';
+      }[];
+      truncated: boolean;
+    };
+    SourceExcerptDto: {
+      snapshot_id: string;
+      path: string;
+      start: number;
+      end: number;
+      text: string;
+      redacted: boolean;
+      truncated: boolean;
+    };
   };
   responses: never;
   parameters: never;
@@ -389,6 +1354,55 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+  AuditController_list: {
+    parameters: {
+      query?: {
+        action?: string;
+        actor?: string;
+        from?: string;
+        to?: string;
+        cursor?: string;
+        limit?: number;
+      };
+      header?: never;
+      path: {
+        organizationId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['AuditPageDto'];
+        };
+      };
+    };
+  };
+  AuditController_verify: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        organizationId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['AuditVerifyDto'];
+        };
+      };
+    };
+  };
   AuthController_login: {
     parameters: {
       query?: never;
@@ -650,6 +1664,455 @@ export interface operations {
           [name: string]: unknown;
         };
         content?: never;
+      };
+    };
+  };
+  ReviewsController_listPullRequests: {
+    parameters: {
+      query?: {
+        state?: 'open' | 'closed' | 'all';
+        limit?: number;
+        cursor?: string;
+      };
+      header?: never;
+      path: {
+        repoId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['PullRequestListDto'];
+        };
+      };
+    };
+  };
+  ReviewsController_getPullRequest: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        pullRequestId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['PullRequestDto'];
+        };
+      };
+    };
+  };
+  ReviewsController_startReview: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        pullRequestId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      202: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['StartReviewResultDto'];
+        };
+      };
+    };
+  };
+  ReviewsController_listReviews: {
+    parameters: {
+      query?: {
+        limit?: number;
+        cursor?: string;
+      };
+      header?: never;
+      path: {
+        pullRequestId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ReviewListDto'];
+        };
+      };
+    };
+  };
+  ReviewsController_getReview: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        pullRequestId: string;
+        reviewId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ReviewDetailDto'];
+        };
+      };
+    };
+  };
+  ReviewsController_cancel: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        reviewId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['CancelReviewResultDto'];
+        };
+      };
+    };
+  };
+  FindingsController_list: {
+    parameters: {
+      query?: {
+        state?: 'published' | 'verified' | 'suppressed' | 'all';
+        severity?: string;
+        reviewer?: string;
+      };
+      header?: never;
+      path: {
+        reviewId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['FindingListDto'];
+        };
+      };
+    };
+  };
+  FindingsController_detail: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        findingId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['FindingDetailDto'];
+        };
+      };
+    };
+  };
+  FindingsController_trace: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        findingId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['FindingTraceDto'];
+        };
+      };
+    };
+  };
+  FeedbackController_list: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        findingId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['FeedbackListDto'];
+        };
+      };
+    };
+  };
+  FeedbackController_submit: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        findingId: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['FeedbackRequestDto'];
+      };
+    };
+    responses: {
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['FeedbackResultDto'];
+        };
+      };
+    };
+  };
+  FeedbackController_summary: {
+    parameters: {
+      query?: {
+        since?: string;
+      };
+      header?: never;
+      path: {
+        repoId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['FeedbackSummaryDto'];
+        };
+      };
+    };
+  };
+  GraphController_symbols: {
+    parameters: {
+      query?: {
+        q?: string;
+        kind?: string;
+        snapshot?: string;
+        limit?: number;
+      };
+      header?: never;
+      path: {
+        repoId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['GraphResponseDto'];
+        };
+      };
+    };
+  };
+  GraphController_symbol: {
+    parameters: {
+      query?: {
+        snapshot?: string;
+      };
+      header?: never;
+      path: {
+        repoId: string;
+        key: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['GraphResponseDto'];
+        };
+      };
+    };
+  };
+  GraphController_neighbors: {
+    parameters: {
+      query?: {
+        dir?: 'in' | 'out';
+        kinds?: string;
+        min_confidence?: number;
+        snapshot?: string;
+      };
+      header?: never;
+      path: {
+        repoId: string;
+        key: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['GraphResponseDto'];
+        };
+      };
+    };
+  };
+  GraphController_subgraph: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        repoId: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['SubgraphRequestDto'];
+      };
+    };
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['GraphResponseDto'];
+        };
+      };
+    };
+  };
+  GraphController_path: {
+    parameters: {
+      query: {
+        from: string;
+        to: string;
+        max_depth?: number;
+        kinds?: string;
+        all?: 'true' | 'false';
+        max_paths?: number;
+        snapshot?: string;
+      };
+      header?: never;
+      path: {
+        repoId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['PathResponseDto'];
+        };
+      };
+    };
+  };
+  GraphController_impact: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        reviewId: string;
+        symbolKey: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ImpactResponseDto'];
+        };
+      };
+    };
+  };
+  GraphController_source: {
+    parameters: {
+      query: {
+        path: string;
+        start: number;
+        end: number;
+        snapshot?: string;
+      };
+      header?: never;
+      path: {
+        repoId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['SourceExcerptDto'];
+        };
       };
     };
   };

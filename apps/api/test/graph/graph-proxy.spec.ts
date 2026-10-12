@@ -226,6 +226,29 @@ describe('graph proxy (API-011)', () => {
     await get(`/repositories/${REPO}/graph/path?from=a&to=b&max_depth=7`).expect(400);
   });
 
+  it('path_forwards_kinds_all_and_max_paths', async () => {
+    await get(
+      `/repositories/${REPO}/graph/path?from=a&to=b&max_depth=5&kinds=CALLS,IMPORTS&all=true&max_paths=5`,
+    ).expect(200);
+    const forwarded = new URL(engine.requests[0]!.url, 'http://engine').searchParams;
+    expect(forwarded.get('kinds')).toBe('CALLS,IMPORTS');
+    expect(forwarded.get('all')).toBe('true');
+    expect(forwarded.get('max_paths')).toBe('5');
+    expect(forwarded.get('max_depth')).toBe('5');
+
+    // Plain shortest-path queries do not send the multi-path parameters.
+    engine.requests.length = 0;
+    await get(`/repositories/${REPO}/graph/path?from=c&to=d`).expect(200);
+    const plain = new URL(engine.requests[0]!.url, 'http://engine').searchParams;
+    expect(plain.has('all')).toBe(false);
+    expect(plain.has('kinds')).toBe(false);
+    expect(plain.has('max_paths')).toBe(false);
+
+    await get(`/repositories/${REPO}/graph/path?from=a&to=b&all=maybe`).expect(400);
+    await get(`/repositories/${REPO}/graph/path?from=a&to=b&max_paths=11`).expect(400);
+    await get(`/repositories/${REPO}/graph/path?from=a&to=b&kinds=CALLS;DROP`).expect(400);
+  });
+
   it('engine down answers 503', async () => {
     engine.fail.status = 500;
     const res = await get(`/repositories/${REPO}/graph/symbols/unknown-key`).expect(503);
