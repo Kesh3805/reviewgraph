@@ -13,8 +13,20 @@ concurrency:
   group: integration-${{ github.ref }}
   cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
-# Service containers are provided natively by the runner; no local Docker is needed to author this.
+# Backing services are runner service containers (loopback ports only, no persisted state).
+# Nothing here, and nothing a developer runs locally, requires Docker on a developer machine.
 jobs:
+  guard:
+    name: guard
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with: { node-version: 24 }
+      - name: Integration gate and quarantine budget
+        run: node scripts/ci/check-integration-gate.mjs
+
   api:
     name: api
     runs-on: ubuntu-24.04
@@ -46,11 +58,15 @@ jobs:
           node-version: 24
           cache: pnpm
       - run: pnpm install --frozen-lockfile --ignore-scripts
+      - name: Wait for the stack
+        run: bash scripts/ci/wait-for-stack.sh --timeout 180 postgres=127.0.0.1:35432 redis=127.0.0.1:36379
       - name: Apply engine migrations
         run: |
+          start=$SECONDS
           for f in $(ls engine/migrations/*.sql | sort); do
             PGPASSWORD=reviewgraph-test psql -v ON_ERROR_STOP=1 -h 127.0.0.1 -p 35432 -U reviewgraph -d reviewgraph -f "$f"
           done
+          echo "migrations applied in $((SECONDS - start))s" >> "$GITHUB_STEP_SUMMARY"
       - name: Kysely type drift
         run: node scripts/db-types.mjs --check --database-url "$RG_TEST_DATABASE_URL"
       - name: Regenerate Kysely types on drift
@@ -63,7 +79,69 @@ jobs:
           name: kysely-generated
           path: apps/api/src/db/generated.ts
       - name: API integration tests
-        run: pnpm -F @reviewgraph/api test:integration
+        run: |
+          start=$SECONDS
+          pnpm -F @reviewgraph/api test:integration
+          echo "api integration suite: $((SECONDS - start))s" >> "$GITHUB_STEP_SUMMARY"
+      - name: Collect service logs
+        if: failure()
+        run: bash scripts/ci/collect-logs.sh ci-logs
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        if: failure()
+        with:
+          name: integration-api-logs
+          path: ci-logs
+          if-no-files-found: ignore
+
+  security:
+    name: security
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    services:
+      postgres:
+        image: postgres:16.15-alpine
+        env:
+          POSTGRES_USER: reviewgraph
+          POSTGRES_PASSWORD: reviewgraph-test
+          POSTGRES_DB: reviewgraph
+        ports: ['35432:5432']
+        options: >-
+          --health-cmd "pg_isready -U reviewgraph -d reviewgraph"
+          --health-interval 2s --health-timeout 3s --health-retries 60
+      redis:
+        image: redis:7.4.9-alpine
+        ports: ['36379:6379']
+        options: >-
+          --health-cmd "redis-cli ping" --health-interval 2s --health-timeout 3s --health-retries 60
+    env:
+      RG_TEST_DATABASE_URL: postgres://reviewgraph:reviewgraph-test@127.0.0.1:35432/reviewgraph
+      RG_TEST_REDIS_URL: redis://127.0.0.1:36379
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile --ignore-scripts
+      - name: Wait for the stack
+        run: bash scripts/ci/wait-for-stack.sh --timeout 180 postgres=127.0.0.1:35432 redis=127.0.0.1:36379
+      - name: Apply engine migrations
+        run: |
+          for f in $(ls engine/migrations/*.sql | sort); do
+            PGPASSWORD=reviewgraph-test psql -v ON_ERROR_STOP=1 -h 127.0.0.1 -p 35432 -U reviewgraph -d reviewgraph -f "$f"
+          done
+      - name: Tenant isolation suites
+        run: pnpm -F @reviewgraph/api test:security
+      - name: Collect service logs
+        if: failure()
+        run: bash scripts/ci/collect-logs.sh ci-logs
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        if: failure()
+        with:
+          name: integration-security-logs
+          path: ci-logs
+          if-no-files-found: ignore
 
   rust:
     name: rust
@@ -100,6 +178,10 @@ jobs:
       - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2
         with:
           workspaces: engine
+      - name: Wait for the stack
+        run: >-
+          bash scripts/ci/wait-for-stack.sh --timeout 180
+          postgres=127.0.0.1:35432 redis=127.0.0.1:36379 qdrant=http://127.0.0.1:36333/readyz
       - name: Apply engine migrations
         run: |
           for f in $(ls engine/migrations/*.sql | sort); do
@@ -107,4 +189,16 @@ jobs:
           done
       - name: Rust integration tests
         working-directory: engine
-        run: cargo test --workspace --features integration --locked
+        run: |
+          start=$SECONDS
+          cargo test --workspace --features integration --locked
+          echo "rust integration suite: $((SECONDS - start))s" >> "$GITHUB_STEP_SUMMARY"
+      - name: Collect service logs
+        if: failure()
+        run: bash scripts/ci/collect-logs.sh ci-logs
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        if: failure()
+        with:
+          name: integration-rust-logs
+          path: ci-logs
+          if-no-files-found: ignore

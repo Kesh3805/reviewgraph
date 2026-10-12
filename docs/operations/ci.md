@@ -33,3 +33,21 @@ Jobs `lint`, `typecheck`, `unit`, `format`, Node 24 and pnpm 10.15, ubuntu-24.04
 - Coverage thresholds are advisory until a baseline is recorded; enforcement is a follow-up.
 - Locally: `pnpm lint:ts`, `pnpm test:ts`. The JUnit and coverage outputs are opt-in through
   `JUNIT_DIR` and `COVERAGE=1`, so plain local runs are unchanged.
+
+## Integration (`integration.yml`)
+
+Jobs `guard`, `api`, `security`, `rust`. Backing services are runner service containers bound to
+loopback: Postgres 16 on 35432, Redis on 36379 and (Rust job) Qdrant on 36333, with no persisted
+state. Each job waits for its services with `scripts/ci/wait-for-stack.sh` (fails naming every
+service that did not come up), applies `engine/migrations/*.sql` in order, runs its suite and, on
+failure, uploads container logs and a Postgres slow-query excerpt from `scripts/ci/collect-logs.sh`.
+
+- `guard` runs `scripts/ci/check-integration-gate.mjs`: every Rust test target that reads
+  `DATABASE_URL` must be behind the `integration` feature or a skip guard, and the number of
+  `#[ignore = "quarantine:ISSUE-n"]` tests must not exceed `scripts/ci/quarantine-budget.txt`.
+- `api` also checks Kysely type drift (`node scripts/db-types.mjs --check`).
+- `security` runs the tenant isolation suites (`pnpm -F @reviewgraph/api test:security`).
+- Locally: install Postgres 16, Redis 7 and Qdrant natively, create the `reviewgraph` role and
+  database with the test credentials above, then run `pnpm test:integration`. No Docker is used.
+- Deviation from the task text: the object-store service for SEC-007/SEC-009 tests is not part of
+  these jobs because it would need Docker Compose; those tests run against their in-memory fake.

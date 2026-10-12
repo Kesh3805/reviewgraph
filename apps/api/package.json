@@ -10,6 +10,7 @@
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "node --no-warnings --experimental-vm-modules node_modules/jest/bin/jest.js",
     "test:integration": "node --no-warnings --experimental-vm-modules node_modules/jest/bin/jest.js -c jest.integration.config.ts",
+    "test:security": "node --no-warnings --experimental-vm-modules node_modules/jest/bin/jest.js -c jest.integration.config.ts --testPathPatterns integration/security integration/rls",
     "db:types": "node ../../scripts/db-types.mjs",
     "db:types:check": "node ../../scripts/db-types.mjs --check"
   },
