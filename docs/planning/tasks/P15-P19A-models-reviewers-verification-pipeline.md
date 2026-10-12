@@ -3335,7 +3335,7 @@ CREATE TABLE verification_cache (
 ---
 
 ### DED-001 — Root-cause fingerprint (symbol + category + normalized claim)
-Status: ☐
+Status: ☑
 
 - **Task ID:** DED-001
 - **Title:** Root-cause fingerprint v2: `symbol + category + normalized claim`, excluding severity, line numbers and reviewer
