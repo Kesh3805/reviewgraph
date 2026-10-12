@@ -1445,7 +1445,7 @@ Status: ☑
 ---
 
 ### RISK-005 — Risk effects
-Status: ☐
+Status: ☑
 
 - **Task ID:** RISK-005
 - **Title:** Map risk level and categories to effects: reviewers, depth, context budget, model tier, verification depth, confidence threshold, test inspection
