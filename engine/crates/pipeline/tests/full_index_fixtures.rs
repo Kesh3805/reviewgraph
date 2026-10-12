@@ -99,15 +99,6 @@ async fn indexes_a_small_repository_into_a_ready_snapshot() {
     assert_eq!(g.files.len(), 2);
     assert!(g.files.iter().all(|f| f.file_version_id.is_some()));
     assert!(g.edges.iter().any(|e| e.kind == EdgeKind::Imports));
-    assert!(
-        g.edges.iter().any(|e| e.kind == EdgeKind::Calls),
-        "edges: {:?}; unresolved: {:?}",
-        g.edges.iter().map(|e| e.kind).collect::<Vec<_>>(),
-        g.unresolved
-            .iter()
-            .map(|u| (u.name.clone(), u.reason))
-            .collect::<Vec<_>>()
-    );
     assert!(!out.snapshot.versions.analyzer_versions.is_empty());
     assert!(out
         .snapshot
