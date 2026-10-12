@@ -32,8 +32,10 @@ const LAYOUT_DIRS: &[&str] = &[
 
 const REVIEW_GITIGNORE: &str = "*\n!.gitignore\n!config.yaml\n";
 
-const STARTER_CONFIG: &str =
-    "# ReviewGraph repository configuration. This file is yours: init never overwrites it.\n\
+/// The starter `.review/config.yaml` (schema v1, POL-001). The `profile` crate validates it.
+pub const STARTER_CONFIG: &str = "# yaml-language-server: $schema=https://raw.githubusercontent.com/Kesh3805/reviewgraph/main/packages/contracts/schemas/ReviewConfigV1.schema.json\n\
+# ReviewGraph repository configuration. This file is yours: init never overwrites it.\n\
+# Every key is documented in docs/reviewers/config-reference.md.\n\
 version: 1\n\
 \n\
 # Extra ignore globs, applied on top of .gitignore and .reviewignore.\n\
@@ -44,9 +46,23 @@ generated:\n\
 \x20 include: []\n\
 \x20 exclude: []\n\
 \n\
-reviewers: {}\n\
-confidence: {}\n\
-rules: []\n";
+review:\n\
+\x20 reviewers: { correctness: true, security: true, tests: true, performance: true, architecture: true, maintainability: false }\n\
+\x20 confidence: { minimum_publish: 0.72 }\n\
+\x20 # Files that are indexed but never reviewed.\n\
+\x20 generated: { ignore: [] }\n\
+\x20 # Glob -> critical | high | medium | low.\n\
+\x20 risk: { paths: {} }\n\
+\n\
+# Layer name -> file globs, referenced by rules.forbidden_dependencies.\n\
+architecture:\n\
+\x20 layers: {}\n\
+\n\
+rules:\n\
+\x20 forbidden_dependencies: []\n\
+\n\
+suppressions: []\n\
+knowledge_sources: []\n";
 
 /// The parts of `.review/config.yaml` that init consumes.
 #[derive(Debug, Clone, Default, Deserialize)]

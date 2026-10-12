@@ -9,6 +9,39 @@ publish.workspace = true
 [lints]
 workspace = true
 
+[features]
+# PostgreSQL adapters for the profile, config and policy stores.
+pg = ["dep:sqlx"]
+# The shared ProfileStore conformance suite; adapters run it from their tests.
+conformance = []
+# Database-backed tests; need TEST_DATABASE_URL (or DATABASE_URL). Plain `cargo test` never
+# touches a database.
+integration = ["pg", "conformance"]
+
 [dependencies]
 review-core.workspace = true
+repository.workspace = true
+analysis-ir.workspace = true
+codegraph.workspace = true
 thiserror.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+serde_yaml.workspace = true
+schemars.workspace = true
+globset.workspace = true
+blake3.workspace = true
+hex.workspace = true
+chrono.workspace = true
+tracing.workspace = true
+rayon.workspace = true
+uuid.workspace = true
+opentelemetry.workspace = true
+sqlx = { workspace = true, optional = true }
+
+[dev-dependencies]
+profile = { path = ".", features = ["conformance"] }
+tokio.workspace = true
+proptest.workspace = true
+tempfile.workspace = true
+pretty_assertions.workspace = true
+review-test-support.workspace = true
