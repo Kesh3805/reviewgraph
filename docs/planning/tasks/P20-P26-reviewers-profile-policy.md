@@ -114,7 +114,7 @@ Status: ☑
 ---
 
 ### REV-S-002 — Security reviewer with trust-boundary context selection
-Status: ☐
+Status: ◐
 
 - **Task ID:** REV-S-002
 - **Title:** Security reviewer with trust-boundary context selection
@@ -252,7 +252,7 @@ Status: ☐
 ---
 
 ### REV-T-001 — Test reviewer
-Status: ☐
+Status: ◐
 
 - **Task ID:** REV-T-001
 - **Title:** Test reviewer (changed behavior without tests, stale mocks, missing negative tests)
@@ -313,7 +313,7 @@ Status: ☐
 ---
 
 ### REV-T-002 — Deterministic pre-check: changed public symbol with zero TESTS edges
-Status: ☐
+Status: ◐
 
 - **Task ID:** REV-T-002
 - **Title:** Deterministic pre-check (changed public symbol with zero TESTS edges)
@@ -358,7 +358,7 @@ Status: ☐
 ---
 
 ### REV-A-001 — Architecture reviewer using profile and rules
-Status: ☐
+Status: ◐
 
 - **Task ID:** REV-A-001
 - **Title:** Architecture reviewer using profile and rules
@@ -422,7 +422,7 @@ Status: ☐
 ---
 
 ### REV-A-002 — Deterministic boundary-violation and cycle detector
-Status: ☐
+Status: ◐
 
 - **Task ID:** REV-A-002
 - **Title:** Deterministic boundary-violation and cycle detector
@@ -469,7 +469,7 @@ Status: ☐
 ---
 
 ### REV-P-001 — Performance reviewer (concrete execution path required)
-Status: ☐
+Status: ◐
 
 - **Task ID:** REV-P-001
 - **Title:** Performance reviewer (concrete execution path required)
@@ -517,7 +517,7 @@ Status: ☐
 ---
 
 ### REV-P-002 — Deterministic N+1 and IO-in-loop detector
-Status: ☐
+Status: ◐
 
 - **Task ID:** REV-P-002
 - **Title:** Deterministic N+1 / IO-in-loop detector
@@ -562,7 +562,7 @@ Status: ☐
 ---
 
 ### REV-M-001 — Maintainability reviewer (high threshold ≥ 0.9)
-Status: ☐
+Status: ◐
 
 - **Task ID:** REV-M-001
 - **Title:** Maintainability reviewer (high threshold ≥0.9)

@@ -11,19 +11,25 @@
 //! - [`normalize`], [`claim_text`]: candidate normalisation (REV-C-003).
 //! - [`security`]: security prompt v1 and schema (REV-S-001).
 
+pub mod architecture;
 pub mod claim_text;
 pub mod context;
 pub mod correctness;
 pub mod error;
 pub mod focus;
 pub mod input;
+pub mod maintainability;
 pub mod normalize;
 pub mod output;
+pub mod performance;
+pub mod prechecks;
 pub mod prompts;
 pub mod refs;
 pub mod reviewer;
 pub mod routing;
 pub mod security;
+pub mod specialist;
+pub mod tests_reviewer;
 
 pub use context::{ContextSnapshot, ReviewContext};
 pub use correctness::CorrectnessReviewer;
