@@ -1,0 +1,61 @@
+{
+  "description": "Paired base/head trees, one file per classification: unchanged, signature-only, body-only, attribute-only, combined, added, removed, reordered, reformatted and an ordinal collision, plus a created and a deleted file.",
+  "unchanged": [
+    "ts:src/unchanged#keep/function",
+    "ts:src/attribute#Mailer.send/method",
+    "ts:src/added#keepA/function",
+    "ts:src/removed#keepB/function",
+    "ts:src/reordered#first/function",
+    "ts:src/reordered#second/function",
+    "ts:src/reformatted#format/function",
+    "ts:src/collision#duplicate/function~1"
+  ],
+  "modified": [
+    {
+      "id": "ts:src/signature#search/function",
+      "flags": [
+        "signature"
+      ]
+    },
+    {
+      "id": "ts:src/body#normalize/function",
+      "flags": [
+        "body"
+      ]
+    },
+    {
+      "id": "ts:src/attribute#Mailer/class",
+      "flags": [
+        "attributes"
+      ]
+    },
+    {
+      "id": "ts:src/combined#lookup/function",
+      "flags": [
+        "signature",
+        "body"
+      ]
+    },
+    {
+      "id": "ts:src/collision#duplicate/function",
+      "flags": [
+        "body"
+      ]
+    }
+  ],
+  "added": [
+    "ts:src/added#brandNew/function",
+    "ts:src/newfile#OrdersService/class",
+    "ts:src/newfile#OrdersService.total/method"
+  ],
+  "removed": [
+    "ts:src/removed#goneHelper/function",
+    "ts:src/oldfile#LegacyService/class",
+    "ts:src/oldfile#LegacyService.total/method"
+  ],
+  "moved_range": [
+    "ts:src/reordered#first/function",
+    "ts:src/reordered#second/function",
+    "ts:src/reformatted#format/function"
+  ]
+}
