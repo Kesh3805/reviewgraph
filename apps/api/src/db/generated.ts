@@ -526,6 +526,7 @@ export interface ReviewRuns {
   base_sha: string;
   budget_usage: Generated<Json>;
   completed_at: Timestamp | null;
+  coverage: Generated<Json>;
   created_at: Generated<Timestamp>;
   degraded_reviewers: Generated<string[]>;
   depth: Generated<string>;
