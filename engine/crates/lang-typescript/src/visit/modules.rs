@@ -112,7 +112,21 @@ impl<'a, 't> Extractor<'a, 't> {
     // ---- ESM imports ----
 
     fn esm_import(&mut self, stmt: Node<'t>) {
-        let Some(source) = stmt.child_by_field_name(field::SOURCE) else {
+        // `import x = require('y')` keeps its string inside the `import_require_clause`.
+        let source = stmt.child_by_field_name(field::SOURCE).or_else(|| {
+            let mut c = stmt.walk();
+            let clause = stmt
+                .named_children(&mut c)
+                .find(|n| n.kind() == kind::IMPORT_REQUIRE_CLAUSE);
+            clause.and_then(|cl| {
+                let mut c2 = cl.walk();
+                let found = cl
+                    .named_children(&mut c2)
+                    .find(|n| n.kind() == kind::STRING);
+                found
+            })
+        });
+        let Some(source) = source else {
             return;
         };
         let Some(specifier) = self.specifier(source) else {
