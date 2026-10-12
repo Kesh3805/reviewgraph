@@ -8,6 +8,7 @@
 pub mod blob;
 pub mod input_hash;
 pub mod metrics;
+pub mod review_state;
 pub mod run_claims;
 pub mod stage_outputs;
 
@@ -18,6 +19,7 @@ use uuid::Uuid;
 
 pub use blob::{BlobStore, MemoryBlobStore};
 pub use input_hash::{canonical_json, hash_hex, input_hash, InputHashParts};
+pub use review_state::{PgReviewStateStore, ReviewStateStore, TransitionResult};
 pub use run_claims::{NewRun, RunClaims, RunRow, REUSABLE_ACROSS_RETRY};
 pub use stage_outputs::{
     MemoryStageStore, NewStageOutput, PgStageStore, PutOutcome, StageStatus, StageStore,
