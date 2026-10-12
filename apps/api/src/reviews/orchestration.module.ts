@@ -1,7 +1,8 @@
 import { Module } from '@nestjs/common';
 import { RepositoriesModule } from '../repositories/repositories.module';
 import { PullRequestSyncService } from './pull-request-sync.service';
-import { REVIEW_JOBS, UnwiredReviewJobs } from './review-jobs.port';
+import { PgJobQueue } from '../jobs/pg-job-queue';
+import { REVIEW_JOBS } from './review-jobs.port';
 import { ReviewOrchestrator } from './review-orchestrator';
 import { SupersessionService } from './supersession.service';
 
@@ -15,8 +16,8 @@ import { SupersessionService } from './supersession.service';
     PullRequestSyncService,
     SupersessionService,
     ReviewOrchestrator,
-    // API-007 replaces this with the adapter over the shared jobs table.
-    { provide: REVIEW_JOBS, useClass: UnwiredReviewJobs },
+    // The adapter over the shared jobs table (API-007, global JobsModule).
+    { provide: REVIEW_JOBS, useExisting: PgJobQueue },
   ],
   exports: [PullRequestSyncService, SupersessionService, ReviewOrchestrator, REVIEW_JOBS],
 })

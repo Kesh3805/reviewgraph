@@ -29,6 +29,8 @@ export interface AuditLog {
   action: string;
   actor_id: string | null;
   actor_type: string;
+  chain_seq: Int8 | null;
+  dedupe_key: string | null;
   hash: Buffer | null;
   id: Generated<string>;
   metadata: Generated<Json>;
@@ -84,6 +86,19 @@ export interface EdgeKinds {
   name: string;
 }
 
+export interface Feedback {
+  comment: string | null;
+  created_at: Generated<Timestamp>;
+  finding_id: string;
+  id: Generated<string>;
+  organization_id: string;
+  repository_id: string;
+  source: string;
+  updated_at: Generated<Timestamp>;
+  user_id: string | null;
+  verdict: string;
+}
+
 export interface FileVersions {
   analyzer_version: string;
   content_hash: Buffer;
@@ -127,6 +142,26 @@ export interface GraphEdges {
   snapshot_id: string;
   source_key: Buffer;
   target_key: Buffer;
+}
+
+export interface Jobs {
+  attempts: Generated<number>;
+  created_at: Generated<Timestamp>;
+  id: Generated<string>;
+  idempotency_key: string;
+  last_error: string | null;
+  locked_by: string | null;
+  locked_until: Timestamp | null;
+  max_attempts: Generated<number>;
+  organization_id: string;
+  payload: Json;
+  priority: Generated<number>;
+  queue: string;
+  rate_limit_requeues: Generated<number>;
+  run_after: Generated<Timestamp>;
+  state: Generated<string>;
+  trace_parent: string | null;
+  updated_at: Generated<Timestamp>;
 }
 
 export interface Memberships {
@@ -543,9 +578,11 @@ export interface DB {
   candidate_findings: CandidateFindings;
   check_runs: CheckRuns;
   edge_kinds: EdgeKinds;
+  feedback: Feedback;
   file_versions: FileVersions;
   finding_feedback: FindingFeedback;
   graph_edges: GraphEdges;
+  jobs: Jobs;
   memberships: Memberships;
   model_cache: ModelCache;
   model_calls: ModelCalls;

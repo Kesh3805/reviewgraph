@@ -434,7 +434,21 @@ Status: ☑
 ---
 
 ### API-007 — TS JobQueue adapter (same PG jobs table, transactional enqueue)
-Status: ☐
+Status: ◐
+
+> **Implementation note:** The `jobs` table did not exist yet, so this task adds
+> `engine/migrations/20261008100000_jobs.sql` exactly as specified by PIPE-001 (the Rust lane reuses
+> it). The adapter lives in `src/jobs/{job-queue.ts,pg-job-queue.ts,consumer.ts,job-store.ts,payloads.ts,jobs.module.ts}`
+> and also implements the GH-013 `JobCanceller`. Payload schemas are zod schemas in `payloads.ts`
+> (the contracts package exports JSON Schema from Rust types, and the Rust payload structs arrive
+> with PIPE-001). LISTEN uses a dedicated pool client and polling covers lost notifications.
+> Concurrency defaults live in `DEFAULT_CONCURRENCY` (`review-publish: 4`) and can be overridden per
+> `consume` call. `ts_and_rust_claim_interoperate` runs the target-architecture claim statement
+> verbatim on a plain connection; running it through the Rust engine test binary waits for
+> PIPE-001, which is why the task stays ◐. `PgJobQueue` also backs SUP-001's `REVIEW_JOBS` port,
+> and `PublishWorker` registers `PublishConsumer.handle` on `review-publish` with concurrency 4 at
+> boot (off under NODE_ENV=test unless `QUEUE_CONSUMERS_ENABLED=true`). Worker transactions set
+> `app.job_worker=on` for the `jobs` RLS policy (SEC-001).
 
 - **Task ID:** API-007
 - **Title:** TS JobQueue adapter (same PG jobs table, transactional enqueue)
@@ -553,7 +567,15 @@ Status: ☐
 ---
 
 ### API-009 — Reviews API
-Status: ☐
+Status: ☑
+
+> **Implementation note:** The manual trigger calls SUP-001's `SupersessionService.startInTx` at
+> the stored head with the suffix `manual:{yyyyMMddHHmm}` (one per head and minute), in the same
+> transaction as its audit row; an active run of the same head is returned rather than replaced
+> (SUP-001 semantics), so "supersedes the running run" applies to runs of an older head. The
+> response's `job_id` is the run's `pr-review` job. Stage timings, risk assessment, change summary and coverage are read
+> from `review_runs.provenance` (`stages`, `risk_assessment`, `change_summary`, `coverage`) until
+> PIPE-007 records transitions; they are empty or null before that.
 
 - **Task ID:** API-009
 - **Title:** Reviews API
@@ -603,7 +625,18 @@ Status: ☐
 ---
 
 ### API-010 — Findings API
-Status: ☐
+Status: ☑
+
+> **Implementation note:** There is no single `findings` table: a finding is the
+> `candidate_findings` row joined with its `verified_findings` and `published_findings` rows. It is
+> addressed by its verified id, or by its candidate id when it never reached verification
+> (suppressed early); migration `20261008100010_finding_resolution.sql` makes `resolve_org` accept
+> both. Confidence components are read from `verified_findings.stage_outcomes.confidence_components`
+> when VER-009 records them (null until then). `FindingDetail` and `FindingTrace` are zod schemas
+> published through the OpenAPI document (`packages/contracts/openapi/api.json`); evidence is
+> reduced to the typed DOM-007 fields, so `reasoning_artifacts`, prompts and raw output are never
+> selected or returned. The PRD section 86 path is checked against a seeded fixture finding; the
+> end-to-end check against the auth-bypass E2E run belongs to the E2E tasks.
 
 - **Task ID:** API-010
 - **Title:** Findings API
@@ -643,7 +676,17 @@ Status: ☐
 ---
 
 ### API-011 — Graph proxy API
-Status: ☐
+Status: ◐
+
+> **Implementation note:** The proxy, the typed `EngineClient` (Node's built-in fetch, which is
+> undici with keep-alive, and a 5 s timeout; no extra dependency), the server-side tenant claims,
+> the Redis query cache, the budgets, the redaction of excerpts (`src/graph/redact.ts`, applied on
+> top of the engine's own) and the source-access audit are done and tested against a stand-in
+> engine HTTP server that follows the API-013 contract. Snapshot resolution goes through the
+> `GraphScope` port: graph snapshots (GS-005) are not in the schema yet, so the database
+> implementation has no default snapshot and validates no snapshot id (graph queries answer 404
+> until GS-005 replaces `defaultSnapshot`/`snapshotBelongsTo`). Excerpts are never cached in Redis.
+> Still open: the acceptance run against the real engine (API-013) and the GX-002 explorer.
 
 - **Task ID:** API-011
 - **Title:** Graph proxy API
@@ -691,7 +734,17 @@ Status: ☐
 ---
 
 ### API-012 — Feedback API
-Status: ☐
+Status: ◐
+
+> **Implementation note:** Migration `20261008100020_feedback.sql` adds `feedback` as specified,
+> with `finding_id` referencing `verified_findings` (the finding id of API-010), RLS and an
+> `updated_at` trigger. The older DOM-009 `finding_feedback` table is left untouched and unused.
+> Feedback, list, summary (`acceptance_rate = useful / total`, `false_positive_rate =
+> false_positive / total`, overall and per reviewer) and `recordProviderSignal` (the GH-011 path,
+> `source='provider'`) are done. Suppression creation goes through the `SuppressionWriter` port:
+> role and verdict checks, the transaction and the audit rows are in place, but the default
+> writer answers 503 until POL-006 adds the `suppressions` table, so the acceptance check
+> "the suppression created is matched on the next run" waits for POL-006.
 
 - **Task ID:** API-012
 - **Title:** Feedback API

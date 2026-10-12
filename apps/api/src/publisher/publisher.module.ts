@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { PublishConsumer } from './publish.consumer';
+import { PublishWorker } from './publish.worker';
 import { PublishGate } from './publish-gate';
 import { PublishSource } from './publish-source';
 import { PublisherService } from './publisher.service';
@@ -13,6 +14,7 @@ import { StaleResolutionService } from './stale-resolution.service';
     StaleResolutionService,
     PublisherService,
     PublishConsumer,
+    PublishWorker,
   ],
   exports: [PublisherService, PublishConsumer, PublishGate],
 })

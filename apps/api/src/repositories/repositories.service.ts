@@ -15,7 +15,7 @@ import { REDIS } from '../common/redis.module';
 import { DbService } from '../db/db.module';
 import type { DB } from '../db/generated';
 import type { Tx } from '../db/tx';
-import { JOB_QUEUE, type JobQueue } from '../jobs/job-queue.port';
+import { JOB_QUEUE, type JobQueue } from '../jobs/job-queue';
 import {
   PROVIDER_RESOLVER,
   ProviderError,
@@ -218,6 +218,7 @@ export class RepositoriesService {
       this.queue.enqueue(trx, {
         queue: 'repository-index',
         idempotencyKey,
+        organizationId: orgId,
         payload: {
           repository_id: repositoryId,
           organization_id: orgId,
@@ -261,6 +262,7 @@ export class RepositoriesService {
         this.queue.enqueue(trx, {
           queue: 'repository-index',
           idempotencyKey,
+          organizationId: orgId,
           payload: {
             repository_id: repositoryId,
             organization_id: orgId,

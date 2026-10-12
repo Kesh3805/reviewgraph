@@ -1050,7 +1050,22 @@ Status: ☐
 ---
 
 ### SEC-001 — Tenant isolation tests (API + RLS)
-Status: ☐
+Status: ◐
+
+> **Implementation note (apps/api side):** The matrix lives in `apps/api/test/security/isolation-matrix.ts`
+> and the coverage guard (`test/security/coverage-guard.spec.ts`) reads the OpenAPI document. The
+> database-backed suites need Postgres, so they run in the integration job:
+> `apps/api/integration/security/{tenancy.fixture.ts,routes-isolation.int.spec.ts,rls-tables.int.spec.ts}`.
+> The fixture is seeded by the test superuser login (not `rg_ops`) with random ids, and the checks
+> run as `rg_api` and `rg_engine` (asserted non-superuser, no BYPASSRLS). Migration
+> `20261008100040_jobs_rls.sql` adds the RLS that PIPE-001 deferred to this task: request paths
+> see only their tenant's jobs, and queue workers opt in per transaction with
+> `set_config('app.job_worker', 'on', true)` (the TS adapter does; the Rust worker of PIPE-001/002
+> must do the same). Cursors are not signed: they only carry `(created_at, id)` and every query is
+> scoped by the route's resource and RLS, which the foreign-cursor test proves. Still open: the
+> engine-side role test `engine/crates/graph-storage/tests/rls_engine_role.rs` (needs the
+> snapshot tables, GS-005) and the internal-route checks once `/internal/**` routes exist.
+> See `docs/security/tenant-isolation-test-plan.md`.
 
 - **Task ID:** SEC-001
 - **Title:** Two-organization isolation suite covering every API route and every RLS-protected table
@@ -1439,7 +1454,20 @@ Status: ☐
 ---
 
 ### SEC-008 — Audit log
-Status: ☐
+Status: ◐
+
+> **Implementation note (apps/api side):** `audit_log` already existed (API-008).
+> Migration `20261008100030_audit_chain.sql` adds the per-organization hash chain (`chain_seq`,
+> a BEFORE INSERT trigger owned by `rg_ops` under a per-organization advisory lock, hashing a
+> time-zone independent canonical payload), `dedupe_key` with a unique index, and
+> `rg_audit_verify(org)`. `AuditService` writes in the caller's transaction (fail closed),
+> redacts metadata (`src/common/redact.ts`), fills `trace_id`, supports `dedupeKey`, and offers
+> `recordStandalone` for denial events that must survive a rollback. The catalog is
+> `src/audit/audit.types.ts`, and the admin read and verify routes are
+> `GET /organizations/:id/audit` and `GET /organizations/:id/audit/verify`. Still open: the Rust
+> `audit` helper and the shared event enum in contracts, auditing login/logout, membership
+> changes, publication (GH-009), credential issuance (SEC-005) and replay rejections (SEC-006),
+> guard denials above a threshold, and `docs/security/audit-log.md`.
 
 - **Task ID:** SEC-008
 - **Title:** Append-only audit log for configuration changes, publication, feedback and security-relevant events

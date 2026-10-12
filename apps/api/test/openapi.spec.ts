@@ -45,4 +45,47 @@ describe('OpenAPI document', () => {
     expect(has('/api/v1/repositories/{repoId}/settings', 'patch')).toBe(true);
     expect(has('/api/v1/auth/me', 'get')).toBe(true);
   });
+
+  it('lists every reviews route (API-009)', () => {
+    const paths = buildOpenApiDocument(app).paths;
+    const has = (path: string, method: string): boolean =>
+      Boolean((paths[path] as Record<string, unknown> | undefined)?.[method]);
+    expect(has('/api/v1/repositories/{repoId}/pull-requests', 'get')).toBe(true);
+    expect(has('/api/v1/pull-requests/{pullRequestId}', 'get')).toBe(true);
+    expect(has('/api/v1/pull-requests/{pullRequestId}/review', 'post')).toBe(true);
+    expect(has('/api/v1/pull-requests/{pullRequestId}/reviews', 'get')).toBe(true);
+    expect(has('/api/v1/pull-requests/{pullRequestId}/reviews/{reviewId}', 'get')).toBe(true);
+    expect(has('/api/v1/reviews/{reviewId}/cancel', 'post')).toBe(true);
+  });
+
+  it('lists every findings route (API-010)', () => {
+    const paths = buildOpenApiDocument(app).paths;
+    const has = (path: string, method: string): boolean =>
+      Boolean((paths[path] as Record<string, unknown> | undefined)?.[method]);
+    expect(has('/api/v1/reviews/{reviewId}/findings', 'get')).toBe(true);
+    expect(has('/api/v1/findings/{findingId}', 'get')).toBe(true);
+    expect(has('/api/v1/findings/{findingId}/trace', 'get')).toBe(true);
+    expect(has('/api/v1/findings/{findingId}/feedback', 'post')).toBe(true);
+    expect(has('/api/v1/findings/{findingId}/feedback', 'get')).toBe(true);
+    expect(has('/api/v1/repositories/{repoId}/feedback/summary', 'get')).toBe(true);
+  });
+
+  it('lists every graph proxy route (API-011)', () => {
+    const paths = buildOpenApiDocument(app).paths;
+    const has = (path: string, method: string): boolean =>
+      Boolean((paths[path] as Record<string, unknown> | undefined)?.[method]);
+    expect(has('/api/v1/repositories/{repoId}/graph/symbols', 'get')).toBe(true);
+    expect(has('/api/v1/repositories/{repoId}/graph/symbols/{key}', 'get')).toBe(true);
+    expect(has('/api/v1/repositories/{repoId}/graph/symbols/{key}/neighbors', 'get')).toBe(true);
+    expect(has('/api/v1/repositories/{repoId}/graph/subgraph', 'post')).toBe(true);
+    expect(has('/api/v1/repositories/{repoId}/graph/path', 'get')).toBe(true);
+    expect(has('/api/v1/reviews/{reviewId}/impact/{symbolKey}', 'get')).toBe(true);
+    expect(has('/api/v1/repositories/{repoId}/source', 'get')).toBe(true);
+  });
+
+  it('lists the audit read routes (SEC-008)', () => {
+    const paths = buildOpenApiDocument(app).paths;
+    expect(paths['/api/v1/organizations/{organizationId}/audit']?.get).toBeDefined();
+    expect(paths['/api/v1/organizations/{organizationId}/audit/verify']?.get).toBeDefined();
+  });
 });
