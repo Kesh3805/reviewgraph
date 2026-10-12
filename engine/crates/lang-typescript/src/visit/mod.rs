@@ -7,6 +7,7 @@ pub mod declarations;
 pub mod expr;
 pub mod fact_keys;
 pub mod facts;
+pub mod modules;
 
 use analysis_ir::{
     AnalyzerConfig, DiagCode, DiagSeverity, IrExport, IrFrameworkFact, IrImport, IrReference,
@@ -15,6 +16,7 @@ use analysis_ir::{
 use review_core::location::SourceRange;
 use review_core::symbol::SymbolKind;
 
+use crate::bindings::BindingTable;
 use crate::diagnostics::DiagnosticSink;
 use crate::ordinals::assign_ordinals;
 use crate::text::Source;
@@ -31,6 +33,8 @@ pub struct Collected {
     pub exports: Vec<IrExport>,
     pub framework: Vec<IrFrameworkFact>,
     pub facts: Vec<SymbolFacts>,
+    /// Module-level import bindings, consumed by the reference pass (TSA-005).
+    pub bindings: BindingTable,
 }
 
 /// Inputs shared by the visitors.
@@ -74,9 +78,13 @@ pub fn run(
     } else {
         Vec::new()
     };
+    let module_facts = modules::collect(root, &ctx.source, &table, sink);
     Collected {
         symbols: table.symbols,
         facts,
+        imports: module_facts.imports,
+        exports: module_facts.exports,
+        bindings: module_facts.bindings,
         ..Collected::default()
     }
 }

@@ -5,6 +5,7 @@
 //! TypeScript.
 
 pub mod analyzer;
+pub mod bindings;
 pub mod diagnostics;
 pub mod error;
 pub mod hashing;
@@ -26,7 +27,7 @@ pub const ANALYZER_NAME: &str = "lang-typescript";
 
 /// Minor: new facts extracted. Major: identity or hash rule change (forces a re-parse of
 /// TS/JS files only, ADR-015).
-pub const ANALYZER_VERSION: AnalyzerVersion = AnalyzerVersion::new(0, 2, 0);
+pub const ANALYZER_VERSION: AnalyzerVersion = AnalyzerVersion::new(0, 3, 0);
 
 /// Exact versions of the parser stack, part of the repository fingerprint (INIT-012).
 /// `tests/parser_versions.rs` checks them against `engine/Cargo.lock`.
