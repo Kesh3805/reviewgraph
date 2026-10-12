@@ -2,6 +2,9 @@
  * Redaction patterns shared (by corpus) with the Rust `telemetry::redact` module.
  * Replacement format: `«redacted:<pattern>»`. Redacting redacted text is a no-op.
  */
+import type { LogRecordProcessor, SdkLogRecord } from '@opentelemetry/sdk-logs';
+import type { ReadableSpan, SpanProcessor } from '@opentelemetry/sdk-trace-base';
+
 interface Pattern {
   name: string;
   regex: RegExp;
@@ -66,6 +69,19 @@ function sensitiveKey(key: string): boolean {
 export function redactObject<T>(value: T, depth = 0, seen = new WeakSet<object>()): T {
   if (typeof value === 'string') return redactString(value) as T;
   if (value === null || typeof value !== 'object') return value;
+  if (value instanceof Error) {
+    // Error fields are not enumerable; keep the shape pino's `err` serializer produces.
+    return {
+      type: value.name,
+      message: redactString(value.message),
+      stack: value.stack === undefined ? undefined : redactString(value.stack),
+    } as T;
+  }
+  if (!Array.isArray(value)) {
+    const proto = Object.getPrototypeOf(value) as unknown;
+    // Dates, Buffers, Maps and class instances keep their own serialization.
+    if (proto !== Object.prototype && proto !== null) return value;
+  }
   if (depth >= MAX_DEPTH) return '«redacted:depth»' as T;
   if (seen.has(value)) return '[circular]' as T;
   seen.add(value);
@@ -84,4 +100,52 @@ export function redactAttributes(attributes: Record<string, unknown>): Record<st
     out[k] = sensitiveKey(k) ? tag('sensitive_key') : typeof v === 'string' ? redactString(v) : v;
   }
   return out;
+}
+
+/** Attribute keys no span may carry: source, diff and prompt content never go on spans. */
+export const FORBIDDEN_SPAN_ATTRIBUTES: readonly string[] = ['prompt', 'source', 'diff', 'body'];
+
+/**
+ * Scrubs finished spans before any exporter sees them (OBS-006). Register it before the
+ * exporting processor; it mutates the attribute objects in place.
+ */
+export class RedactingSpanProcessor implements SpanProcessor {
+  onStart(): void {}
+
+  onEnd(span: ReadableSpan): void {
+    const attributes = span.attributes as Record<string, unknown>;
+    for (const key of Object.keys(attributes)) {
+      if (FORBIDDEN_SPAN_ATTRIBUTES.includes(key)) delete attributes[key];
+    }
+    Object.assign(attributes, redactAttributes(attributes));
+    for (const event of span.events) {
+      if (event.attributes) Object.assign(event.attributes, redactAttributes(event.attributes));
+    }
+  }
+
+  forceFlush(): Promise<void> {
+    return Promise.resolve();
+  }
+
+  shutdown(): Promise<void> {
+    return Promise.resolve();
+  }
+}
+
+/** Redacts log record bodies and string attributes before the batch processor exports them. */
+export class RedactingLogRecordProcessor implements LogRecordProcessor {
+  onEmit(record: SdkLogRecord): void {
+    if (typeof record.body === 'string') record.setBody(redactString(record.body));
+    for (const [key, value] of Object.entries(redactAttributes(record.attributes))) {
+      record.setAttribute(key, value as string);
+    }
+  }
+
+  forceFlush(): Promise<void> {
+    return Promise.resolve();
+  }
+
+  shutdown(): Promise<void> {
+    return Promise.resolve();
+  }
 }

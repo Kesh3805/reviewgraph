@@ -27,6 +27,7 @@ use crate::error::{Error, Result};
 use crate::guard::TelemetryGuard;
 use crate::json_format::{DispatchSlot, JsonLayer};
 use crate::otlp;
+use crate::redact::otel::RedactingLogProcessor;
 
 /// A boxed layer that sits directly on the registry (used for the redaction slot).
 pub type BoxedLayer = Box<dyn Layer<Registry> + Send + Sync + 'static>;
@@ -121,6 +122,7 @@ fn build(config: &TelemetryConfig, redaction: Option<BoxedLayer>) -> Result<Tele
 
         let logger = SdkLoggerProvider::builder()
             .with_resource(resource)
+            .with_log_processor(RedactingLogProcessor)
             .with_batch_exporter(log_exporter)
             .build();
 
@@ -147,6 +149,8 @@ fn build(config: &TelemetryConfig, redaction: Option<BoxedLayer>) -> Result<Tele
         .with(layers)
         .try_init()
         .map_err(|_| Error::SubscriberAlreadySet)?;
+    // Create the metric registry now that the meter provider (if any) is installed.
+    let _ = crate::metrics::global();
     // Boxed/Vec layer wrappers do not forward `on_register_dispatch`, so hand the JSON layer
     // its dispatch explicitly.
     if let Some(slot) = slot {

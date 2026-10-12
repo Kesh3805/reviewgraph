@@ -15,6 +15,10 @@ use tracing_subscriber::fmt::{FmtContext, FormatEvent, FormattedFields};
 use tracing_subscriber::registry::LookupSpan;
 
 use crate::attrs::CORRELATION_KEYS;
+use crate::redact::layer::{
+    fail_closed, redact_error_chain, redact_field_counted, REDACTION_BUDGET,
+};
+use crate::redact::{is_sensitive_key, redact_value, tag};
 
 /// Shared slot holding a weak handle to the subscriber this layer is installed in. Inside a
 /// subscriber callback `tracing::Span::current()` is unavailable (re-entrancy guard), so the
@@ -119,41 +123,59 @@ struct FieldCollector {
     fields: Map<String, Value>,
 }
 
+impl FieldCollector {
+    fn put(&mut self, field: &Field, text: &str) {
+        let name = field.name();
+        if name == "message" {
+            self.message = Some(redact_field_counted("message", text));
+        } else {
+            self.fields.insert(
+                name.to_owned(),
+                Value::String(redact_field_counted(name, text)),
+            );
+        }
+    }
+
+    /// Non-string fields of a sensitive name are replaced regardless of their value.
+    fn put_scalar(&mut self, field: &Field, value: Value) {
+        let value = if is_sensitive_key(field.name()) {
+            Value::String(tag("sensitive_key"))
+        } else {
+            value
+        };
+        self.fields.insert(field.name().to_owned(), value);
+    }
+}
+
 impl Visit for FieldCollector {
     fn record_debug(&mut self, field: &Field, value: &dyn fmt::Debug) {
-        if field.name() == "message" {
-            self.message = Some(format!("{value:?}"));
-        } else {
-            self.fields
-                .insert(field.name().to_owned(), Value::String(format!("{value:?}")));
-        }
+        self.put(field, &format!("{value:?}"));
     }
 
     fn record_str(&mut self, field: &Field, value: &str) {
-        if field.name() == "message" {
-            self.message = Some(value.to_owned());
-        } else {
-            self.fields
-                .insert(field.name().to_owned(), Value::String(value.to_owned()));
-        }
+        self.put(field, value);
+    }
+
+    fn record_error(&mut self, field: &Field, value: &(dyn std::error::Error + 'static)) {
+        let text = redact_error_chain(value);
+        self.put(field, &text);
     }
 
     fn record_i64(&mut self, field: &Field, value: i64) {
-        self.fields.insert(field.name().to_owned(), value.into());
+        self.put_scalar(field, value.into());
     }
 
     fn record_u64(&mut self, field: &Field, value: u64) {
-        self.fields.insert(field.name().to_owned(), value.into());
+        self.put_scalar(field, value.into());
     }
 
     fn record_bool(&mut self, field: &Field, value: bool) {
-        self.fields.insert(field.name().to_owned(), value.into());
+        self.put_scalar(field, value.into());
     }
 
     fn record_f64(&mut self, field: &Field, value: f64) {
         if let Some(n) = serde_json::Number::from_f64(value) {
-            self.fields
-                .insert(field.name().to_owned(), Value::Number(n));
+            self.put_scalar(field, Value::Number(n));
         }
     }
 }
@@ -169,70 +191,83 @@ where
         event: &Event<'_>,
     ) -> fmt::Result {
         let meta = event.metadata();
-        let mut collector = FieldCollector::default();
-        event.record(&mut collector);
+        // Fail closed: a panic or an over-budget redaction replaces the whole line.
+        let text = fail_closed(
+            meta.level().as_str(),
+            meta.target(),
+            REDACTION_BUDGET,
+            || {
+                let mut collector = FieldCollector::default();
+                event.record(&mut collector);
 
-        let mut line = Map::new();
-        line.insert(
-            "timestamp".into(),
-            chrono::Utc::now()
-                .to_rfc3339_opts(chrono::SecondsFormat::Micros, true)
-                .into(),
-        );
-        line.insert("level".into(), meta.level().as_str().into());
-        line.insert("target".into(), meta.target().into());
-        line.insert(
-            "message".into(),
-            collector.message.take().unwrap_or_default().into(),
-        );
-        if !collector.fields.is_empty() {
-            line.insert("fields".into(), Value::Object(collector.fields));
-        }
+                let mut line = Map::new();
+                line.insert(
+                    "timestamp".into(),
+                    chrono::Utc::now()
+                        .to_rfc3339_opts(chrono::SecondsFormat::Micros, true)
+                        .into(),
+                );
+                line.insert("level".into(), meta.level().as_str().into());
+                line.insert("target".into(), meta.target().into());
+                line.insert(
+                    "message".into(),
+                    collector.message.take().unwrap_or_default().into(),
+                );
+                if !collector.fields.is_empty() {
+                    line.insert("fields".into(), Value::Object(collector.fields));
+                }
 
-        let mut spans = Vec::new();
-        let mut flat = Map::new();
-        if let Some(scope) = ctx.event_scope() {
-            // Root first, so inner spans override outer correlation values.
-            for span in scope.from_root() {
-                let mut obj = Map::new();
-                obj.insert("name".into(), span.name().into());
-                if let Some(fields) = span.extensions().get::<FormattedFields<JsonFields>>() {
-                    if let Ok(Value::Object(m)) = serde_json::from_str::<Value>(fields.as_str()) {
-                        for (k, v) in m {
-                            if CORRELATION_KEYS.contains(&k.as_str()) {
-                                flat.insert(k.clone(), v.clone());
+                let mut spans = Vec::new();
+                let mut flat = Map::new();
+                if let Some(scope) = ctx.event_scope() {
+                    // Root first, so inner spans override outer correlation values.
+                    for span in scope.from_root() {
+                        let mut obj = Map::new();
+                        obj.insert("name".into(), span.name().into());
+                        if let Some(fields) = span.extensions().get::<FormattedFields<JsonFields>>()
+                        {
+                            if let Ok(parsed @ Value::Object(_)) =
+                                serde_json::from_str::<Value>(fields.as_str())
+                            {
+                                if let Value::Object(m) = redact_value(&parsed) {
+                                    for (k, v) in m {
+                                        if CORRELATION_KEYS.contains(&k.as_str()) {
+                                            flat.insert(k.clone(), v.clone());
+                                        }
+                                        obj.insert(k, v);
+                                    }
+                                }
                             }
-                            obj.insert(k, v);
+                        }
+                        spans.push(Value::Object(obj));
+                    }
+                }
+                if let Some(Value::Object(current)) = spans.last() {
+                    line.insert("span".into(), Value::Object(current.clone()));
+                }
+                line.insert("spans".into(), Value::Array(spans));
+                for (k, v) in flat {
+                    line.insert(k, v);
+                }
+
+                let current = event
+                    .parent()
+                    .cloned()
+                    .or_else(|| ctx.lookup_current().map(|s| s.id()));
+                if let (Some(id), Some(dispatch)) = (current, self.dispatch.get()) {
+                    if let Some(otel_cx) = get_otel_context(&id, &dispatch) {
+                        let span_ref = otel_cx.span();
+                        let sc = span_ref.span_context();
+                        if sc.is_valid() {
+                            line.insert("trace_id".into(), sc.trace_id().to_string().into());
+                            line.insert("span_id".into(), sc.span_id().to_string().into());
                         }
                     }
                 }
-                spans.push(Value::Object(obj));
-            }
-        }
-        if let Some(Value::Object(current)) = spans.last() {
-            line.insert("span".into(), Value::Object(current.clone()));
-        }
-        line.insert("spans".into(), Value::Array(spans));
-        for (k, v) in flat {
-            line.insert(k, v);
-        }
 
-        let current = event
-            .parent()
-            .cloned()
-            .or_else(|| ctx.lookup_current().map(|s| s.id()));
-        if let (Some(id), Some(dispatch)) = (current, self.dispatch.get()) {
-            if let Some(otel_cx) = get_otel_context(&id, &dispatch) {
-                let span_ref = otel_cx.span();
-                let sc = span_ref.span_context();
-                if sc.is_valid() {
-                    line.insert("trace_id".into(), sc.trace_id().to_string().into());
-                    line.insert("span_id".into(), sc.span_id().to_string().into());
-                }
-            }
-        }
-
-        let text = serde_json::to_string(&Value::Object(line)).map_err(|_| fmt::Error)?;
+                serde_json::to_string(&Value::Object(line)).ok()
+            },
+        );
         writeln!(writer, "{text}")
     }
 }

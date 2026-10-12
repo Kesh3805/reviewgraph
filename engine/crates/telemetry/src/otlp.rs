@@ -71,7 +71,11 @@ fn observe(signal: &'static str, result: &OTelSdkResult) {
 pub(crate) struct CountedSpans<E>(E);
 
 impl<E: SpanExporter> SpanExporter for CountedSpans<E> {
-    async fn export(&self, batch: Vec<SpanData>) -> OTelSdkResult {
+    async fn export(&self, mut batch: Vec<SpanData>) -> OTelSdkResult {
+        // Second line of defense: scrub secrets from attributes before they leave the process.
+        for span in &mut batch {
+            crate::redact::otel::scrub_span(span);
+        }
         let r = self.0.export(batch).await;
         observe("traces", &r);
         r

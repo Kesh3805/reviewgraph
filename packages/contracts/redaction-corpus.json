@@ -35,12 +35,57 @@
       "input": "x -----BEGIN RSA PRIVATE KEY-----\nMIIabc\n-----END RSA PRIVATE KEY----- y",
       "expected_redacted": "x «redacted:private_key» y",
       "pattern": "private_key"
+    },
+    {
+      "name": "token_in_query_string",
+      "input": "GET /hook?token=ghp_abcdefghijklmnopqrstuvwxyz0123456789&page=2",
+      "expected_redacted": "GET /hook?token=«redacted:github_token»&page=2",
+      "pattern": "github_token"
+    },
+    {
+      "name": "basic_header_base64",
+      "input": "Authorization: Basic dXNlcjpwYXNzd29yZA==",
+      "expected_redacted": "«redacted:auth_header»",
+      "pattern": "auth_header"
+    },
+    {
+      "name": "multiline_pem",
+      "input": "-----BEGIN PRIVATE KEY-----\nAAAA\nBBBB\n-----END PRIVATE KEY-----",
+      "expected_redacted": "«redacted:private_key»",
+      "pattern": "private_key"
+    },
+    {
+      "name": "jwt",
+      "input": "id eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMjM0In0.c2lnbmF0dXJl ok",
+      "expected_redacted": "id «redacted:jwt» ok",
+      "pattern": "jwt"
+    },
+    {
+      "name": "anthropic_style_key",
+      "input": "key sk-ant-api03-abcdefghijklmnopqrstuvwxyz end",
+      "expected_redacted": "key «redacted:api_key» end",
+      "pattern": "api_key"
+    },
+    {
+      "name": "hub_signature",
+      "input": "x-hub-signature-256: sha256=0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+      "expected_redacted": "x-hub-signature-256: «redacted:hub_signature»",
+      "pattern": "hub_signature"
+    },
+    {
+      "name": "json_escaped_split_token",
+      "input": "{\"msg\":\"ghp_abcdefghijklmnopqrstuvwxyz0123456789\\n\"}",
+      "expected_redacted": "{\"msg\":\"«redacted:github_token»\\n\"}",
+      "pattern": "github_token"
     }
   ],
   "negatives": [
     "plain log line with no secrets",
     "commit 3f2a9c1 touched src/main.rs",
     "https://example.com/path?page=2",
-    "tokenizer finished in 12ms"
+    "tokenizer finished in 12ms",
+    "sk-learn is a python library",
+    "mention the ghp_ prefix in docs",
+    "AKIA is the access key prefix"
   ]
 }

@@ -10,7 +10,10 @@ pub mod error;
 pub mod guard;
 pub mod init;
 pub mod json_format;
+pub mod metrics;
 pub mod otlp;
+pub mod redact;
+pub mod spans;
 
 pub use config::{LogFormat, Secret, TelemetryConfig};
 pub use error::{Error, Result, TelemetryError};

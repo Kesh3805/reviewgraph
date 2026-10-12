@@ -14,6 +14,7 @@ import { BatchSpanProcessor, type SpanProcessor } from '@opentelemetry/sdk-trace
 import { ATTR_SERVICE_NAME, ATTR_SERVICE_VERSION } from '@opentelemetry/semantic-conventions';
 import type { IncomingMessage } from 'node:http';
 import type { TelemetryConfig } from './config';
+import { RedactingLogRecordProcessor, RedactingSpanProcessor } from './redact';
 
 export interface TelemetryHandle {
   /** False when no endpoint is configured or `RG_OTEL_ENABLED=false` (no-op SDK). */
@@ -124,17 +125,23 @@ function buildSdk(config: TelemetryConfig, overrides: TelemetryOverrides): NodeS
       [ATTR_SERVICE_VERSION]: config.serviceVersion,
       'deployment.environment.name': config.environment,
     }),
-    spanProcessors: overrides.spanProcessors ?? [
-      new BatchSpanProcessor(
-        trackExportFailures(new OTLPTraceExporter(exporterConfig('/v1/traces')), 'traces'),
-        { maxQueueSize: BATCH_QUEUE_SIZE, maxExportBatchSize: 512, scheduledDelayMillis: 5000 },
-      ),
+    spanProcessors: [
+      new RedactingSpanProcessor(),
+      ...(overrides.spanProcessors ?? [
+        new BatchSpanProcessor(
+          trackExportFailures(new OTLPTraceExporter(exporterConfig('/v1/traces')), 'traces'),
+          { maxQueueSize: BATCH_QUEUE_SIZE, maxExportBatchSize: 512, scheduledDelayMillis: 5000 },
+        ),
+      ]),
     ],
-    logRecordProcessors: overrides.logRecordProcessors ?? [
-      new BatchLogRecordProcessor({
-        exporter: trackExportFailures(new OTLPLogExporter(exporterConfig('/v1/logs')), 'logs'),
-        maxQueueSize: BATCH_QUEUE_SIZE,
-      }),
+    logRecordProcessors: [
+      new RedactingLogRecordProcessor(),
+      ...(overrides.logRecordProcessors ?? [
+        new BatchLogRecordProcessor({
+          exporter: trackExportFailures(new OTLPLogExporter(exporterConfig('/v1/logs')), 'logs'),
+          maxQueueSize: BATCH_QUEUE_SIZE,
+        }),
+      ]),
     ],
     metricReaders: overrides.metricReaders ?? [
       periodic(new OTLPMetricExporter(exporterConfig('/v1/metrics'))),

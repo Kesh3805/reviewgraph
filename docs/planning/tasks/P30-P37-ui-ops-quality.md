@@ -796,7 +796,7 @@ Status: ☐
 ---
 
 ### OBS-004 — Span coverage of the review lifecycle
-Status: ☐
+Status: ◐ (span registry, stage_span! macro, required attrs, span attribute scrubbing done; missing: crate instrumentation, span_tree conformance test, span-catalog.md)
 
 - **Task ID:** OBS-004
 - **Title:** Canonical lifecycle spans with standard attributes, and a test that fails when a stage lacks its span
@@ -850,7 +850,7 @@ Status: ☐
 ---
 
 ### OBS-005 — Metrics instruments
-Status: ◐ (metrics-catalog.md contract done; Rust/TS instrument registries pending)
+Status: ◐ (Rust registry, TS twin, xtask catalog generation done; missing: trybuild compile-fail label test, pipeline recording sites, gauge refresh task, criterion bench)
 
 - **Task ID:** OBS-005
 - **Title:** Central metric registries (Rust and TypeScript) for the full PRD §115 / master-plan metric set, with bounded label cardinality
@@ -902,7 +902,7 @@ Status: ◐ (metrics-catalog.md contract done; Rust/TS instrument registries pen
 ---
 
 ### OBS-006 — Redaction layers and tests
-Status: ◐ (TypeScript redaction and shared corpus done; Rust `telemetry::redact` layer pending)
+Status: ◐ (Rust redact module, formatter, span and log-body scrubbing, TS wiring done; missing: OTLP log attribute scrubbing, criterion benches, xtask no-log-of-sensitive-types check)
 
 - **Task ID:** OBS-006
 - **Title:** Redaction in the Rust `tracing` pipeline and the NestJS log formatter, sharing one pattern set and a shared test corpus
@@ -1135,7 +1135,7 @@ Status: ◐
 ---
 
 ### SEC-002 — Qdrant and PostgreSQL tenant-filter audit tests
-Status: ☐
+Status: ◐ (semantic/tests cross_tenant_qdrant.rs and tenant_isolation.rs exist; missing: pipeline/tests/security suites, SQL statement audit, xtask audit-sql)
 
 - **Task ID:** SEC-002
 - **Title:** End-to-end cross-tenant tests for Qdrant and engine-side PostgreSQL queries, plus a static audit that every query carries tenant predicates

@@ -4,10 +4,12 @@ import { logs, SeverityNumber } from '@opentelemetry/api-logs';
 import pino, { type DestinationStream, type Logger } from 'pino';
 import { currentRequestId } from '../common/request-id.middleware';
 import { CORRELATION_ATTRIBUTES } from './attributes';
+import { redactObject, redactString } from './redact';
 
 /**
- * Redaction injection point. OBS-006 supplies the real formatter; until then only the
- * well-known credential headers/fields are censored.
+ * Well-known credential headers/fields censored by pino itself. Everything else goes through
+ * `redactString` / `redactObject` (OBS-006), which the logger below applies to the message and
+ * to every logged object, so secret-looking values are caught even under other keys.
  */
 export const REDACT_PATHS = [
   'authorization',
@@ -52,6 +54,15 @@ export function createJsonLogger(
       formatters: { level: (label) => ({ level: label }) },
       redact: { paths: REDACT_PATHS, censor: '[redacted]' },
       mixin: correlationFields,
+      hooks: {
+        // Message and format arguments: scrub strings before pino interpolates them.
+        logMethod(args, method) {
+          const cleaned = args.map((arg) =>
+            typeof arg === 'string' ? redactString(arg) : redactObject(arg),
+          ) as unknown as Parameters<typeof method>;
+          method.apply(this, cleaned);
+        },
+      },
     },
     destination,
   );
@@ -93,7 +104,7 @@ export class JsonLoggerService implements LoggerService {
   }
 
   private emit(level: keyof typeof SEVERITY, message: unknown, fields: Record<string, unknown>) {
-    const text = typeof message === 'string' ? message : JSON.stringify(message);
+    const text = redactString(typeof message === 'string' ? message : JSON.stringify(message));
     this.logger[level as 'info'](fields, text);
     if (!this.logger.isLevelEnabled(level)) return;
     const attributes = { ...correlationFields() } as Record<string, string>;
