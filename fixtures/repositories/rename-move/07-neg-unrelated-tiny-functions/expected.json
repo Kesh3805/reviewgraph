@@ -1,0 +1,16 @@
+{
+  "description": "UserEntity.getId removed and OrderEntity.getName added: tiny, different bodies in unrelated classes must not pair.",
+  "matches": [],
+  "unmatched_added": [
+    "ts:src/orders/order.entity#OrderEntity.getName/method"
+  ],
+  "unmatched_removed": [
+    "ts:src/users/user.entity#UserEntity.getId/method"
+  ],
+  "unchanged": [
+    "ts:src/users/user.entity#UserEntity.describe/method",
+    "ts:src/orders/order.entity#OrderEntity.summary/method"
+  ],
+  "modified": [],
+  "ambiguous": 0
+}

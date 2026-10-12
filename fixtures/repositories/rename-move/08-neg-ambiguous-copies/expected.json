@@ -1,0 +1,16 @@
+{
+  "description": "An identical helper removed from one file and added in two sibling directories: equally plausible successors, so no match.",
+  "matches": [],
+  "unmatched_added": [
+    "ts:src/billing/discounts#clampPercent/function",
+    "ts:src/inventory/stock#clampPercent/function"
+  ],
+  "unmatched_removed": [
+    "ts:src/reports/summary#clampPercent/function"
+  ],
+  "unchanged": [
+    "ts:src/reports/summary#completionRate/function"
+  ],
+  "modified": [],
+  "ambiguous": 1
+}

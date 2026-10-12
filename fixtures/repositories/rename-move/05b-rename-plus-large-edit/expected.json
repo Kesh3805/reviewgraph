@@ -1,0 +1,37 @@
+{
+  "description": "As 05, but half of quote() is rewritten: the method is added + removed, never paired.",
+  "matches": [
+    {
+      "from": "ts:src/shipping/shipping.service#ShippingCalculator/class",
+      "to": "ts:src/shipping/shipping.service#ShippingQuoteCalculator/class",
+      "transition": "renamed",
+      "rule": "exact_body",
+      "min_similarity": 1.0
+    },
+    {
+      "from": "ts:src/shipping/shipping.service#ShippingCalculator.volumetricWeight/method",
+      "to": "ts:src/shipping/shipping.service#ShippingQuoteCalculator.volumetricWeight/method",
+      "transition": "renamed",
+      "rule": "exact_body",
+      "min_similarity": 1.0
+    },
+    {
+      "from": "ts:src/shipping/shipping.service#ShippingCalculator.isDomestic/method",
+      "to": "ts:src/shipping/shipping.service#ShippingQuoteCalculator.isDomestic/method",
+      "transition": "renamed",
+      "rule": "exact_body",
+      "min_similarity": 1.0
+    }
+  ],
+  "unmatched_added": [
+    "ts:src/shipping/shipping.service#ShippingQuoteCalculator.quote/method"
+  ],
+  "unmatched_removed": [
+    "ts:src/shipping/shipping.service#ShippingCalculator.quote/method"
+  ],
+  "unchanged": [
+    "ts:src/shipping/shipping.service#Parcel/interface"
+  ],
+  "modified": [],
+  "ambiguous": 0
+}

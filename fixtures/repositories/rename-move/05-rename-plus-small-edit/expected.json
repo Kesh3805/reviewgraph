@@ -1,0 +1,41 @@
+{
+  "description": "ShippingCalculator renamed to ShippingQuoteCalculator and two lines of quote() edited: the method pairs by token similarity inside the matched class.",
+  "matches": [
+    {
+      "from": "ts:src/shipping/shipping.service#ShippingCalculator/class",
+      "to": "ts:src/shipping/shipping.service#ShippingQuoteCalculator/class",
+      "transition": "renamed",
+      "rule": "exact_body",
+      "min_similarity": 1.0
+    },
+    {
+      "from": "ts:src/shipping/shipping.service#ShippingCalculator.volumetricWeight/method",
+      "to": "ts:src/shipping/shipping.service#ShippingQuoteCalculator.volumetricWeight/method",
+      "transition": "renamed",
+      "rule": "exact_body",
+      "min_similarity": 1.0
+    },
+    {
+      "from": "ts:src/shipping/shipping.service#ShippingCalculator.isDomestic/method",
+      "to": "ts:src/shipping/shipping.service#ShippingQuoteCalculator.isDomestic/method",
+      "transition": "renamed",
+      "rule": "exact_body",
+      "min_similarity": 1.0
+    },
+    {
+      "from": "ts:src/shipping/shipping.service#ShippingCalculator.quote/method",
+      "to": "ts:src/shipping/shipping.service#ShippingQuoteCalculator.quote/method",
+      "transition": "renamed",
+      "rule": "token_similarity",
+      "min_similarity": 0.8,
+      "max_similarity": 1.0
+    }
+  ],
+  "unmatched_added": [],
+  "unmatched_removed": [],
+  "unchanged": [
+    "ts:src/shipping/shipping.service#Parcel/interface"
+  ],
+  "modified": [],
+  "ambiguous": 0
+}

@@ -131,6 +131,11 @@ pub mod kind {
     pub const SWITCH_STATEMENT: &str = "switch_statement";
     pub const TRY_STATEMENT: &str = "try_statement";
     pub const CATCH_CLAUSE: &str = "catch_clause";
+    pub const FINALLY_CLAUSE: &str = "finally_clause";
+    pub const ELSE_CLAUSE: &str = "else_clause";
+    pub const SWITCH_CASE: &str = "switch_case";
+    pub const SWITCH_DEFAULT: &str = "switch_default";
+    pub const UNARY_EXPRESSION: &str = "unary_expression";
 }
 
 pub mod field {
@@ -159,6 +164,11 @@ pub mod field {
     pub const KEY: &str = "key";
     pub const OPERATOR: &str = "operator";
     pub const KIND: &str = "kind";
+    pub const CONSEQUENCE: &str = "consequence";
+    pub const ALTERNATIVE: &str = "alternative";
+    pub const HANDLER: &str = "handler";
+    pub const FINALIZER: &str = "finalizer";
+    pub const INDEX: &str = "index";
 }
 
 /// Every kind constant, for the grammar-consistency test.
@@ -278,6 +288,11 @@ pub const ALL_KINDS: &[&str] = &[
     kind::SWITCH_STATEMENT,
     kind::TRY_STATEMENT,
     kind::CATCH_CLAUSE,
+    kind::FINALLY_CLAUSE,
+    kind::ELSE_CLAUSE,
+    kind::SWITCH_CASE,
+    kind::SWITCH_DEFAULT,
+    kind::UNARY_EXPRESSION,
 ];
 
 /// Every field-name constant, for the grammar-consistency test.
@@ -307,4 +322,9 @@ pub const ALL_FIELDS: &[&str] = &[
     field::KEY,
     field::OPERATOR,
     field::KIND,
+    field::CONSEQUENCE,
+    field::ALTERNATIVE,
+    field::HANDLER,
+    field::FINALIZER,
+    field::INDEX,
 ];

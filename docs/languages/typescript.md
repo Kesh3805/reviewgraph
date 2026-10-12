@@ -64,3 +64,48 @@ and an instance member with the same name) get an ordinal: members are ordered b
 on. Adding a duplicate after an existing symbol therefore never changes the existing symbol's
 identity. Limitation: inserting an earlier duplicate shifts later ordinals; the rename matcher
 (SID-005) pairs them through `body_hash`. The pass is idempotent and independent of input order.
+
+## Syntax facts (TSA-006)
+
+`ParsedUnit.facts` lists, per symbol, a position-free summary of what the symbol does. Facts are
+attributed to the innermost enclosing symbol by range; callbacks and anonymous functions are not
+symbols under the default `AnonymousFnPolicy::Attribute`, so their facts fold into the enclosing
+symbol, and module-level statements land on the module symbol (`LocalId(0)`). Facts are emitted in
+source order; groups are sorted by `LocalId`; at most 2,000 facts are kept per symbol (an
+`UnsupportedConstruct` info diagnostic marks the cap). `AnalyzerConfig.syntax_facts = false` turns
+the pass off.
+
+`h8` is the first 8 hex characters of a BLAKE3 hash (domain `rg.fact.v1`) over the normalized token
+stream of a node, so whitespace, comments, quote style and trailing commas never change a key.
+
+| Kind | Key | Detail |
+| --- | --- | --- |
+| `Call` | `call:{receiver}.{name}/{argc}` (receiver chain with `this` kept, literals dropped, inner calls written `name()`) | `validation` for `validate*`, `assert*`, `plainToInstance`, `.parse`/`.safeParse` on `z.*` or `*Schema` receivers |
+| `New` | `new:{Name}/{argc}` | `validation` for `new ValidationPipe` |
+| `Condition` | `if:{h8}`, `ternary:{h8}`, `switch:{h8}` over the condition or switch value | `has_else`, `early_exit` (if only: the consequence is a lone `return`/`throw`), `compares_null`, `negated`, `idents` (at most 8, sorted); `cases` for `switch` |
+| `Loop` | `loop:{for,for_of,for_in,while,do,foreach}:{h8 of the header}` | `awaits_inside` |
+| `Throw` | `throw:{ClassName}` for `throw new X(...)`, else `throw:expr` | |
+| `TryCatch` | `try:{catch,nocatch}:{finally,nofinally}` | `empty_catch`, `rethrows`, `catch_param` |
+| `Await` | `await:{callee}`, `await:expr`, `await:for_of` for `for await` | |
+| `Return` | `return:{void,null,undefined,true,false,lit,ident,obj}`, `return:call:{callee}`, `return:expr:{h8}` | |
+| `Assignment` | `assign:{member chain}` for member targets (`assign:this.total`) | `augmented` |
+| `DbWriteLike` / `DbReadLike` | `dbw:{method}:{entity or ?}` / `dbr:{method}:{entity or ?}` | `method`, `entity`, `receiver_declared_type`, `confidence` (0.9 typed, 0.75 name only, 0.6 raw SQL) |
+| `TransactionWrapper` | `tx:{callee}` for `.transaction(...)`, `.runInTransaction(...)`, `start/commit/rollbackTransaction`; `tx:@Transactional` | facts inside the callback carry `in_transaction = true` |
+| `GuardDecorator` | `guard:{Name}:{h8 of the arguments}` | `name` |
+| `ConfigRead` | `env:NAME` for `process.env.NAME`, `process.env['NAME']`, `const { NAME } = process.env` | `name` (never a value) |
+
+Database heuristics (`src/visit/db_heuristics.rs`): a call qualifies only when its method is in the
+write table (`save, insert, update, upsert, delete, remove, softDelete, softRemove, restore,
+increment, decrement, destroy, bulkCreate`, `create` on a Model-like receiver, `execute` after an
+`insert()/update()/delete()` builder step, `query` whose SQL starts with `INSERT, UPDATE, DELETE,
+ALTER, DROP, TRUNCATE`) or the read table (`find, findOne, findOneBy, findBy, findAndCount, count,
+exists, getMany, getOne, getRawMany`, `query` with `SELECT`), *and* the receiver's declared type
+ends in `Repository, EntityManager, DataSource, QueryRunner, Model, Prisma, Knex`, or its name
+contains `repo, repository, manager, db, dataSource, queryRunner, prisma, knex` (or is `em`), or the
+chain goes through `createQueryBuilder` (then only the terminal call counts). SQL text is classified
+by its first keyword and never stored.
+
+Guard decorators default to `^(UseGuards|Roles?|Permissions?|Public|Auth\w*|Authorize\w*|Skip\w*Auth\w*)$`
+on the last name segment; `AnalyzerConfig.guard_decorator_names` replaces the pattern with an exact
+list. `analysis_ir::facts::compare_keys(base, head)` returns the multiset difference by
+`(kind, key)` that the change classifier consumes.

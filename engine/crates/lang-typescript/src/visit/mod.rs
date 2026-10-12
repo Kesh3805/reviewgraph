@@ -2,8 +2,11 @@
 //! (TSA-005), syntax facts (TSA-006) and hashes (TSA-007), all walking the tree with bounded
 //! depth so no input can overflow the stack.
 
+pub mod db_heuristics;
 pub mod declarations;
 pub mod expr;
+pub mod fact_keys;
+pub mod facts;
 
 use analysis_ir::{
     AnalyzerConfig, DiagCode, DiagSeverity, IrExport, IrFrameworkFact, IrImport, IrReference,
@@ -66,8 +69,14 @@ pub fn run(
             None,
         );
     }
+    let facts = if ctx.cfg.syntax_facts {
+        facts::collect(root, &ctx.source, &table.symbols, ctx.cfg, sink)
+    } else {
+        Vec::new()
+    };
     Collected {
         symbols: table.symbols,
+        facts,
         ..Collected::default()
     }
 }

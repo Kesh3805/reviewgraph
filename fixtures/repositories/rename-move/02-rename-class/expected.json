@@ -1,0 +1,40 @@
+{
+  "description": "OrderService renamed to OrdersService; every member follows through the matched class.",
+  "matches": [
+    {
+      "from": "ts:src/orders/orders.service#OrderService/class",
+      "to": "ts:src/orders/orders.service#OrdersService/class",
+      "transition": "renamed",
+      "rule": "exact_body",
+      "min_similarity": 1.0
+    },
+    {
+      "from": "ts:src/orders/orders.service#OrderService.create/method",
+      "to": "ts:src/orders/orders.service#OrdersService.create/method",
+      "transition": "renamed",
+      "rule": "exact_body",
+      "min_similarity": 1.0
+    },
+    {
+      "from": "ts:src/orders/orders.service#OrderService.total/method",
+      "to": "ts:src/orders/orders.service#OrdersService.total/method",
+      "transition": "renamed",
+      "rule": "exact_body",
+      "min_similarity": 1.0
+    },
+    {
+      "from": "ts:src/orders/orders.service#OrderService.cancel/method",
+      "to": "ts:src/orders/orders.service#OrdersService.cancel/method",
+      "transition": "renamed",
+      "rule": "exact_body",
+      "min_similarity": 1.0
+    }
+  ],
+  "unmatched_added": [],
+  "unmatched_removed": [],
+  "unchanged": [
+    "ts:src/orders/orders.service#OrderLine/interface"
+  ],
+  "modified": [],
+  "ambiguous": 0
+}
