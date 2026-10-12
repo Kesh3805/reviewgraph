@@ -3841,7 +3841,7 @@ Status: ☐
 ---
 
 ### PIPE-006 — Budget manager
-Status: ☐
+Status: ◐
 
 - **Task ID:** PIPE-006
 - **Title:** Review budget manager (PRD §90): symbols, graph expansion, tokens, candidates, model calls, latency
