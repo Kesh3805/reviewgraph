@@ -6,3 +6,5 @@ pub mod jobs;
 
 pub use error::{Error, Result};
 pub mod index;
+#[cfg(feature = "pg")]
+pub mod store;

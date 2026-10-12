@@ -3225,6 +3225,7 @@ dependencies = [
  "codegraph",
  "graph-storage",
  "lang-typescript",
+ "opentelemetry",
  "rayon",
  "repository",
  "review-core",
@@ -3237,6 +3238,7 @@ dependencies = [
  "tokio-util",
  "tracing",
  "uuid",
+ "verification",
 ]
 
 [[package]]

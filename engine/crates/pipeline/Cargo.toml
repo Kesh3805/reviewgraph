@@ -10,11 +10,16 @@ publish.workspace = true
 workspace = true
 
 [features]
+# PostgreSQL adapters (the finding lifecycle store).
+pg = ["dep:sqlx", "dep:opentelemetry", "dep:verification"]
 # Database-backed tests; need TEST_DATABASE_URL (or DATABASE_URL) pointing at a Postgres server
 # whose user may CREATE DATABASE. Plain `cargo test` never touches a database.
-integration = []
+integration = ["pg"]
 
 [dependencies]
+verification = { workspace = true, optional = true }
+sqlx = { workspace = true, optional = true }
+opentelemetry = { workspace = true, optional = true }
 review-core.workspace = true
 analysis-ir.workspace = true
 graph-storage.workspace = true
@@ -33,5 +38,6 @@ tracing.workspace = true
 uuid.workspace = true
 
 [dev-dependencies]
+tokio.workspace = true
 sqlx.workspace = true
 tempfile.workspace = true
