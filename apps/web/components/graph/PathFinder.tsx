@@ -77,7 +77,12 @@ export function PathFinder({
       <div className="grid gap-4 md:grid-cols-2">
         <div className="space-y-2">
           <Picked label="From" symbol={from} />
-          <SymbolSearch repoId={repoId} snapshot={snapshot} label="From symbol" onSelect={setFrom} />
+          <SymbolSearch
+            repoId={repoId}
+            snapshot={snapshot}
+            label="From symbol"
+            onSelect={setFrom}
+          />
         </div>
         <div className="space-y-2">
           <Picked label="To" symbol={to} />
@@ -129,7 +134,9 @@ export function PathFinder({
       {query.isFetching && <Loading label="Finding paths" />}
       {query.isError && (
         <p role="alert" className="text-sm text-destructive">
-          {isGraphUnavailable(query.error) ? 'Graph service unavailable.' : 'Could not find a path.'}
+          {isGraphUnavailable(query.error)
+            ? 'Graph service unavailable.'
+            : 'Could not find a path.'}
         </p>
       )}
       {query.isSuccess && !query.isFetching && paths.length === 0 && submitted && (

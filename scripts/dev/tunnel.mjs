@@ -15,15 +15,21 @@ async function main() {
   if (process.env.NGROK_DOMAIN) args.push(`--domain=${process.env.NGROK_DOMAIN}`);
   const child = spawn('ngrok', args, { stdio: 'ignore' });
   child.on('error', () => {
-    console.error('ngrok not found: install from https://ngrok.com/download and run `ngrok config add-authtoken <token>`');
+    console.error(
+      'ngrok not found: install from https://ngrok.com/download and run `ngrok config add-authtoken <token>`',
+    );
     process.exit(1);
   });
   for (let i = 0; i < 30; i++) {
     await new Promise((r) => setTimeout(r, 1000));
     try {
-      const url = parseNgrokTunnels(await (await fetch('http://127.0.0.1:4040/api/tunnels')).json());
+      const url = parseNgrokTunnels(
+        await (await fetch('http://127.0.0.1:4040/api/tunnels')).json(),
+      );
       if (url) {
-        console.log(`Webhook URL: ${url}\nUpdate the GitHub App webhook URL to this value. Ctrl+C stops the tunnel.`);
+        console.log(
+          `Webhook URL: ${url}\nUpdate the GitHub App webhook URL to this value. Ctrl+C stops the tunnel.`,
+        );
         return;
       }
     } catch {

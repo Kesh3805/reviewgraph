@@ -14,15 +14,24 @@ test('compare_passes_within_noise_tolerance', () => {
 });
 
 test('compare_fails_on_precision_drop_over_3_points', () => {
-  assert.equal(compareQuality({ precision: 80, fp_rate: 10 }, { precision: 76, fp_rate: 10 }).length, 1);
+  assert.equal(
+    compareQuality({ precision: 80, fp_rate: 10 }, { precision: 76, fp_rate: 10 }).length,
+    1,
+  );
 });
 
 test('compare_fails_on_fp_rate_rise_over_3_points', () => {
-  assert.equal(compareQuality({ precision: 80, fp_rate: 10 }, { precision: 80, fp_rate: 14 }).length, 1);
+  assert.equal(
+    compareQuality({ precision: 80, fp_rate: 10 }, { precision: 80, fp_rate: 14 }).length,
+    1,
+  );
 });
 
 test('smoke_set_has_exactly_five_cases_that_exist', () => {
-  const ids = readFileSync(new URL('../../benchmarks/quality/smoke-set.txt', import.meta.url), 'utf8')
+  const ids = readFileSync(
+    new URL('../../benchmarks/quality/smoke-set.txt', import.meta.url),
+    'utf8',
+  )
     .split('\n')
     .filter((l) => l.trim() && !l.startsWith('#'));
   assert.equal(ids.length, 5);

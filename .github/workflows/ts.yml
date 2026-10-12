@@ -37,8 +37,8 @@ jobs:
           if [ "${{ github.event_name }}" = "pull_request" ]; then
             F="$(node scripts/ci/affected-filter.mjs origin/${{ github.base_ref }})"
           else F=ALL; fi
-          if [ "$F" = "ALL" ]; then pnpm -r --if-present lint -- --max-warnings 0
-          elif [ -n "$F" ]; then pnpm $F --if-present lint -- --max-warnings 0
+          if [ "$F" = "ALL" ]; then pnpm -r --if-present lint --max-warnings 0
+          elif [ -n "$F" ]; then pnpm $F --if-present lint --max-warnings 0
           else echo "no affected packages"; fi
 
   typecheck:

@@ -37,7 +37,13 @@ async function main() {
   let failed = false;
   for (let i = 0; i < Number(values.repeat); i++) {
     const deliveryId = values.redeliver && i > 0 ? randomUUID() : baseId;
-    const req = buildRequest({ secret, event: values.event, body, deliveryId, tamper: values.tamper });
+    const req = buildRequest({
+      secret,
+      event: values.event,
+      body,
+      deliveryId,
+      tamper: values.tamper,
+    });
     const res = await fetch(values.url, { method: 'POST', headers: req.headers, body: req.body });
     console.log(`delivery=${deliveryId} status=${res.status} ${await res.text()}`);
     const ok = expected ? res.status === expected : res.ok;

@@ -15,7 +15,10 @@ test('manifest_contains_no_write_contents_or_admin_permissions', () => {
 
 test('tunnel_script_parses_ngrok_local_api_response', () => {
   const url = parseNgrokTunnels({
-    tunnels: [{ public_url: 'http://x.ngrok-free.app' }, { public_url: 'https://x.ngrok-free.app' }],
+    tunnels: [
+      { public_url: 'http://x.ngrok-free.app' },
+      { public_url: 'https://x.ngrok-free.app' },
+    ],
   });
   assert.equal(url, 'https://x.ngrok-free.app/api/v1/webhooks/github');
   assert.equal(parseNgrokTunnels({ tunnels: [] }), undefined);

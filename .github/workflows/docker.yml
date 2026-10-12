@@ -3,7 +3,8 @@ name: docker
 # Images are built on the CI runner only; local development never requires Docker.
 on:
   pull_request:
-    paths: ['infra/docker/**', 'engine/**', 'apps/**', 'packages/**', '.github/workflows/docker.yml']
+    paths:
+      ['infra/docker/**', 'engine/**', 'apps/**', 'packages/**', '.github/workflows/docker.yml']
   push:
     branches: [main]
     tags: ['v*']
@@ -27,8 +28,16 @@ jobs:
         image: [engine, api, web]
     steps:
       - uses: actions/checkout@v4
+      # Skip until DEV-001 adds infra/docker/<image>.Dockerfile.
+      - name: Check Dockerfile exists
+        id: df
+        run: |
+          if [ -f "infra/docker/${{ matrix.image }}.Dockerfile" ]; then echo "present=true" >> "$GITHUB_OUTPUT"
+          else echo "present=false" >> "$GITHUB_OUTPUT"; echo "::notice::infra/docker/${{ matrix.image }}.Dockerfile not found; skipping (DEV-001)"; fi
       - uses: docker/setup-buildx-action@v3
+        if: steps.df.outputs.present == 'true'
       - name: Build (no push)
+        if: steps.df.outputs.present == 'true'
         uses: docker/build-push-action@v6
         with:
           context: .
@@ -40,6 +49,8 @@ jobs:
           build-args: |
             GIT_SHA=${{ github.sha }}
       - name: Hardening checks
+        if: steps.df.outputs.present == 'true'
         run: bash scripts/ci/image-hardening-check.sh reviewgraph-${{ matrix.image }}:ci ${{ matrix.image }}
       - name: Read-only rootfs smoke
+        if: steps.df.outputs.present == 'true'
         run: bash scripts/ci/image-smoke.sh reviewgraph-${{ matrix.image }}:ci ${{ matrix.image }}

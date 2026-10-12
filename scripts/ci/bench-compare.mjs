@@ -16,7 +16,9 @@ export function comparePerf(baseline, current, t = THRESHOLDS) {
       failures.push(`${name}: p95 ${base.p95_ms}ms -> ${cur.p95_ms}ms exceeds +${t.p95Pct}%`);
     }
     if (base.peak_mem_mb && cur.peak_mem_mb > base.peak_mem_mb * (1 + t.memPct / 100)) {
-      failures.push(`${name}: memory ${base.peak_mem_mb}MB -> ${cur.peak_mem_mb}MB exceeds +${t.memPct}%`);
+      failures.push(
+        `${name}: memory ${base.peak_mem_mb}MB -> ${cur.peak_mem_mb}MB exceeds +${t.memPct}%`,
+      );
     }
   }
   return failures;
@@ -26,10 +28,14 @@ export function comparePerf(baseline, current, t = THRESHOLDS) {
 export function compareQuality(baseline, current, t = THRESHOLDS) {
   const failures = [];
   if (baseline.precision - current.precision > t.precisionPts) {
-    failures.push(`precision ${baseline.precision} -> ${current.precision} drops more than ${t.precisionPts} points`);
+    failures.push(
+      `precision ${baseline.precision} -> ${current.precision} drops more than ${t.precisionPts} points`,
+    );
   }
   if (current.fp_rate - baseline.fp_rate > t.fpPts) {
-    failures.push(`fp_rate ${baseline.fp_rate} -> ${current.fp_rate} rises more than ${t.fpPts} points`);
+    failures.push(
+      `fp_rate ${baseline.fp_rate} -> ${current.fp_rate} rises more than ${t.fpPts} points`,
+    );
   }
   return failures;
 }

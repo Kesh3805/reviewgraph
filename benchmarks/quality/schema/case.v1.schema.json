@@ -13,8 +13,17 @@
       "type": "array",
       "minItems": 1,
       "items": {
-        "enum": ["correctness_regression", "safe_change", "security", "architecture", "fp_trap",
-                 "test_gap", "concurrency", "transaction", "api_contract"]
+        "enum": [
+          "correctness_regression",
+          "safe_change",
+          "security",
+          "architecture",
+          "fp_trap",
+          "test_gap",
+          "concurrency",
+          "transaction",
+          "api_contract"
+        ]
       }
     },
     "language": { "type": "string" },
