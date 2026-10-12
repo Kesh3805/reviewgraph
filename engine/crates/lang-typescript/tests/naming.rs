@@ -523,3 +523,171 @@ fn qualified_names_chain_below_the_parent() {
         "the module symbol is one reserved segment"
     );
 }
+
+#[test]
+fn default_export_object_members() {
+    let unit = common::analyze(
+        "src/naming/default-object-members.ts",
+        "export default { load() {}, nested: { deep() {} }, run: () => undefined };\n",
+    );
+    for entry in [
+        "constant default",
+        "method default.load",
+        "method default.nested.deep",
+        "function default.run",
+    ] {
+        assert!(
+            has(&unit, entry),
+            "{entry} missing: {}",
+            list(&unit).join(", ")
+        );
+    }
+}
+
+/// One example per row of the "Declarations" rule table in `docs/languages/typescript.md`,
+/// keyed by the row's construct cell (backticks removed). The expected values are qualified
+/// names, as the table's `Name` column states them.
+const DOC_ROW_EXAMPLES: &[(&str, &str, &[&str])] = &[
+    (
+        "class, abstract class",
+        "abstract class A {}\nclass B {}\n",
+        &["A", "B"],
+    ),
+    (
+        "class expression bound to a variable",
+        "const C = class {};\n",
+        &["C"],
+    ),
+    (
+        "interface",
+        "interface I { a: string; m(): void }\n",
+        &["I", "I.a", "I.m"],
+    ),
+    ("type alias", "type T = string;\n", &["T"]),
+    (
+        "enum, const enum",
+        "enum E { A = 1 }\nconst enum F { B = 2 }\n",
+        &["E", "E.A", "F", "F.B"],
+    ),
+    ("function", "function f(): void {}\n", &["f"]),
+    (
+        "method, getter, setter, constructor",
+        "class K { m() {} get g() { return 1; } set g(v: number) {} constructor() {} }\n",
+        &["K.m", "K.g", "K.constructor"],
+    ),
+    (
+        "class property",
+        "class P { x = 1; f = () => undefined; }\n",
+        &["P.x", "P.f"],
+    ),
+    (
+        "constructor parameter property",
+        "class Q { constructor(private id: string) {} }\n",
+        &["Q.id"],
+    ),
+    (
+        "module const / let / var",
+        "const a = 1;\nlet b = 2;\nvar c = 3;\n",
+        &["a", "b", "c"],
+    ),
+    (
+        "const f = () => {} / function () {}",
+        "const f = () => {};\nconst g = function () {};\n",
+        &["f", "g"],
+    ),
+    (
+        "object-literal const o = { a() {}, b: () => {} }",
+        "const o = { a() {}, b: () => {}, c: { d() {} } };\n",
+        &["o", "o.a", "o.b", "o.c.d"],
+    ),
+    (
+        "namespace A.B.C {}",
+        "namespace A.B.C { export const v = 1; }\n",
+        &["A", "A.B", "A.B.C"],
+    ),
+    (
+        "export default class/function {} (anonymous)",
+        "export default class { m() {} }\n",
+        &["default", "default.m"],
+    ),
+    (
+        "export default { ... }",
+        "export default { k() {} };\n",
+        &["default", "default.k"],
+    ),
+    (
+        "export default identifier",
+        "const existing = 1;\nexport default existing;\n",
+        &["existing"],
+    ),
+];
+
+fn doc_declaration_rows() -> Vec<String> {
+    let path = format!(
+        "{}/../../../docs/languages/typescript.md",
+        env!("CARGO_MANIFEST_DIR")
+    );
+    let text = std::fs::read_to_string(&path).unwrap_or_else(|e| panic!("cannot read {path}: {e}"));
+    let mut in_section = false;
+    let mut rows = Vec::new();
+    for line in text.lines() {
+        if line.starts_with("## ") {
+            in_section = line.starts_with("## Declarations");
+            continue;
+        }
+        if !in_section || !line.starts_with('|') {
+            continue;
+        }
+        let first = line
+            .trim_start_matches('|')
+            .split('|')
+            .next()
+            .unwrap_or_default()
+            .trim()
+            .replace('`', "");
+        if first == "Construct" || first.chars().all(|c| c == '-') {
+            continue;
+        }
+        rows.push(first);
+    }
+    rows
+}
+
+#[test]
+fn rule_table_rows_each_have_a_checked_example() {
+    let rows = doc_declaration_rows();
+    assert!(!rows.is_empty(), "the Declarations table was not found");
+    for row in &rows {
+        assert!(
+            DOC_ROW_EXAMPLES.iter().any(|(key, _, _)| key == row),
+            "row {row:?} of the rule table has no example in DOC_ROW_EXAMPLES"
+        );
+    }
+    for (key, _, _) in DOC_ROW_EXAMPLES {
+        assert!(
+            rows.iter().any(|row| row == key),
+            "example {key:?} matches no row of the rule table"
+        );
+    }
+    for (key, source, expected) in DOC_ROW_EXAMPLES {
+        let unit = common::analyze("src/naming/doc-row.ts", source);
+        let names: Vec<String> = unit
+            .symbols
+            .iter()
+            .skip(1)
+            .map(|s| s.qualified_name.join("."))
+            .collect();
+        for name in *expected {
+            assert!(
+                names.iter().any(|n| n == name),
+                "row {key:?}: {name} missing from {names:?}"
+            );
+        }
+        if *key == "export default identifier" {
+            assert!(
+                !names.iter().any(|n| n == "default"),
+                "row {key:?} adds no symbol: {names:?}"
+            );
+        }
+    }
+}
