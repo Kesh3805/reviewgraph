@@ -115,7 +115,9 @@ fn run_with(
         },
     );
     let delta = SymbolDelta::from_units(diff, units, &renames);
-    build_changed_symbols(&map, &delta, &GraphPair::none(), units, cfg)
+    let mut cfg = cfg.clone();
+    cfg.renames = renames;
+    build_changed_symbols(&map, &delta, &GraphPair::none(), units, &cfg)
 }
 
 fn run(diff: &DiffModel, units: &UnitMap) -> ChangedSymbolSet {
@@ -473,11 +475,12 @@ fn golden_authorize_has_base_and_head_versions() {
     let units = support::units_for(&scenario, &diff);
     let set = run(&diff, &units);
     let non_cosmetic: Vec<_> = set.symbols.iter().filter(|r| !r.cosmetic).collect();
-    assert_eq!(non_cosmetic.len(), 1, "{non_cosmetic:#?}");
+    assert_eq!(non_cosmetic.len(), 1, "{set:#?}");
     let rec = non_cosmetic[0];
     assert_eq!(
         rec.symbol.symbol_id.as_str(),
-        "ts:src/auth/auth.service#AuthService.authorize/method"
+        "ts:src/auth/auth.service#AuthService.authorize/method",
+        "{set:#?}"
     );
     assert_eq!(
         rec.symbol.change,

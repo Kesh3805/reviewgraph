@@ -153,13 +153,7 @@ impl SymbolDelta {
         if let Some(base_unit) = base {
             for (bi, bid) in base_ids.iter().enumerate().skip(1) {
                 let target = renames.get(bid).unwrap_or(bid);
-                let found = head.and_then(|hu| {
-                    head_by_id
-                        .get(target)
-                        .copied()
-                        .filter(|&hi| hi != 0)
-                        .map(|hi| (hu, hi))
-                });
+                let found = head.zip(head_by_id.get(target).copied().filter(|&hi| hi != 0));
                 let Some((head_unit, hi)) = found else {
                     out.extend(removed_entry(base_unit, &base_ids, bi, base_path));
                     continue;

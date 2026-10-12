@@ -5,10 +5,11 @@
 //! touches) and the [`SymbolDelta`] (symbols whose hashes changed, even if no hunk touched their
 //! own lines). Each seed becomes one [`SymbolRecord`].
 
-use std::collections::{BTreeMap, BTreeSet};
+use std::collections::{BTreeMap, BTreeSet, HashMap};
 use std::sync::Arc;
 
 use analysis_ir::framework::FrameworkFactKind;
+use analysis_ir::identity::symbol_ids;
 use analysis_ir::symbol::{IrSymbol, LocalId, Modifiers, Visibility};
 use analysis_ir::unit::ParsedUnit;
 use codegraph::query::{EdgeFilter, GraphQuery};
@@ -36,6 +37,8 @@ pub struct ChangeCfg {
     pub base_paths: BTreeMap<RepoPath, RepoPath>,
     /// Files that are not analysed as source (generated, vendored, ...).
     pub generated: BTreeSet<RepoPath>,
+    /// Symbol lineage (SID-005): base symbol id to its head id.
+    pub renames: BTreeMap<SymbolId, SymbolId>,
 }
 
 impl Default for ChangeCfg {
@@ -44,6 +47,7 @@ impl Default for ChangeCfg {
             max_symbols: 5_000,
             base_paths: BTreeMap::new(),
             generated: BTreeSet::new(),
+            renames: BTreeMap::new(),
         }
     }
 }
@@ -208,6 +212,40 @@ pub fn build_changed_symbols(
         seeds.entry((seed.key, seed.side)).or_insert(seed);
     }
     span.record("seeds", seeds.len());
+
+    // The hunk map loads the base unit only when old-side lines changed, so an insert-only edit
+    // arrives without its base symbol; look it up by id (or lineage) here.
+    let reverse: BTreeMap<&SymbolId, &SymbolId> =
+        cfg.renames.iter().map(|(b, h)| (h, b)).collect();
+    let mut base_index: HashMap<RepoPath, Option<HashMap<SymbolId, u32>>> = HashMap::new();
+    for seed in seeds.values_mut() {
+        if seed.side != DiffSide::Head || seed.base_local.is_some() {
+            continue;
+        }
+        let base_path = cfg
+            .base_paths
+            .get(&seed.path)
+            .unwrap_or(&seed.path)
+            .clone();
+        let index = base_index.entry(base_path.clone()).or_insert_with(|| {
+            units.unit(DiffSide::Base, &base_path).map(|u| {
+                symbol_ids(&u)
+                    .into_iter()
+                    .enumerate()
+                    .map(|(i, id)| (id, i as u32))
+                    .collect()
+            })
+        });
+        let Some(index) = index else { continue };
+        let base_id = reverse.get(&seed.id).map_or_else(|| seed.id.clone(), |b| (*b).clone());
+        if let Some(&local) = index.get(&base_id) {
+            seed.base_local = Some(local);
+            seed.base_path = Some(base_path);
+            if base_id != seed.id {
+                seed.base_id = Some(base_id);
+            }
+        }
+    }
 
     let mut out = ChangedSymbolSet::default();
     for seed in seeds.values() {
