@@ -2360,6 +2360,8 @@ Status: ☐
 ### INC-001 — Changed-path detection between commits (gix tree diff) incl. renames
 Status: ◐
 
+> **Implementation note:** `incremental::changeset::detect_changes` and its tests are implemented and green in CI. Missing: the `unaffected_by_user_git_config` test and the 100k-file benchmark; objects are carried as hex strings rather than `gix::ObjectId`.
+
 > **Implementation note:** The gix tree-diff primitive (`repository::git::tree_changes`: `diff_trees`, `tree_changes`, rename/copy detection) was built with DIFF-002 and is covered by `diff-engine/tests/files.rs`. Still missing: `incremental::changeset::detect_changes` on top of it and this task's own tests.
 
 - **Task ID:** INC-001
@@ -2406,7 +2408,9 @@ Status: ◐
 ---
 
 ### INC-002 — Hash-skip + reparse-only-changed
-Status: ☐
+Status: ◐
+
+> **Implementation note:** `reparse_changed`, `BlobSource` (git and in-memory) and unit-cache ports are implemented with tests. Missing: `file_versions` upsert through the store, async `ParseCache` adapter in `pipeline`, cancellation checks, and the benchmark.
 
 - **Task ID:** INC-002
 - **Title:** `incremental::reparse` — for each changed path, hash the head blob, skip it when the content hash equals the base file's, otherwise obtain a `ParsedUnit` (parse cache first, analyzer second) and report counters.
@@ -2457,7 +2461,9 @@ Status: ☐
 ---
 
 ### INC-003 — Apply per-file symbol diffs (SID-004/005) to build the head symbol table
-Status: ☐
+Status: ◐
+
+> **Implementation note:** `diff_changed_files` (key-set classification, cross-file rename pairing) and `HeadSymbolTables` with lazy base loading are implemented with tests. Missing: the `symbols_diff` benchmark and an IR-cache-backed `BaseUnitSource` (the port exists; no adapter).
 
 - **Task ID:** INC-003
 - **Title:** `incremental::symbols` — classify symbols of each reparsed file as unchanged/modified/added/removed, run the cross-file rename/move matcher, and produce a head `SymbolTables` view (changed files from fresh IR, everything else lazily from the base).
@@ -2503,6 +2509,8 @@ Status: ☐
 
 ### INC-004 — Name index with delta support
 Status: ◐
+
+> **Implementation note:** `BaseIndexes`, `NameIndex::from_graph`, `NameDelta::from_changes` and the proptest are implemented. Missing: GS-008 cache integration and the benchmarks. Note: the IR parents top-level symbols under the module symbol, so the linker indexes them as members.
 
 - **Task ID:** INC-004
 - **Title:** `incremental::name_index` — a base `NameIndex` cached with the base graph, an `OverlayNameIndex` implementing `NameLookup` for the head, and a `NameDelta` that lists exactly the names whose candidate sets changed.
@@ -2828,6 +2836,8 @@ Status: ☐
 
 ### INC-011 — Full-rebuild trigger evaluation (PRD §24)
 Status: ◐
+
+> **Implementation note:** `evaluate_snapshot` now consumes `SnapshotMeta`, `SnapshotVersions` and `ChangeSet` with config-path detection and tests. Missing: the `ConfigReader` recompute hook and the decision table in `docs/graph-schema/versioning.md`.
 
 - **Task ID:** INC-011
 - **Title:** `incremental::rebuild` — a pure decision function that returns `Incremental` or `Full{reasons, mode}` from versions, config components, snapshot health, the change set and operator flags.
