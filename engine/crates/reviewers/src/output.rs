@@ -8,6 +8,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
 use crate::error::ReviewerError;
+use crate::gates::GatedItem;
 use crate::refs::RefTable;
 
 /// Schema name and version used in requests and fixtures.
@@ -140,6 +141,8 @@ pub struct ReviewerOutput {
     pub no_findings_reason: Option<String>,
     pub model_response_meta: ModelResponseMeta,
     pub ref_table: Arc<RefTable>,
+    /// Candidates dropped by the reviewer's gates (never published).
+    pub gated: Vec<GatedItem>,
 }
 
 /// Splits a validated model output into raw items. An item that does not deserialise (possible

@@ -7,19 +7,41 @@
 //! `code_chunk` duplicate search lives in the semantic layer; its confirmed candidates enter as
 //! [`DuplicateCandidate`]s.
 
-use model_gateway::TaskType;
-use serde::{Deserialize, Serialize};
+use std::sync::LazyLock;
 
-use crate::context::{ChangedSymbol, ReviewContext};
+use model_gateway::{OutputSchema, TaskType};
+use serde::{Deserialize, Serialize};
+use serde_json::{json, Value};
+
+use crate::context::{ChangedSymbol, DiagnosticItem, ReviewContext};
 use crate::error::ReviewerError;
-use crate::output::reviewer_output_schema;
-use crate::prompts::prompt;
-use crate::reviewer::{Applicability, ContextBudget, ReviewerKind, RiskAssessment, RoutingInput};
+use crate::prompts::{prompt, Prompt};
+use crate::reviewer::{
+    Applicability, ContextBudget, ReviewRequest, ReviewerKind, RiskAssessment, RoutingInput,
+};
 use crate::routing::{SkipReason, COMPLEXITY_SIGNALS};
 use crate::specialist::{any_signal, no_extra_sections, SpecialistReviewer, SpecialistSpec};
 
 /// Semver of the maintainability reviewer code.
-pub const MAINTAINABILITY_REVIEWER_VERSION: &str = "1.0.0";
+pub const MAINTAINABILITY_REVIEWER_VERSION: &str = "1.1.0";
+
+pub const MAINTAINABILITY_SCHEMA_NAME: &str = "maintainability";
+pub const MAINTAINABILITY_SCHEMA_VERSION: &str = "v1";
+pub const MAINTAINABILITY_SCHEMA_JSON: &str =
+    include_str!("../prompts/maintainability/v1.schema.json");
+
+/// The five maintainability categories of `maintainability.v1`.
+pub const MAINTAINABILITY_CATEGORIES: &[&str] = &[
+    "duplicated_logic",
+    "unreviewable_function",
+    "abstraction_leak",
+    "inconsistent_pattern",
+    "unreadable_control_flow",
+];
+
+/// `tool` of a seed diagnostic: the context carries every deterministic seed as a `D#` item of
+/// this tool, with the metric (or `duplicate`) as its `code`.
+pub const SEED_TOOL: &str = "deterministic:maintainability";
 /// `review.reviewers.maintainability` default.
 pub const DEFAULT_ENABLED: bool = false;
 /// Default minimum confidence to publish a maintainability finding.
@@ -44,7 +66,8 @@ pub struct Metrics {
     pub max_nesting: u32,
 }
 
-/// Thresholds a metric must cross, base to head.
+/// Limits a metric must exceed, base to head: a metric over its limit in the base does not
+/// qualify (REV-M-001: cyclomatic > 25, lines > 150, nesting > 5).
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub struct MetricThresholds {
     pub cyclomatic: u32,
@@ -55,9 +78,9 @@ pub struct MetricThresholds {
 impl Default for MetricThresholds {
     fn default() -> Self {
         Self {
-            cyclomatic: 15,
-            lines: 80,
-            max_nesting: 4,
+            cyclomatic: 25,
+            lines: 150,
+            max_nesting: 5,
         }
     }
 }
@@ -97,14 +120,14 @@ pub fn metrics_of(body: &str) -> Metrics {
     }
 }
 
-/// A metric that crossed its threshold from base to head. A metric that was already over the
-/// threshold in the base does not qualify.
+/// A metric that crossed its limit from base to head. A metric that was already over the limit
+/// in the base does not qualify.
 pub fn metric_crossed(
     base: Option<Metrics>,
     head: Metrics,
     t: &MetricThresholds,
 ) -> Option<&'static str> {
-    let crossed = |b: Option<u32>, h: u32, limit: u32| h >= limit && b.is_none_or(|b| b < limit);
+    let crossed = |b: Option<u32>, h: u32, limit: u32| h > limit && b.is_none_or(|b| b <= limit);
     if crossed(base.map(|m| m.cyclomatic), head.cyclomatic, t.cyclomatic) {
         Some("cyclomatic_complexity")
     } else if crossed(base.map(|m| m.lines), head.lines, t.lines) {
@@ -177,7 +200,103 @@ pub fn maintainability_budget(risk: &RiskAssessment) -> ContextBudget {
     ContextBudget::for_risk(risk.level)
 }
 
-/// Builds the maintainability reviewer (prompt `maintainability/v1`).
+/// The seeds of [`seed`] as `D#` diagnostics, ready to join the context's
+/// `deterministic_findings`. `code` is the metric name or `duplicate`.
+pub fn seed_diagnostics(
+    cx: &dyn ReviewContext,
+    thresholds: &MetricThresholds,
+    duplicates: &[DuplicateCandidate],
+) -> Vec<DiagnosticItem> {
+    let mut out: Vec<DiagnosticItem> = cx
+        .changed_symbols()
+        .iter()
+        .filter(|s| !s.generated)
+        .filter_map(|s| {
+            symbol_metric(s, thresholds).map(|metric| DiagnosticItem {
+                tool: SEED_TOOL.to_owned(),
+                path: s.path.clone(),
+                line: s.range[0],
+                code: metric.to_owned(),
+                message: format!("{metric} crossed its limit in {}", s.symbol_id),
+            })
+        })
+        .collect();
+    out.extend(
+        duplicates
+            .iter()
+            .filter(|d| d.confirmed())
+            .map(|d| DiagnosticItem {
+                tool: SEED_TOOL.to_owned(),
+                path: String::new(),
+                line: 0,
+                code: "duplicate".to_owned(),
+                message: format!("duplicate of {}", d.symbol_id),
+            }),
+    );
+    out
+}
+
+/// The model is never called without a deterministic seed in the context.
+fn maintainability_ready(req: &ReviewRequest<'_>) -> Result<(), ReviewerError> {
+    if req
+        .context
+        .diagnostics()
+        .iter()
+        .any(|d| d.tool == SEED_TOOL)
+    {
+        Ok(())
+    } else {
+        Err(ReviewerError::NotReady(
+            "no deterministic maintainability seed in the context".into(),
+        ))
+    }
+}
+
+/// The fields `maintainability.v1` adds to the common candidate.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct MaintainabilityCandidateExtension {
+    pub category: String,
+    /// `D#` ref of the deterministic seed the finding rests on.
+    pub seed_ref: String,
+}
+
+impl MaintainabilityCandidateExtension {
+    /// Reads the extension from one raw `maintainability.v1` finding.
+    pub fn from_raw(finding: &Value) -> Option<Self> {
+        serde_json::from_value(json!({
+            "category": finding.get("category")?,
+            "seed_ref": finding.get("seed_ref")?,
+        }))
+        .ok()
+    }
+}
+
+static MAINTAINABILITY_SCHEMA: LazyLock<Result<OutputSchema, String>> = LazyLock::new(|| {
+    serde_json::from_str::<Value>(MAINTAINABILITY_SCHEMA_JSON)
+        .map(|v| {
+            OutputSchema::new(
+                MAINTAINABILITY_SCHEMA_NAME,
+                MAINTAINABILITY_SCHEMA_VERSION,
+                v,
+            )
+        })
+        .map_err(|e| e.to_string())
+});
+
+/// The `maintainability.v1` output schema.
+pub fn maintainability_output_schema() -> Result<OutputSchema, ReviewerError> {
+    MAINTAINABILITY_SCHEMA.clone().map_err(|e| {
+        ReviewerError::Prompt(format!("maintainability.v1 schema is not valid JSON: {e}"))
+    })
+}
+
+/// The maintainability prompt, v2 (binds `maintainability.v1`).
+pub fn maintainability_prompt() -> Result<Prompt, ReviewerError> {
+    prompt("maintainability", 2)
+}
+
+/// Builds the maintainability reviewer (prompt `maintainability/v2`, schema
+/// `maintainability.v1`).
 pub fn maintainability_reviewer() -> Result<SpecialistReviewer, ReviewerError> {
     Ok(SpecialistReviewer::new(
         SpecialistSpec {
@@ -186,9 +305,10 @@ pub fn maintainability_reviewer() -> Result<SpecialistReviewer, ReviewerError> {
             version: MAINTAINABILITY_REVIEWER_VERSION,
             applies: maintainability_applies,
             extra: no_extra_sections,
+            ready: maintainability_ready,
             budget: maintainability_budget,
         },
-        prompt("maintainability", 1)?,
-        reviewer_output_schema()?,
+        maintainability_prompt()?,
+        maintainability_output_schema()?,
     ))
 }

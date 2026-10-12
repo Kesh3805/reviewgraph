@@ -27,6 +27,10 @@ impl Classify for Error {
 pub enum ReviewerError {
     #[error("model gateway: {0}")]
     Gateway(#[from] GatewayError),
+    /// A precondition of the reviewer is not met (for example no deterministic seed); no model
+    /// call was made.
+    #[error("not ready: {0}")]
+    NotReady(String),
     #[error("invalid context: {0}")]
     InvalidContext(String),
     /// A prompt or schema asset is broken (caught by the startup self-test and unit tests).
@@ -46,6 +50,7 @@ impl ReviewerError {
                 ..
             }) => "replay_miss",
             Self::Gateway(e) => e.class(),
+            Self::NotReady(_) => "not_ready",
             Self::InvalidContext(_) => "invalid_context",
             Self::Prompt(_) => "prompt_asset",
             Self::Cancelled => "cancelled",
