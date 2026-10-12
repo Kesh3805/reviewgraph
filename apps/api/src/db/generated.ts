@@ -549,6 +549,17 @@ export interface ReviewRuns {
   updated_at: Generated<Timestamp>;
 }
 
+export interface ReviewRunTransitions {
+  at: Generated<Timestamp>;
+  detail: Json | null;
+  from_state: string;
+  id: Generated<Int8>;
+  job_id: string | null;
+  organization_id: string;
+  review_run_id: string;
+  to_state: string;
+}
+
 export interface SemanticCollections {
   activated_at: Timestamp | null;
   created_at: Generated<Timestamp>;
@@ -601,6 +612,20 @@ export interface Snapshots {
   stats: Generated<Json>;
   status: string;
   updated_at: Generated<Timestamp>;
+}
+
+export interface StageOutputs {
+  blob_key: string | null;
+  created_at: Generated<Timestamp>;
+  duration_ms: number;
+  input_hash: string;
+  organization_id: string;
+  output: Json | null;
+  output_hash: string;
+  review_run_id: string;
+  schema_version: number;
+  stage: string;
+  status: string;
 }
 
 export interface SymbolLineage {
@@ -744,12 +769,14 @@ export interface DB {
   repository_profiles: RepositoryProfiles;
   repository_settings: RepositorySettings;
   resolved_by_kinds: ResolvedByKinds;
+  review_run_transitions: ReviewRunTransitions;
   review_runs: ReviewRuns;
   reviewer_runs: ReviewerRuns;
   semantic_collections: SemanticCollections;
   sessions: Sessions;
   snapshot_files: SnapshotFiles;
   snapshots: Snapshots;
+  stage_outputs: StageOutputs;
   symbol_lineage: SymbolLineage;
   symbols: Symbols;
   synthetic_nodes: SyntheticNodes;
