@@ -2241,7 +2241,7 @@ Status: ☐
 ---
 
 ### VER-001 — Finding lifecycle persistence
-Status: ☐
+Status: ◐ (migration + store trait + edge validation done; PG impl and REJECTED_INVALID enum variant pending)
 
 **Task ID:** VER-001
 
