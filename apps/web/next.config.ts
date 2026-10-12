@@ -1,9 +1,13 @@
+import { fileURLToPath } from 'node:url';
 import type { NextConfig } from 'next';
 
 /** Where the Next server proxies `/api/*` to (the NestJS control plane). */
 const apiInternalUrl = process.env.API_INTERNAL_URL ?? 'http://127.0.0.1:8080';
 
 const nextConfig: NextConfig = {
+  // Self-contained server bundle for the CI-built image (infra/docker/web.Dockerfile).
+  output: 'standalone',
+  outputFileTracingRoot: fileURLToPath(new URL('../../', import.meta.url)),
   poweredByHeader: false,
   reactStrictMode: true,
   // The browser and the API share an origin, so SameSite=Lax session cookies just work.

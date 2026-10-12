@@ -1,0 +1,17 @@
+.git
+.github
+.omc
+.claude
+**/node_modules
+**/target
+**/.next
+**/dist
+**/coverage
+fixtures/.built
+fixtures/.build
+benchmarks
+docs/product
+.env
+.env.*
+*.pem
+.secrets

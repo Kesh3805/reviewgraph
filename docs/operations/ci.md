@@ -51,3 +51,32 @@ failure, uploads container logs and a Postgres slow-query excerpt from `scripts/
   database with the test credentials above, then run `pnpm test:integration`. No Docker is used.
 - Deviation from the task text: the object-store service for SEC-007/SEC-009 tests is not part of
   these jobs because it would need Docker Compose; those tests run against their in-memory fake.
+
+## Benchmarks (`bench.yml`)
+
+- `smoke` (pull requests and manual runs): `cargo bench --workspace --no-run --locked` proves every
+  bench compiles, a tiny criterion profile runs for `codegraph` and `incremental` (timings are
+  informational because shared runners are noisy; a crash or panic fails), and the compare scripts'
+  tests run.
+- `nightly` (02:17 UTC and manual): the full criterion run with `--save-baseline nightly`,
+  converted by `scripts/ci/criterion-to-perf.mjs` to `perf-current.json` (`p95_ms` and `median_ms`
+  per benchmark) and compared with `benchmarks/baselines/perf.json` by `scripts/ci/bench-compare.mjs`
+  (p95 latency regression above 20 percent or memory above 15 percent fails). A failing scheduled
+  run opens or updates one `perf-regression` issue. Artifacts: `perf-current.json`, `compare.txt`,
+  criterion output.
+- Updating baselines: download the `criterion` artifact of a green nightly (or manual) run, copy
+  `perf-current.json` over `benchmarks/baselines/perf.json` and open a reviewed PR whose description
+  justifies the change. Never edit baselines to make a run pass.
+- Quality baseline (`benchmarks/baselines/quality.json`) is still a placeholder: the review-eval
+  `run` command under the replay adapter and the QB-001 labeled corpus do not exist yet, so the
+  quality smoke and nightly comparison are not wired. `bench-compare.mjs quality` is ready for it.
+
+## Docker images (`docker.yml`)
+
+Images are built only on the CI runner (`infra/docker/{engine,api,web}.Dockerfile`; see
+`infra/docker/README.md`). Per image: build with Buildx and the GitHub Actions layer cache,
+hardening checks (`scripts/ci/image-hardening-check.sh`), read-only rootfs smoke
+(`scripts/ci/image-smoke.sh`), Trivy (HIGH and CRITICAL, fixed vulnerabilities, waivers from
+`security/exceptions.toml`) and a syft CycloneDX SBOM uploaded as `sbom-<image>`. On `v*` tags the
+`publish` job pushes `sha-<short>` and semver tags to `ghcr.io/<owner>/<repo>/<image>` with the
+workflow token (`packages: write` only on that job; skipped for forks).

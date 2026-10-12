@@ -4,7 +4,16 @@ name: docker
 on:
   pull_request:
     paths:
-      ['infra/docker/**', 'engine/**', 'apps/**', 'packages/**', '.github/workflows/docker.yml']
+      [
+        'infra/docker/**',
+        '.dockerignore',
+        'engine/**',
+        'apps/**',
+        'packages/**',
+        'scripts/ci/image-*',
+        'scripts/security/**',
+        '.github/workflows/docker.yml',
+      ]
   push:
     branches: [main]
     tags: ['v*']
@@ -21,23 +30,20 @@ jobs:
   build:
     name: ${{ matrix.image }}
     runs-on: ubuntu-24.04
-    timeout-minutes: 30
+    timeout-minutes: 40
     strategy:
       fail-fast: false
       matrix:
         image: [engine, api, web]
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
-      # Skip until DEV-001 adds infra/docker/<image>.Dockerfile.
-      - name: Check Dockerfile exists
-        id: df
-        run: |
-          if [ -f "infra/docker/${{ matrix.image }}.Dockerfile" ]; then echo "present=true" >> "$GITHUB_OUTPUT"
-          else echo "present=false" >> "$GITHUB_OUTPUT"; echo "::notice::infra/docker/${{ matrix.image }}.Dockerfile not found; skipping (DEV-001)"; fi
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with: { node-version: 24 }
       - uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
-        if: steps.df.outputs.present == 'true'
+      - name: Build time
+        id: meta
+        run: echo "time=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$GITHUB_OUTPUT"
       - name: Build (no push)
-        if: steps.df.outputs.present == 'true'
         uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6
         with:
           context: .
@@ -48,9 +54,65 @@ jobs:
           cache-to: type=gha,mode=max,scope=${{ matrix.image }}
           build-args: |
             GIT_SHA=${{ github.sha }}
+            BUILD_TIME=${{ steps.meta.outputs.time }}
       - name: Hardening checks
-        if: steps.df.outputs.present == 'true'
         run: bash scripts/ci/image-hardening-check.sh reviewgraph-${{ matrix.image }}:ci ${{ matrix.image }}
       - name: Read-only rootfs smoke
-        if: steps.df.outputs.present == 'true'
         run: bash scripts/ci/image-smoke.sh reviewgraph-${{ matrix.image }}:ci ${{ matrix.image }}
+      - name: Trivy ignore list from security exceptions
+        run: node scripts/security/exceptions-to-trivyignore.mjs > .trivyignore
+      - name: Trivy scan (HIGH and CRITICAL, fixed vulnerabilities only)
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          image-ref: reviewgraph-${{ matrix.image }}:ci
+          severity: HIGH,CRITICAL
+          ignore-unfixed: true
+          exit-code: '1'
+          trivyignores: .trivyignore
+      - name: SBOM (syft, CycloneDX)
+        uses: anchore/sbom-action@e22c389904149dbc22b58101806040fa8d37a610 # v0
+        with:
+          image: reviewgraph-${{ matrix.image }}:ci
+          format: cyclonedx-json
+          output-file: sbom-${{ matrix.image }}.cdx.json
+          upload-artifact: false
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: sbom-${{ matrix.image }}
+          path: sbom-${{ matrix.image }}.cdx.json
+
+  publish:
+    name: publish ${{ matrix.image }}
+    if: startsWith(github.ref, 'refs/tags/v') && github.event.repository.fork == false
+    needs: build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      fail-fast: false
+      matrix:
+        image: [engine, api, web]
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
+      - name: Log in to the registry
+        env:
+          REGISTRY_TOKEN: ${{ github.token }}
+        run: echo "$REGISTRY_TOKEN" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
+      - name: Compute tags
+        id: tags
+        run: |
+          repo="ghcr.io/$(echo '${{ github.repository }}' | tr '[:upper:]' '[:lower:]')/${{ matrix.image }}"
+          short="$(echo '${{ github.sha }}' | cut -c1-12)"
+          echo "list=$repo:sha-$short,$repo:${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+      - uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6
+        with:
+          context: .
+          file: infra/docker/${{ matrix.image }}.Dockerfile
+          push: true
+          tags: ${{ steps.tags.outputs.list }}
+          cache-from: type=gha,scope=${{ matrix.image }}
+          build-args: |
+            GIT_SHA=${{ github.sha }}
