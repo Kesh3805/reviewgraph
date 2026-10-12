@@ -1710,7 +1710,7 @@ Status: ☐
 
 ### TSA-004 — Import/export extraction (ESM + CJS)
 
-Status: ☐
+Status: ☑
 
 - **Task ID:** TSA-004
 - **Title:** Import/export extraction (ESM named/default/namespace, re-exports `export * from`, type-only imports, CJS require/module.exports)
