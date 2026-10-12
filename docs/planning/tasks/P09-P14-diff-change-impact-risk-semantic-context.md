@@ -1878,7 +1878,7 @@ Status: ☑
 ---
 
 ### CTX-001 — ContextPackage / ContextItem model
-Status: ☐
+Status: ☑
 
 - **Task ID:** CTX-001
 - **Title:** `ContextPackage` and `ContextItem` model with source locations, provenance per item and an omitted-with-reason list
@@ -2024,7 +2024,7 @@ Status: ☐
 ---
 
 ### CTX-005 — Ranking
-Status: ☐
+Status: ☑
 
 - **Task ID:** CTX-005
 - **Title:** Relevance ranking from 10 PRD §33 signals with per-reviewer weights (no weight > 0.35) and the §34 distance heuristic
@@ -2075,7 +2075,7 @@ Status: ☐
 ---
 
 ### CTX-006 — Budgeting
-Status: ☐
+Status: ☑
 
 - **Task ID:** CTX-006
 - **Title:** Per-reviewer budgets with greedy selection by score per token
